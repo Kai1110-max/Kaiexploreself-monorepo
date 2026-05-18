@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: exploreself-app
+    env: node
+    buildCommand: npm install && npx nx build frontend-web && npx nx build backend
+    startCommand: node dist/apps/backend/main.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_PORT
+        value: "10000"
+      - key: BACKEND_HOSTNAME
+        value: "https://exploreself-app.onrender.com"
+      - key: REGISTRATION_SECRET_CODE
+        value: ACTION2026
+      - key: MONGODB_URL
+        sync: false # Set this in Render dashboard (e.g., mongodb+srv://...)
+      - key: MONGODB_DBNAME
+        value: exploreself_prod
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY # (Optional: keep if used as fallback)
+        sync: false
+      - key: ZHIPU_API_KEY # The ChatGLM API Key used in config.ts
+        sync: false

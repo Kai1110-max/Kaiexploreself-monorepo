@@ -7,9 +7,13 @@ export class Http {
 
   static get axios(): Axios {
     if (this._axiosInstance == null) {
+      let hostname = import.meta.env.VITE_BACKEND_HOSTNAME || 'localhost';
+      if (hostname === '0.0.0.0') {
+        hostname = 'localhost';
+      }
       this._axiosInstance = axios.create({
-        baseURL: `http://${import.meta.env.VITE_BACKEND_HOSTNAME}:${
-          import.meta.env.VITE_BACKEND_PORT
+        baseURL: `http://${hostname}:${
+          import.meta.env.VITE_BACKEND_PORT || 3000
         }/api/v1`,
       });
     }

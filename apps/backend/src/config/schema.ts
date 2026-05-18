@@ -106,6 +106,38 @@ export const AgendaSchema = new Schema({
   initialNarrative: {type: String, required: true, minLength: 1},
   threads: {type: [Schema.Types.ObjectId], ref: 'ThreadItem', required: true, default: []},
   summaries: {type: [String], required: true, default: []},
+  actionPlans: {type: [String], required: true, default: []},
+  actionPlanDocument: {
+    type: {
+      charter: {type: String, default: ''},
+      motivation: {type: String, default: ''},
+      purpose: {type: String, default: ''},
+      inquiryQuestion: {type: String, default: ''},
+      theoryBridging: {type: String, default: ''},
+      dataAndTools: {type: String, default: ''},
+      interventionDesign: {type: String, default: ''},
+      senseMaking: {type: String, default: ''},
+      reflection: {type: String, default: ''},
+      decisionMaking: {type: String, default: ''}
+    },
+    default: null,
+    required: false
+  },
+  publicationScore: {type: Number, default: 0, required: false},
+  futurePlan: {type: [String], default: [], required: false},
+  peerReviews: {
+    type: [{
+      reviewerId: {type: String, required: true},
+      section: {type: String, required: true},
+      comment: {type: String, required: true},
+      aiValidation: {type: String, required: false},
+      status: {type: String, enum: ['pending', 'resolved', 'rejected'], default: 'pending'},
+      createdAt: {type: Date, default: Date.now}
+    }],
+    default: [],
+    required: false
+  },
+  coWriters: {type: [Schema.Types.ObjectId], ref: 'User', default: [], required: false},
   pinnedThemes: {type: [String], required: true, default: []},
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date},

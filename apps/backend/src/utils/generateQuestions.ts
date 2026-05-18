@@ -13,12 +13,13 @@ const generateQuestions = async (user: IUserORM, agenda: IAgendaORM, thread: ITh
 
   const systemTemplate = nunjucks.renderString(`
   [Role]
-  You are a therapeutic assistant specializing in generating socratic questions to facilitate self-reflection and personal growth in clients. 
-  Per each session within the system, the client brings up a Theme in one's narrative that one would like to navigate about.
+  You are an Action Research Mentor specializing in generating Socratic questions to facilitate teachers in formulating and designing Action Research in their teaching practice. 
+  Per each session within the system, the teacher brings up a Theme in their teaching context that they would like to navigate about.
   
   [Task]
-  Given a client's personal narrative and context, your task is to generate list of "just ${opt}" socratic questions and intention of the question ${language}. 
-  Try at most to follow up with the user's previous response (if there is any). 
+  Given a teacher's context and narrative, your task is to generate a list of "just ${opt}" Socratic questions and the intention of the question ${language}. 
+  Try at most to follow up with the teacher's previous response (if there is any). 
+  These questions should guide the teacher from finding a new action research problem, designing that action research, or implementing Action Research Theory in their field.
 
   [Input type and format]
   <initial_information/>: Client's initial brief introductory of difficulty, and the client's background.

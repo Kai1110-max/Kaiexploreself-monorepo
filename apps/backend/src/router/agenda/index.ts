@@ -2,7 +2,7 @@ import express from 'express';
 import { assertAgendaIdParamMiddleware, RequestWithAgenda, RequestWithUser, signedInUserMiddleware } from '../middlewares';
 import { AgendaItem, User } from '../../config/schema';
 import { body, validationResult } from 'express-validator';
-import { generateSummary, generateTitleFromNarrative, mapSummaryToQIDs } from '../../utils/summary';
+import { generateSummary, generateTitleFromNarrative, mapSummaryToQIDs, generateActionPlan, generateActionPlanDoc, evaluateActionPlan, improveActionPlanSection, mapInquiryConsistency, validatePeerReview, agenticSync } from '../../utils/summary';
 import { InteractionType, SessionStatus } from '@core';
 import { logInteraction } from '../../utils/logInteraction';
 import themeRouter from './theme'
@@ -256,6 +256,118 @@ router.put('/:aid/summarize', assertAgendaIdParamMiddleware, async(req: RequestW
     res.json({
       err: err.message
     })
+  }
+})
+
+router.put('/:aid/action-plan', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const actionPlan = await generateActionPlan(req.user, req.agenda)
+    req.agenda.actionPlans.push(actionPlan)
+    await req.agenda.save()
+    res.json({ actionPlan })
+  } catch (err) {
+    res.json({
+      err: err.message
+    })
+  }
+})
+
+router.put('/:aid/action-plan-doc', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const doc = await generateActionPlanDoc(req.user, req.agenda)
+    req.agenda.actionPlanDocument = doc as any;
+    await req.agenda.save()
+    res.json({ actionPlanDocument: doc })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/action-plan-doc/update', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const { actionPlanDocument } = req.body;
+    req.agenda.actionPlanDocument = actionPlanDocument;
+    await req.agenda.save()
+    res.json({ actionPlanDocument: req.agenda.actionPlanDocument })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/action-plan-doc/evaluate', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    if (!req.agenda.actionPlanDocument) {
+      return res.status(400).json({ err: "No action plan document exists" })
+    }
+    const evaluation = await evaluateActionPlan(req.agenda.actionPlanDocument, req.user.isKorean)
+    req.agenda.publicationScore = evaluation.publicationScore;
+    req.agenda.futurePlan = evaluation.futurePlan;
+    await req.agenda.save()
+    res.json({ 
+      publicationScore: evaluation.publicationScore,
+      futurePlan: evaluation.futurePlan
+    })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/action-plan-doc/improve', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const { sectionName, content } = req.body;
+    const improvedText = await improveActionPlanSection(sectionName, content, req.user.isKorean)
+    res.json({ improvedText })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/action-plan-doc/agent-sync', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const { sectionName, content, actionPlanDocument } = req.body;
+    const agentResponse = await agenticSync(sectionName, content, actionPlanDocument, req.user.isKorean)
+    res.json({ agentResponse })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/action-plan-doc/consistency', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    if (!req.agenda.actionPlanDocument) {
+      return res.status(400).json({ err: "No action plan document exists" })
+    }
+    const consistencyMap = await mapInquiryConsistency(req.agenda.actionPlanDocument, req.user.isKorean)
+    res.json({ consistencyMap })
+  } catch (err) {
+    res.status(500).json({ err: err.message })
+  }
+})
+
+router.post('/:aid/peer-review', assertAgendaIdParamMiddleware, async(req: RequestWithAgenda, res) => {
+  try {
+    const { section, comment } = req.body;
+    // AI validates the peer review
+    const aiValidation = await validatePeerReview(section, comment, req.user.isKorean);
+    
+    const newReview = {
+      reviewerId: req.user._id.toString(), // Using current user as reviewer for demonstration
+      section,
+      comment,
+      aiValidation,
+      status: 'pending',
+      createdAt: new Date()
+    };
+    
+    if (!req.agenda.peerReviews) {
+      req.agenda.peerReviews = [];
+    }
+    req.agenda.peerReviews.push(newReview as any);
+    await req.agenda.save();
+    
+    res.json({ peerReview: newReview });
+  } catch (err) {
+    res.status(500).json({ err: err.message });
   }
 })
 

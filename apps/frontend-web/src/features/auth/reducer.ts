@@ -100,6 +100,53 @@ export function loginWithPasscode(
   };
 }
 
+export function registerUser(
+  alias: string,
+  passcode: string,
+  isKorean: boolean,
+  secretCode: string,
+  onSuccess?: () => void,
+  onError?: (err: any) => void
+): AppThunk {
+  return async (dispatch, getState) => {
+    dispatch(authSlice.actions.setAuthorizingFlag(true));
+    try {
+      const response = await Http.axios.post(`/auth/register`, {
+        alias,
+        passcode,
+        isKorean,
+        secretCode
+      });
+      const { token, user } = response.data;
+
+      const decoded = jwtDecode<{
+        sub: string;
+        iat: number;
+        exp: number;
+      }>(token);
+
+      dispatch(
+        authSlice.actions.mountUser({
+          token,
+          userId: decoded.sub,
+          userInfo: user,
+        })
+      );
+      dispatch(updateUserInfo(user));
+
+      await i18next.changeLanguage(user.isKorean === true ? 'kr' : 'en')
+
+      onSuccess?.();
+    } catch (err) {
+      console.log('Err in register: ', err);
+      dispatch(authSlice.actions.setAuthError(err as any));
+      onError?.(err);
+    } finally {
+      dispatch(authSlice.actions.setAuthorizingFlag(false));
+    }
+  };
+}
+
 export function signOut(onSuccess?: () => {}): AppThunk {
   return async (dispatch, getState) => {
     dispatch(authSlice.actions.resetState());

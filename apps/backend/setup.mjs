@@ -37,57 +37,13 @@ async function setup(){
     console.log(env, env["BACKEND_PORT"])
 
     const answers = {
-        "BACKEND_PORT": env["BACKEND_PORT"] || await input({
-            default: '3000',
-            message: 'Insert Backend port number:',
-            required: true,
-            validate: (input) =>  {
-                const pass = makeExistingValidator("Please enter a valid port number.")(input)
-                if(pass !== true){
-                    return pass
-                }
-
-                try{
-                    Number.parseInt(input)
-                    return true
-                }catch(ex){
-                    return "The port number must be an integer."
-                }
-            }
-        }),
-        "BACKEND_HOSTNAME": env["BACKEND_HOSTNAME"] || await input({
-            default: '0.0.0.0',
-            message: 'Insert Backend hostname WITHOUT protocol and port (e.g., 0.0.0.0, naver.com):',
-            required: true,
-            validate: makeExistingValidator("Please enter a valid hostname.")
-        }),
-        "AUTH_SECRET": env["AUTH_SECRET"] || await input({
-            default: 'NaverAILabHCIELMI',
-            message: 'Insert any random string to be used as an auth secret:',
-            required: true,
-            validate: makeExistingValidator("Please enter any text.")
-        }),
-        "MONGODB_URL": env["MONGODB_URL"] || await input({
-            default: 'mongodb://localhost:27017/',
-            message: "Insert a full URL to connect to MongoDB on the system.",
-            required: true
-        }),
-        "MONGODB_DBNAME": env["MONGODB_DBNAME"] || await input({
-            default: "exploreself",
-            message: "Insert a DB name to store the app data.",
-            required: true
-        }),
-        "OPENAI_API_KEY": env["OPENAI_API_KEY"] || await input({
-            message: 'Insert OpenAI API Key:',
-            required: true,
-            validate: makeExistingValidator("Please enter a valid API key.")
-        }),
-        "ADMIN_HASHED_PW": env["ADMIN_HASHED_PW"] || await hashPassword(await password({
-            message: 'Enter password for admin:',
-            required: true,
-            validate: makeExistingValidator("Please enter a valid password.")
-        })),
-
+        "BACKEND_PORT": env["BACKEND_PORT"] || '3000',
+        "BACKEND_HOSTNAME": env["BACKEND_HOSTNAME"] || '0.0.0.0',
+        "AUTH_SECRET": env["AUTH_SECRET"] || 'NaverAILabHCIELMI',
+        "MONGODB_URL": env["MONGODB_URL"] || 'mongodb://localhost:27017/',
+        "MONGODB_DBNAME": env["MONGODB_DBNAME"] || 'exploreself',
+        "OPENAI_API_KEY": env["OPENAI_API_KEY"] || 'test_key',
+        "ADMIN_HASHED_PW": env["ADMIN_HASHED_PW"] || await hashPassword('123456'), // 默认管理员密码设为 123456
         "ADMIN_ID": env["ADMIN_ID"] || nanoid()
     }
 

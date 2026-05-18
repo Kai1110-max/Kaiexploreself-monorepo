@@ -56,9 +56,14 @@ router.get("/verify", signedInUserMiddleware, (req, res) => {
 })
 
 router.post("/register", createPasscodeValidation(), 
-    body("alias").trim().notEmpty(), body("isKorean").isBoolean().exists(), async (req, res) => {
+    body("alias").trim().notEmpty(), body("isKorean").isBoolean().exists(), body("secretCode").trim().notEmpty(), async (req, res) => {
     const vErrors = validationResult(req)
     if(vErrors.isEmpty()){
+        const secretCode = req.body.secretCode
+        const expectedCode = process.env.REGISTRATION_SECRET_CODE || "ACTION2026"
+        if (secretCode !== expectedCode) {
+            return res.status(403).send("InvalidSecretCode")
+        }
         const passcode = req.body.passcode
         const alias = req.body.alias
         const isKorean = req.body.isKorean

@@ -1,13 +1,14 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { OpenAI } from '@langchain/openai';
+import { ChatZhipuAI } from '@langchain/community/chat_models/zhipuai';
 
-const chatModel = new ChatOpenAI({
-  model: "gpt-4o"
+const chatModel = new ChatZhipuAI({
+  model: "glm-4",
+  zhipuAIApiKey: "5a8ce15272e841d6a36a5e5b5c8b5083.RmQYB1waqZDKNEtM",
 });
 
-const llmModel = new OpenAI({
-  model: "gpt-4o"
-})
+const llmModel = new ChatZhipuAI({
+  model: "glm-4",
+  zhipuAIApiKey: "5a8ce15272e841d6a36a5e5b5c8b5083.RmQYB1waqZDKNEtM",
+});
 
 // const uid = '668bcb49eea1742b895f0fe8'
 

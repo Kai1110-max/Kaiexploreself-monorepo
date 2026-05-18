@@ -25,6 +25,8 @@ import generateComment from '../../api_call/generateComment';
 import generateKeywords from '../../api_call/generateKeywords';
 import { postInteractionData } from '../../api_call/postInteractionData';
 import { generateSummary } from '../../api_call/generateSummary';
+import { generateActionPlan } from '../../api_call/generateActionPlan';
+import { generateActionPlanDoc, evaluateActionPlan, improveActionPlanSection, updateActionPlanDoc, fetchConsistencyMap, submitPeerReview } from '../../api_call/actionPlanDoc';
 import getThemeRecommendation from '../../api_call/generateThemes';
 
 const threadEntityAdapter = createEntityAdapter<IThreadWithQuestionIds, string>(
@@ -44,6 +46,7 @@ export type IAgendaState = {
   isLoadingAgenda: boolean;
   isCreatingNewThread: boolean;
   isCreatingSummary: boolean;
+  isCreatingActionPlan: boolean;
   isLoadingThemes: boolean;
   newThemes: ThemeWithExpressions[];
 
@@ -59,6 +62,12 @@ export type IAgendaState = {
   questionCommentCreationLoadingFlags: { [key: string]: boolean | undefined };
   questionKeywordCreationLoadingFlags: { [key: string]: boolean | undefined };
   questionShowKeywordsFlags: { [key: string]: boolean | undefined };
+
+  actionPlanDocument?: any;
+  publicationScore?: number;
+  futurePlan?: string[];
+  consistencyMap?: any;
+  peerReviews?: any[];
 
   isThemeSelectorOpen: boolean;
 
@@ -78,6 +87,7 @@ const initialState: IAgendaState = {
   isLoadingAgenda: false,
   isCreatingNewThread: false,
   isCreatingSummary: false,
+  isCreatingActionPlan: false,
   isLoadingThemes: false,
   newThemes: [],
 
@@ -92,6 +102,12 @@ const initialState: IAgendaState = {
   sessionStatus: SessionStatus.Exploring,
 
   summaries: [],
+  actionPlans: [],
+  actionPlanDocument: undefined,
+  publicationScore: undefined,
+  futurePlan: undefined,
+  consistencyMap: undefined,
+  peerReviews: [],
 
   threadInInitializationFlags: {},
   threadQuestionCreationLoadingFlags: {},
@@ -172,6 +188,10 @@ const agendaSlice = createSlice({
 
     setCreatingSummaryFlag: (state, action: PayloadAction<boolean>) => {
       state.isCreatingSummary = action.payload;
+    },
+
+    setCreatingActionPlanFlag: (state, action: PayloadAction<boolean>) => {
+      state.isCreatingActionPlan = action.payload;
     },
 
     setLoadingThemesFlag: (state, action: PayloadAction<boolean>) => {
@@ -319,6 +339,36 @@ const agendaSlice = createSlice({
 
     addNewSummary: (state, action: PayloadAction<string>) => {
       state.summaries.push(action.payload);
+    },
+
+    addNewActionPlan: (state, action: PayloadAction<string>) => {
+      if (!state.actionPlans) {
+        state.actionPlans = [];
+      }
+      state.actionPlans.push(action.payload);
+    },
+
+    setActionPlanDocument: (state, action: PayloadAction<any>) => {
+      state.actionPlanDocument = action.payload;
+    },
+
+    setPublicationScore: (state, action: PayloadAction<number>) => {
+      state.publicationScore = action.payload;
+    },
+
+    setFuturePlan: (state, action: PayloadAction<string[]>) => {
+      state.futurePlan = action.payload;
+    },
+
+    setConsistencyMap: (state, action: PayloadAction<any>) => {
+      state.consistencyMap = action.payload;
+    },
+
+    appendPeerReview: (state, action: PayloadAction<any>) => {
+      if (!state.peerReviews) {
+        state.peerReviews = [];
+      }
+      state.peerReviews.push(action.payload);
     },
 
     appendPinnedTheme: (state, action: PayloadAction<string>) => {
@@ -844,6 +894,122 @@ export function getNewSummary(): AppThunk {
   };
 }
 
+export function getNewActionPlan(): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      try {
+        dispatch(agendaSlice.actions.setCreatingActionPlanFlag(true));
+        const actionPlan = await generateActionPlan(
+          state.auth.token,
+          state.agenda.agendaId
+        );
+        if (actionPlan != null) {
+          dispatch(agendaSlice.actions.addNewActionPlan(actionPlan));
+        } else {
+          //TODO error handling
+        }
+      } catch (ex) {
+        console.log(ex);
+      } finally {
+        dispatch(agendaSlice.actions.setCreatingActionPlanFlag(false));
+      }
+    }
+  };
+}
+
+export function getNewActionPlanDoc(): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      try {
+        dispatch(agendaSlice.actions.setCreatingActionPlanFlag(true));
+        const doc = await generateActionPlanDoc(
+          state.auth.token,
+          state.agenda.agendaId
+        );
+        if (doc != null) {
+          dispatch(agendaSlice.actions.setActionPlanDocument(doc));
+        }
+      } catch (ex) {
+        console.log(ex);
+      } finally {
+        dispatch(agendaSlice.actions.setCreatingActionPlanFlag(false));
+      }
+    }
+  };
+}
+
+export function updateAndSaveActionPlanDoc(doc: any): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      dispatch(agendaSlice.actions.setActionPlanDocument(doc));
+      await updateActionPlanDoc(state.auth.token, state.agenda.agendaId, doc);
+    }
+  };
+}
+
+export function fetchEvaluation(): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      try {
+        const evalData = await evaluateActionPlan(
+          state.auth.token,
+          state.agenda.agendaId
+        );
+        if (evalData != null) {
+          dispatch(agendaSlice.actions.setPublicationScore(evalData.publicationScore));
+          dispatch(agendaSlice.actions.setFuturePlan(evalData.futurePlan));
+        }
+      } catch (ex) {
+        console.log(ex);
+      }
+    }
+  };
+}
+
+export function fetchConsistency(): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      try {
+        const mapData = await fetchConsistencyMap(
+          state.auth.token,
+          state.agenda.agendaId
+        );
+        if (mapData != null) {
+          dispatch(agendaSlice.actions.setConsistencyMap(mapData));
+        }
+      } catch (ex) {
+        console.log(ex);
+      }
+    }
+  };
+}
+
+export function postPeerReview(section: string, comment: string): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token && state.agenda.agendaId) {
+      try {
+        const review = await submitPeerReview(
+          state.auth.token,
+          state.agenda.agendaId,
+          section,
+          comment
+        );
+        if (review) {
+          dispatch(agendaSlice.actions.appendPeerReview(review));
+        }
+      } catch (ex) {
+        console.log(ex);
+      }
+    }
+  };
+}
+
 export function updateQuestionResponse(
   tid: string, 
   qid: string,
@@ -999,5 +1165,10 @@ export const {
   setLoadingThemesFlag,
   resetNewThemes,
   setHoveringOutlineThreadId,
+  setActionPlanDocument,
+  setPublicationScore,
+  setFuturePlan,
+  setConsistencyMap,
+  appendPeerReview,
 } = agendaSlice.actions;
 export default agendaSlice.reducer;

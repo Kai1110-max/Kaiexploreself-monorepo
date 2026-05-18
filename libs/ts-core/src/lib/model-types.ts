@@ -88,11 +88,39 @@ export enum SessionStatus{
 }
 
 
+export interface IActionPlanDocument {
+  charter: string; // 探究章程与研究者协议 (Charter & Researcher Agreement)
+  motivation: string; // 动机 (Motivation)
+  purpose: string; // 目的 (Purpose - separated from motivation)
+  inquiryQuestion: string; // 探究问题 (Inquiry Question)
+  theoryBridging: string; // 理论桥接 (Theory Bridging & Publication Targeting)
+  dataAndTools: string; // 数据与工具 (Data & Tools Requirements)
+  interventionDesign: string; // 干预设计 (Intervention Design)
+  senseMaking: string; // 意义建构 (Sense Making)
+  reflection: string; // 解读与反思 (Interpretation & Reflection)
+  decisionMaking: string; // 决策与下一步 (Decision Making & Next Cycle)
+}
+
+export interface IPeerReview {
+  reviewerId: string; // The ID of the "Critical Friend"
+  section: keyof IActionPlanDocument; // The section being reviewed
+  comment: string; // The actual review content
+  aiValidation?: string; // AI-mediated structural check of the review
+  status: 'pending' | 'resolved' | 'rejected';
+  createdAt: Date;
+}
+
 export interface IAgendaBase {
   title: string | undefined;
   initialNarrative: string;
   pinnedThemes: Array<string>
   summaries: string[];
+  actionPlans?: string[];
+  actionPlanDocument?: IActionPlanDocument;
+  publicationScore?: number;
+  futurePlan?: string[];
+  peerReviews?: IPeerReview[];
+  coWriters?: string[]; // Array of User IDs allowed to co-write this document
   createdAt: Date;
   updatedAt: Date;
   debriefing: string | undefined;
