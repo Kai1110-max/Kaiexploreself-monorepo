@@ -76,12 +76,50 @@ To support peer review, colleagues can leave comments under specific modules. Th
 
 ---
 
-## 4. User Guide: Step-by-Step Workflow
+## 4. Comprehensive UI & Workflow Guide
 
-1. **Secure Login:** Go to the platform, click **Register**. Enter an Alias, a Passcode, and the Secret Invite Code (e.g., `ACTION2026`). For future visits, use *only your Passcode* to log in.
-2. **Socratic Chat:** Use the left panel to chat with the AI about your classroom problem.
-3. **Generate Document:** Click `Regenerate Document`. The AI will populate the 10-step Action Plan on the right.
-4. **Co-Write:** Edit any section directly. Wait 3 seconds to see the AI's real-time academic feedback below your text.
-5. **Ask AI to Improve:** Click the `✨ Ask AI to Improve` button on any module to have the AI professionally rewrite that specific block.
-6. **Evaluate:** Click `Evaluate Publication Chance` to get your Rigor Score and Consistency Map (displayed in the right sidebar).
-7. **Export:** Click the `Export` button to download the final plan as an editable Word document (`.doc`) or a print-ready PDF.
+This section details every page, panel, and button in the platform, explaining the underlying logic and principles behind the user interface design.
+
+### Stage 1: Initial Problem Elicitation
+**Page: "Jot down Your Teaching Challenges"**
+*   **Main Text Area:** Users freely write about their teaching difficulties or classroom issues.
+    *   *Logic/Principle:* Lowers the cognitive barrier to entry. Teachers do not need to know academic jargon; they simply describe their real-world problems. The AI will later translate this into academic concepts.
+*   **Button: `Start Exploring Action Research Topics`**
+    *   *Function:* Becomes active once input is provided. Triggers the AI to analyze the raw text and extract potential research directions.
+
+### Stage 2: Theme Exploration & Scaffolding
+**Page: Exploration Interface**
+*   **Left Sidebar (Outline):**
+    *   *Function:* Displays a navigational tree of the user's initial challenges and selected themes.
+    *   *Logic:* Helps users maintain a mental map of their exploration process, ensuring they don't lose track of their original intent.
+*   **Panel: Specific Theme Scaffolding (e.g., "capturing and maintaining student attention")**
+    *   *Function:* Presents an AI-generated specific question related to the selected theme.
+    *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the AI's question.
+    *   **Toggle: `Keywords to Guide Your Expression`:** Shows/hides suggested vocabulary to help users articulate their thoughts professionally.
+    *   **AI Tip Box & Button `See New Tips`:** Provides concrete examples and starting points on the right side. Clicking the button cycles through different hints.
+        *   *Logic/Principle:* Vygotskian scaffolding. Provides just enough support to help the teacher formulate a plan without doing the thinking for them.
+    *   **Button: `Get More Question Suggestions`:** Generates alternative prompts if the current question doesn't resonate with the user.
+*   **Button: `Explore Other Themes` & Modal Dialog:**
+    *   *Function:* Opens a pop-up with alternative AI-generated themes.
+    *   *Modal Elements:* Clickable **Theme Cards**, a **`See Other Expressions`** button to reword themes, a **Pinned Themes** section to save interests, and a **Custom Theme Input** ("Add Myself") to allow manual topic entry.
+    *   *Logic/Principle:* Encourages divergent thinking before converging on a specific research plan.
+*   **Button: `View AI Summary` (Bottom Left):**
+    *   *Function:* Transitions to the final synthesis stage once the user has explored enough.
+
+### Stage 3: Synthesis & Live Document Co-writing
+**Page: Summary & Live Document Dashboard**
+*   **Panels: "Exploration History" & "AI Summary":**
+    *   *Function:* Synthesizes the entire brainstorming session into a cohesive academic narrative.
+    *   **Button: `View New Summary`:** Regenerates the synthesis if the user is unsatisfied.
+*   **Panel: "Live Action Research Document" (The Core Engine):**
+    *   *Function:* The main workspace where the 10 AMTI modules are filled out and evaluated.
+    *   **Button: `Export`:** Downloads the document as an editable Word file (`.doc`) or PDF. Produces tangible research artifacts for offline sharing or submission.
+    *   **Button: `Evaluate Publication Chance`:** Triggers the hidden CAR-based quality checks to assess publishability.
+    *   **Button: `Regenerate Document`:** Re-populates the 10 modules based on the latest AI summary.
+    *   **Phase Navigation Tabs (1. Plan / 2. Act / 3. Observe & Reflect):** Clickable tabs to jump between the Kemmis/Mertler stages, simplifying the complex 10-step process.
+    *   **Module Textareas & Button `✨ Ask AI to Improve`:** Editable fields for each step. The button rewrites the user's raw text into formal academic language.
+    *   **Agentic Feedback Cards (Blue/Yellow/Green):** Appear silently below the text box after 3 seconds of typing inactivity, offering Socratic questions, critical feedback, or approval.
+        *   *Logic/Principle:* Implements "Bounded Autonomy," acting as a proactive consultant without interrupting the writing flow.
+*   **Panel: Evaluation Results (Right Sidebar, appears after evaluation):**
+    *   **Publication Rigor Score (Dial Chart):** Displays a percentage score based on CAR compliance.
+    *   **Future Actions Timeline:** Lists concrete next steps to improve the score.
