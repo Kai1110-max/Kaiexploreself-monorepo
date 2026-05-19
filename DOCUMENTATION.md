@@ -1,126 +1,87 @@
-# AI-Mediated Action Research Platform: System Architecture & Theoretical Framework
+# AI-Mediated Action Research Platform: Comprehensive Documentation
 
-This document outlines the core principles, logical architecture, and functional mechanics of the AI-Mediated Action Research Platform. It is designed to serve as a comprehensive reference for educational researchers, faculty trainers, and technical maintainers.
-
----
-
-## 1. Executive Summary & Core Vision
-The platform is designed to support faculty in a transnational Sino-British university to conduct rigorous action research. Moving beyond traditional "chatbot-style" generic prompting, this system acts as an **Agentic Academic Consultant**. It pairs human academic judgement with AI scaffolding to transform broad teaching concerns into workable, publication-ready study designs (targeting AIED/CHI standards).
+This document serves as the definitive guide for educational researchers, action research experts, and faculty users. It details the theoretical foundations (AMTI and CAR), the functional mechanics of the 10 core modules, the Agentic AI interactions, and a step-by-step user guide.
 
 ---
 
-## 2. The Three-Layered Theoretical Framework
-To balance user accessibility with academic rigor, the system eschews a single off-the-shelf model in favor of a customized three-layered architecture:
+## 1. Core Vision & Theoretical Frameworks
 
-### Layer 1: The User Experience (UX) Layer - Kemmis/Mertler Cycle
-*   **Purpose:** To lower the cognitive barrier for disciplinary experts who may be new to action research.
-*   **Implementation:** The complex computational steps are hidden behind a simplified, classic Action Research cycle presented in the UI:
-    *   **Phase 1: Plan** (Identifying the issue, reviewing theory, planning data).
-    *   **Phase 2: Act** (Designing the intervention).
-    *   **Phase 3: Observe & Reflect** (Sense-making, reflecting, and deciding on future actions).
+### 1.1 The Challenge
+Traditional AI chatbots provide generic, linear assistance that is often too rigid for specific academic needs. Faculty need a tool that acts as an **Agentic Academic Consultant**—one that can recognize intent, ask Socratic follow-up questions, and evaluate research designs against publication standards.
 
-### Layer 2: The Computational Engine - AMTI (Analytics Model for Teacher Inquiry)
-*   **Purpose:** To serve as the operational backbone. AMTI is exceptionally well-suited for AI because it turns abstract teacher inquiry into explicit, discrete computational steps.
-*   **Implementation:** The system's data model and AI prompt chains are divided into 10 structured AMTI-aligned sub-modules:
-    1.  `Charter & Researcher Agreement`
-    2.  `Motivation` (The underlying drive)
-    3.  `Purpose` (Specific research aim)
-    4.  `Inquiry Question` (Formulating answerable questions)
-    5.  `Theory Bridging` (Connecting to pedagogical literature)
-    6.  `Data & Tools` (Planning evidence collection)
-    7.  `Intervention Design` (Structuring the change)
-    8.  `Sense Making` (Finding patterns in data)
-    9.  `Reflection` (Evaluating the outcomes)
-    10. `Decision Making` (Planning the next cycle)
-
-### Layer 3: The Quality Assurance Layer - CAR (Canonical Action Research)
-*   **Purpose:** To quietly enforce publishable rigor in the background.
-*   **Implementation:** The AI agents are instructed to evaluate the teacher's input against the 5 Principles of CAR (Davison et al., 2004):
-    *   **RCA (Researcher-Client Agreement):** Checked in Step 1 (Charter). Ensuring boundaries and ethical targets are set.
-    *   **CPM (Cyclical Process Model):** Checked via the "Inquiry Consistency Map" to ensure Plan -> Act -> Reflect loops logically.
-    *   **PT (Principle of Theory):** Enforced in Step 5. AI demands theoretical justification for interventions.
-    *   **PCA (Principle of Change through Action):** Evaluated in the final "Publication Rigor Score".
-    *   **PLR (Principle of Learning through Reflection):** AI acts as a guardrail against over-generalization during Step 9.
+### 1.2 The Solution: A Three-Layered Architecture
+1. **The User Experience (UX) Layer:** Based on the simplified **Kemmis/Mertler Cycle** (`Plan -> Act -> Observe & Reflect`) to lower cognitive barriers.
+2. **The Computational Backbone:** Based on **AMTI (Analytics Model for Teacher Inquiry)**. The AI breaks the research process into 10 explicit, computable modules.
+3. **The Quality Assurance Layer:** Based on **CAR (Canonical Action Research)**. The AI silently enforces five rigorous principles to ensure the final output is publishable in top-tier venues (e.g., CHI, AIED).
 
 ---
 
-## 3. Agentic AI & Human-AI Collaboration Mechanics
-To achieve true "Agentic AI" (Interactivity, Bounded Autonomy, and Adaptability), the platform implements the following features:
+## 2. Deep Dive: The 10 AMTI Modules & AI Guidance
 
-### 3.1. Live Collaborative Document (Non-linear Workflow)
-Teachers do not just "chat" with the AI. The main interface is a structured, editable **Live Action Plan Document**. Teachers can jump to any section (e.g., refining an intervention without working through the whole process from the start). 
+The platform generates a "Live Action Research Document" consisting of 10 distinct modules. The AI scaffolds the teacher through each module:
 
-### 3.2. Bounded Autonomy & Silent Agentic Sync
-*   **Mechanism:** When a teacher edits a text box and pauses for a few seconds, an invisible "Agentic Sync" is triggered. 
-*   **Action:** The `CAR Reviewer Agent` reads the new edits, compares them against the global persistent memory (the rest of the document), and decides if an intervention is needed.
-*   **Output:** The UI displays a dynamic feedback card:
-    *   🔵 **Questioning (Intent Recognition):** If the input is too vague, the AI acts like a human consultant and asks follow-up questions (e.g., *"How exactly will you measure student engagement?"*).
-    *   🟡 **Feedback:** Highlights methodological risks.
-    *   🟢 **Approval:** Validates rigorous academic writing.
+### Phase 1: Plan (Preparation & Design)
+*   **0. Charter & Researcher Agreement**
+    *   *What it does:* Defines the boundaries, stakeholders, and ethical targets of the research.
+    *   *AI Guidance:* The AI ensures the teacher establishes a clear "Researcher-Client Agreement" (RCA from CAR), asking: *"Who are the primary beneficiaries of this study, and what are the ethical boundaries?"*
+*   **1. Motivation & Purpose**
+    *   *What it does:* Captures the underlying personal or institutional drive for the research.
+    *   *AI Guidance:* Prevents teachers from confusing "motivation" with "research questions."
+*   **2. Specific Purpose**
+    *   *What it does:* Narrows the broad motivation into a specific, measurable goal for the current semester.
+*   **3. Inquiry Question**
+    *   *What it does:* Formulates the core research questions.
+    *   *AI Guidance:* The AI acts as a "Question-Driven Studio," challenging the teacher to make questions answerable and evidence-based, avoiding simple yes/no questions.
+*   **4. Theory Bridging & Target**
+    *   *What it does:* Connects the local classroom problem to established pedagogical theories (e.g., Cognitive Load Theory).
+    *   *AI Guidance:* Enforces the **Principle of Theory (PT from CAR)**. The AI might ask: *"What existing literature supports your proposed solution?"*
+*   **5. Data & Tools**
+    *   *What it does:* Plans the specific evidence collection methods (e.g., surveys, interviews, LMS logs).
+    *   *AI Guidance:* Ensures triangulation. If a teacher only uses surveys, the AI suggests adding observational data.
 
-### 3.3. Inquiry Consistency Mapping (Visual Analytics)
-An AI Orchestrator evaluates the 10 AMTI steps holistically to generate a visual matrix. It identifies:
-*   `[Good] Strong Links:` (e.g., The data collection tool perfectly answers the inquiry question).
-*   `[Fix] Weak Links:` (e.g., A theory is mentioned, but the intervention design completely ignores it).
+### Phase 2: Act (Implementation)
+*   **6. Intervention Design**
+    *   *What it does:* Structures the actual change being introduced to the classroom (the "Action").
+    *   *AI Guidance:* Enforces the **Cyclical Process Model (CPM from CAR)**. The AI prompts for specific timelines, control variables, and fidelity checks to ensure the intervention is repeatable.
 
-### 3.4. Export & Report Generation
-Once the Action Plan reaches a publishable standard, teachers can export the live document into standard offline formats.
-*   **Export as Word (.doc):** Generates an editable Microsoft Word document for further formatting, local sharing, or institutional submission.
-*   **Export as PDF:** Renders a clean, print-ready PDF version of the document, stripping away UI elements (buttons, chat history) to produce a finalized, immutable report.
+### Phase 3: Observe & Reflect (Analysis & Next Steps)
+*   **7. Sense-making & Interpretation**
+    *   *What it does:* The space where teachers document their raw findings and initial patterns.
+*   **8. Interpretation & Reflection**
+    *   *What it does:* Deep analysis connecting findings back to the initial theory.
+    *   *AI Guidance:* Enforces the **Principle of Learning through Reflection (PLR from CAR)**. The AI acts as a cognitive guardrail, challenging over-generalizations and asking for alternative explanations.
+*   **9. Decision Making (Next Steps)**
+    *   *What it does:* Planning the next cycle of the action research.
+    *   *AI Guidance:* Enforces the **Principle of Change through Action (PCA from CAR)**, ensuring the research leads to tangible pedagogical improvements.
+
+---
+
+## 3. Advanced Features: Agentic AI & Diagnostics
+
+### 3.1 Non-Linear Co-Writing & Silent Agentic Sync
+Teachers do not have to fill out the 10 modules in order. The document is fully editable. 
+*   **Bounded Autonomy:** When a teacher edits any module and stops typing for 3 seconds, the AI silently reads the edit and compares it against the rest of the document.
+*   **Dynamic Feedback:** The AI generates a card below the text box:
+    *   🔵 **Questioning:** (e.g., *"You mentioned using a survey. What specific constructs will it measure?"*)
+    *   🟡 **Feedback:** (e.g., *"Your intervention seems disconnected from the theory you cited in Step 4."*)
+    *   🟢 **Approval:** (e.g., *"This data collection plan is well-triangulated and rigorous."*)
+
+### 3.2 Evaluation & Publication Probability
+*Note: This feature is accessed via the **"Evaluate Publication Chance"** button at the top of the Live Document.*
+*   **Inquiry Consistency Map:** The AI generates a diagnostic matrix showing `[Good] Strong Links` and `[Fix] Weak Links`. For example, it will flag a warning if your "Data Tools" cannot answer your "Inquiry Question".
+*   **Publication Rigor Score:** The system calculates a probability score (0-100%) reflecting how well the current document adheres to the 5 CAR principles. It also generates a timeline of recommended future actions to increase the chance of acceptance at venues like CHI or AIED.
+
+### 3.3 Critical Friend Reviews (CIDA Community Framework)
+To support peer review, colleagues can leave comments under specific modules. The AI evaluates the colleague's comment and attaches an "AI Structural Check" badge to ensure the feedback is methodologically sound and constructive.
 
 ---
 
 ## 4. User Guide: Step-by-Step Workflow
-This section outlines the standard operating procedure for teachers using the app to conduct action research.
 
-### Step 1: Secure Registration & Login
-1. Navigate to the platform URL.
-2. Select the **Register** tab. Enter your Name/Alias (for report attribution), set a **Passcode** (your key to access the system), and input the **Invite Secret Code** (e.g., `ACTION2026`).
-3. Once registered, you will use *only your Passcode* to log in for all future sessions.
-
-### Step 2: Project Scoping & Socratic Chat
-1. Upon logging in, interact with the AI Consultant in the left-hand chat panel.
-2. Describe your teaching context or a specific classroom challenge (e.g., *"My students are disengaged during 8 AM lectures."*).
-3. The AI will ask Socratic follow-up questions to help you narrow down the scope and identify root causes.
-
-### Step 3: Generating the Initial Action Plan
-1. Once the problem is sufficiently explored, click the **"Regenerate Document"** button.
-2. The AI will synthesize your chat history and populate the 10-step **Live Action Research Document** on the right side of the screen.
-
-### Step 4: Non-Linear Co-Writing & Agentic Feedback
-1. The document is divided into three navigable phases: **Plan**, **Act**, and **Observe & Reflect**.
-2. **Direct Editing:** You can directly edit the text in any of the 10 AMTI modules. You do not need to go in order.
-3. **Agentic Sync:** When you stop typing for 3 seconds, the AI silently reviews your edits. Look for the dynamic feedback card below the text box:
-   * 🔵 **Question:** The AI prompts you for more specific details to meet CAR standards.
-   * 🟡 **Feedback:** The AI warns you of methodological risks.
-   * 🟢 **Approval:** The AI validates your rigorous academic writing.
-4. **✨ Ask AI to Improve:** If you are stuck on a specific section, click this button to have the AI academically refine just that specific text block without altering the rest of your document.
-
-### Step 5: Evaluation & Peer Review (CIDA)
-1. **Evaluate Publication Chance:** Click this button to generate a rigorous academic score (0-100) based on CAR principles.
-2. **Inquiry Consistency Map:** Review the generated diagnostic tags (e.g., `[Good]` or `[Fix]`) on the right sidebar to ensure your Research Questions, Interventions, and Data Collection methods align logically.
-3. **Critical Friend Reviews:** Invite colleagues to review your plan. They can leave specific comments under each of the 10 modules. The AI will attach a "Structural Check" to their feedback to ensure it is academically constructive.
-
-### Step 6: Exporting the Final Document
-1. Click the **Export** button with the download icon.
-2. Choose either **Export as Word (.doc)** for further editing or **Export as PDF** for a clean, print-ready submission.
-
----
-
-## 5. CIDA Collaborative Framework (Community Extension)
-To elevate the tool from a personal assistant to a community infrastructure, the system implements the **Critical Friend Peer Review** module:
-*   **Peer Reviews:** Colleagues can leave targeted comments on specific modules (e.g., criticizing the Intervention Design).
-*   **AI-Mediated Validation:** When a peer submits a review, the AI evaluates the review itself against CAR principles, attaching an "AI Structural Check" badge. This ensures community feedback remains academically constructive.
-
----
-
-## 6. Technical Specifications & Deployment
-*   **Tech Stack:** React (Frontend), Node.js/Express (Backend), MongoDB Atlas (Persistent Database).
-*   **LLM Integration:** LangChain orchestrates `ChatZhipuAI` (ChatGLM) for structured JSON outputs and agentic reasoning.
-*   **Security & Access:** 
-    *   Passcode-only authentication (inherited design to lower login friction and protect privacy).
-    *   Registration requires a `Secret Invite Code` to prevent unauthorized quota usage during beta testing.
-*   **Deployment:** Fully containerized (`Dockerfile`) and currently deployed on Render.com as a monolithic Web Service, bypassing CORS issues by serving frontend static files via the Express backend.
-
----
-*Document generated for Action Research Experts and System Maintainers.*
+1. **Secure Login:** Go to the platform, click **Register**. Enter an Alias, a Passcode, and the Secret Invite Code (e.g., `ACTION2026`). For future visits, use *only your Passcode* to log in.
+2. **Socratic Chat:** Use the left panel to chat with the AI about your classroom problem.
+3. **Generate Document:** Click `Regenerate Document`. The AI will populate the 10-step Action Plan on the right.
+4. **Co-Write:** Edit any section directly. Wait 3 seconds to see the AI's real-time academic feedback below your text.
+5. **Ask AI to Improve:** Click the `✨ Ask AI to Improve` button on any module to have the AI professionally rewrite that specific block.
+6. **Evaluate:** Click `Evaluate Publication Chance` to get your Rigor Score and Consistency Map (displayed in the right sidebar).
+7. **Export:** Click the `Export` button to download the final plan as an editable Word document (`.doc`) or a print-ready PDF.
