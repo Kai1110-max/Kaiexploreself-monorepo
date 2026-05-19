@@ -2,7 +2,7 @@ services:
   - type: web
     name: exploreself-app
     env: node
-    buildCommand: npm install && npx nx build frontend-web && npx nx build backend
+    buildCommand: npm install --legacy-peer-deps && npx nx build frontend-web && npx nx build backend
     startCommand: node dist/apps/backend/main.js
     envVars:
       - key: NODE_ENV
