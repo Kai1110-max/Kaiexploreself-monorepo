@@ -2,11 +2,11 @@ import { useDispatch, useSelector } from '../../../redux/hooks';
 import { LoadingIndicator } from '../../../components/LoadingIndicator';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { getNewActionPlanDoc, updateAndSaveActionPlanDoc, fetchEvaluation, fetchConsistency, postPeerReview } from '../reducer';
-import { Button, Input, Progress, Timeline, Steps, Card, Space, message, Tag, List, Collapse, Form } from 'antd';
+import { Button, Input, Progress, Timeline, Steps, Card, Space, message, Tag, List, Collapse, Form, Dropdown } from 'antd';
 import { useAgendaIdInRoute } from '../hooks';
 import { usePrevious } from '@uidotdev/usehooks';
 import { improveActionPlanSection, agenticSync } from '../../../api_call/actionPlanDoc';
-import { RobotOutlined, UserOutlined, QuestionCircleOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { RobotOutlined, UserOutlined, QuestionCircleOutlined, CheckCircleOutlined, InfoCircleOutlined, DownloadOutlined, FileWordOutlined, FilePdfOutlined } from '@ant-design/icons';
 
 import { IActionPlanDocument } from '@core';
 
@@ -31,6 +31,91 @@ export const LiveActionPlanPanel = () => {
   const typingTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const [currentPhase, setCurrentPhase] = useState<number>(0);
+
+  const sectionsList = [
+    { title: '0. Charter & Researcher Agreement', key: 'charter' },
+    { title: '1. Motivation & Purpose', key: 'motivation' },
+    { title: '2. Specific Purpose', key: 'purpose' },
+    { title: '3. Inquiry Question', key: 'inquiryQuestion' },
+    { title: '4. Theory Bridging & Target', key: 'theoryBridging' },
+    { title: '5. Data & Tools', key: 'dataAndTools' },
+    { title: '6. Intervention Design', key: 'interventionDesign' },
+    { title: '7. Sense-making & Interpretation', key: 'senseMaking' },
+    { title: '8. Interpretation & Reflection', key: 'reflection' },
+    { title: '9. Decision Making (Next Steps)', key: 'decisionMaking' }
+  ];
+
+  const exportToWord = useCallback(() => {
+    if (!actionPlanDocument) return;
+    let html = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Action Research Plan</title>
+        <style>
+          body { font-family: 'Calibri', 'Times New Roman', serif; line-height: 1.6; }
+          h1 { color: #1e3a8a; text-align: center; }
+          h2 { color: #2563eb; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-top: 24px; }
+          p { margin-bottom: 12px; white-space: pre-wrap; }
+        </style>
+      </head>
+      <body>
+        <h1>Action Research Plan</h1>
+    `;
+    sectionsList.forEach(sec => {
+      const content = actionPlanDocument[sec.key as keyof IActionPlanDocument] || 'Not filled yet.';
+      html += `<h2>${sec.title}</h2><p>${content}</p>`;
+    });
+    html += `</body></html>`;
+
+    const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Action_Research_Plan.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [actionPlanDocument]);
+
+  const exportToPDF = useCallback(() => {
+    if (!actionPlanDocument) return;
+    let html = `
+      <html>
+      <head>
+        <title>Action Research Plan</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+          h1 { color: #1e3a8a; text-align: center; margin-bottom: 30px; }
+          h2 { color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; margin-top: 30px; }
+          p { margin-bottom: 16px; white-space: pre-wrap; background: #f9fafb; padding: 15px; border-radius: 8px; }
+          @media print {
+            body { margin: 0; }
+            p { background: transparent; padding: 0; border: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Action Research Plan</h1>
+    `;
+    sectionsList.forEach(sec => {
+      const content = actionPlanDocument[sec.key as keyof IActionPlanDocument] || 'Not filled yet.';
+      html += `<h2>${sec.title}</h2><p>${content}</p>`;
+    });
+    html += `
+        <script>
+          window.onload = function() { window.print(); window.close(); }
+        </script>
+      </body></html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+    } else {
+      message.error("Please allow popups to generate PDF");
+    }
+  }, [actionPlanDocument]);
 
   const handleGenerateActionPlan = useCallback(async () => {
     dispatch(getNewActionPlanDoc())
@@ -230,6 +315,21 @@ export const LiveActionPlanPanel = () => {
       <div className='flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4'>
         <div className='font-bold text-2xl text-blue-800 break-words'>Live Action Research Document</div>
         <Space className="flex-wrap">
+          {actionPlanDocument && (
+            <Dropdown 
+              menu={{
+                items: [
+                  { key: 'word', label: 'Export as Word (.doc)', icon: <FileWordOutlined />, onClick: exportToWord },
+                  { key: 'pdf', label: 'Export as PDF', icon: <FilePdfOutlined />, onClick: exportToPDF }
+                ]
+              }}
+              placement="bottomRight"
+            >
+              <Button type="dashed" icon={<DownloadOutlined />}>
+                Export
+              </Button>
+            </Dropdown>
+          )}
           {actionPlanDocument && (
             <Button onClick={handleEvaluate} type="default">
               Evaluate Publication Chance
