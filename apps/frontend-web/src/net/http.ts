@@ -11,10 +11,17 @@ export class Http {
       if (hostname === '0.0.0.0') {
         hostname = 'localhost';
       }
-      this._axiosInstance = axios.create({
-        baseURL: `http://${hostname}:${
+      let baseURL = '';
+      if (hostname.startsWith('http://') || hostname.startsWith('https://')) {
+        baseURL = `${hostname}/api/v1`;
+      } else {
+        baseURL = `http://${hostname}:${
           import.meta.env.VITE_BACKEND_PORT || 3000
-        }/api/v1`,
+        }/api/v1`;
+      }
+
+      this._axiosInstance = axios.create({
+        baseURL: baseURL,
       });
     }
     return this._axiosInstance!;
