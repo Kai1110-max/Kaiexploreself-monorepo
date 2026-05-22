@@ -444,7 +444,16 @@ export const LiveActionPlanPanel = () => {
                   '0%': '#108ee9',
                   '100%': '#87d068',
                 }} />
-                <div className="mt-2 text-gray-500 text-sm">Based on academic standards</div>
+                <div className="mt-4 text-left text-xs text-gray-500 leading-relaxed border-t pt-3">
+                  <div className="font-semibold text-gray-700 mb-1">Scoring Criteria (CAR Principles):</div>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li><strong>RCA:</strong> Clear stakeholders and ethical boundaries.</li>
+                    <li><strong>CPM:</strong> Clear plan-act-observe-reflect cycle.</li>
+                    <li><strong>PT:</strong> Pedagogical literature bridged to classroom problem.</li>
+                    <li><strong>PCA:</strong> Tangible pedagogical change vs. mere observation.</li>
+                    <li><strong>PLR:</strong> Triangulation and deep reflection over generalization.</li>
+                  </ul>
+                </div>
               </Card>
             )}
 
