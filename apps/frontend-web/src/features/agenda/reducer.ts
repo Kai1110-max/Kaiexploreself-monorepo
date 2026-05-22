@@ -656,7 +656,7 @@ export function populateNewThread(
             );
             
             // Force a re-fetch of the entire agenda to ensure all components have the latest populated state
-            dispatch(loadAgenda(state.agenda.agendaId));
+            dispatch(loadAgenda(state.agenda.agendaId) as any);
           }
         }
       } catch (ex) {

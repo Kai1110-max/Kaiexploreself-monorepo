@@ -124,7 +124,7 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
     // If it's already populated, return the thread and its populated questions
     const populatedThread = await ThreadItem.findById(tid).populate('questions');
     return res.json({
-      threadData: thread,
+      threadData: populatedThread,
       questions: populatedThread?.questions || []
     });
   } catch (err) {
