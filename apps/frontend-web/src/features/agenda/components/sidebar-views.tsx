@@ -29,11 +29,12 @@ export const OutlinePanel = () => {
   const [t] = useTranslation()
 
   const themeListTimelineItems = useMemo(() => {
-    const timelineItems = threads?.map((thread) => {
+    const timelineItems = (threads || []).map((thread) => {
       const threadQuestions = questions.filter(q => q.tid === thread._id && q.selected);
       const isDone = threadQuestions.length > 0 && threadQuestions.some(q => q.response && q.response.length > 0);
       
       return {
+        key: thread._id,
         children: (
           <div
             className={OUTLINE_PANEL_CLASS + " flex items-center justify-between"}
@@ -54,6 +55,7 @@ export const OutlinePanel = () => {
     }) || [];
     return [
       {
+        key: 'narrative',
         children: (
           <div
             className={OUTLINE_PANEL_CLASS + " flex items-center justify-between"}
@@ -126,7 +128,7 @@ export const PinnedThemesPanel = () => {
 
   const dispatch = useDispatch()
 
-  const pinnedThemes = useSelector((state) => state.agenda.pinnedThemes);
+  const pinnedThemes = useSelector((state) => state.agenda.pinnedThemes || []);
   const recentRemovedTheme = useSelector(state => state.agenda.recentRemovedTheme)
   const token = useSelector((state) => state.auth.token) as string;
 

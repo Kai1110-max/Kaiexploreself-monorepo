@@ -82,7 +82,7 @@ const schema = yup.object({
 const ThemeBox = () => {
 
   const isOpen = useSelector((state) => state.agenda.isThemeSelectorOpen);
-  const didTutorial = useSelector((state) => state.user.didTutorial)
+  const didTutorial = useSelector((state) => state.user.didTutorial || {})
 
   const themes = useSelector(state => state.agenda.newThemes)
   const dispatch = useDispatch();

@@ -10,7 +10,7 @@ import { usePrevious } from '@uidotdev/usehooks';
 export const SummaryPanel = () => {
   const agendaId = useAgendaIdInRoute()
   const prevAgendaId = usePrevious(agendaId)
-  const summaryList: string[] = useSelector(state => state.agenda.summaries)
+  const summaryList: string[] = useSelector(state => state.agenda.summaries || [])
   const isCreatingSummary = useSelector(state => state.agenda.isCreatingSummary)
   const dispatch = useDispatch();
   

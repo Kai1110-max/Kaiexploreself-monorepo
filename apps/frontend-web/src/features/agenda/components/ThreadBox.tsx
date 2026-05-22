@@ -184,6 +184,10 @@ export const ThreadBox = (props: { tid: string }) => {
     dispatch(setFloatingHeaderFlag({tid: props.tid, intersecting: isIntersectingTop}))
   }, [props.tid, entry?.isIntersecting, entry?.boundingClientRect?.top, entry?.boundingClientRect?.bottom, inView])
 
+  if (!thread) {
+    return null;
+  }
+
   return (<Card
         ref={ref}
         title={<span className='font-bold'>{thread.theme}</span>}

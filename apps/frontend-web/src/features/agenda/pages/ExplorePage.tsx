@@ -25,7 +25,7 @@ const SidePanel = () => {
   const dispatch = useDispatch();
   const isThemeSelectorOpen = useSelector(state => state.agenda.isThemeSelectorOpen)
 
-  const title = useSelector(state => state.agenda.title)
+  const title = useSelector(state => state.agenda.title || '')
 
   const [t] = useTranslation()
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const SidePanel = () => {
               onClick={onReturnClick}
             ><ChevronDoubleLeftIcon className="w-6 h-6" />
             </Button>
-            <ResponsiveEllipsis text={title} maxLine={1} className='w-full text-base select-none px-1 text-gray-500'/>
+            <ResponsiveEllipsis text={title || ''} maxLine={1} className='w-full text-base select-none px-1 text-gray-500'/>
       </div>
       <div className={classNames(
         'flex-1 overflow-y-auto bg-gray-400/2',
@@ -75,15 +75,17 @@ const NewThemeButtonPopover = () => {
   return <InfoPopover content={t("Info.NewTheme")} iconColor='white'/>
 }
 
+const EMPTY_ARRAY: any[] = [];
+
 export const ExplorerPage = () => {
 
   const [t] = useTranslation()
   const navigate = useNavigate()
 
-  const title = useSelector(state => state.agenda.title)
+  const title = useSelector(state => state.agenda.title || '')
 
   const initialNarrative = useSelector(
-    (state) => state.agenda.initialNarrative
+    (state) => state.agenda.initialNarrative || ''
   );
 
   const sessionStatus = useSelector(state => state.agenda.sessionStatus)
@@ -112,7 +114,7 @@ export const ExplorerPage = () => {
   const prevThreadCount = useRef(threadIds.length);
 
   const currentTid = currentStepIndex > 0 && currentStepIndex <= maxStepIndex ? threadIds[currentStepIndex - 1] : undefined;
-  const currentQuestions = useSelector(state => currentTid ? selectedQuestionsSelector(state, currentTid) : []);
+  const currentQuestions = useSelector(state => currentTid ? selectedQuestionsSelector(state, currentTid as string) : EMPTY_ARRAY);
   const isCurrentStepDone = currentStepIndex === 0 || (currentQuestions.length > 0 && currentQuestions.some(q => q.response && q.response.length > 0));
 
   useEffect(() => {
@@ -219,15 +221,15 @@ export const ExplorerPage = () => {
               
               <div className="relative">
                 {currentStepIndex === 0 && (
-                  <Card ref={narrativeCardRef} title={`${t("Narrative.InitialNarrative")} - ${title}`}>
+                  <Card ref={narrativeCardRef} title={`${t("Narrative.InitialNarrative")} - ${title || ''}`}>
                     <span className="text-gray-600 leading-7">
                       {initialNarrative}
                     </span>
                   </Card>
                 )}
 
-                {currentStepIndex > 0 && currentStepIndex <= maxStepIndex && (
-                  <ThreadBox key={threadIds[currentStepIndex - 1]} tid={threadIds[currentStepIndex - 1]} />
+                {currentStepIndex > 0 && currentStepIndex <= maxStepIndex && currentTid && (
+                  <ThreadBox key={currentTid as string} tid={currentTid as string} />
                 )}
                 
                 {currentStepIndex === maxStepIndex && (
