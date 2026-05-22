@@ -29,6 +29,8 @@ import { generateActionPlan } from '../../api_call/generateActionPlan';
 import { generateActionPlanDoc, evaluateActionPlan, improveActionPlanSection, updateActionPlanDoc, fetchConsistencyMap, submitPeerReview } from '../../api_call/actionPlanDoc';
 import getThemeRecommendation from '../../api_call/generateThemes';
 
+import populateThread from '../../api_call/populateThread';
+
 const threadEntityAdapter = createEntityAdapter<IThreadWithQuestionIds, string>(
   {
     selectId: (model: IThreadWithQuestionIds) => model._id,
@@ -622,18 +624,23 @@ export function populateNewThread(
           handlers?.onThreadCreated?.(newThread._id);
 
           try {
-            const questions = await generateQuestions(
+            const populateResult = await populateThread(
               state.auth.token,
               state.agenda.agendaId,
-              newThread._id,
-              3
+              newThread._id
             );
-            if (questions) {
-              dispatch(agendaSlice.actions.setQuestions(questions));
+            if (populateResult && populateResult.questions) {
+              dispatch(agendaSlice.actions.setQuestions(populateResult.questions));
+              // Also update the thread to include the new theoryName and question IDs
+              dispatch(agendaSlice.actions.updateThread({
+                ...newThread,
+                theoryName: populateResult.threadData.theoryName,
+                questions: populateResult.threadData.questions
+              }));
               handlers?.onQuestionsGenerated?.(newThread._id);
             }
           } catch (err) {
-            console.log('Err in fetching questions: ', err);
+            console.log('Err in populating thread: ', err);
           } finally {
             dispatch(
               agendaSlice.actions.setCreatingThreadQuestionsFlag({
