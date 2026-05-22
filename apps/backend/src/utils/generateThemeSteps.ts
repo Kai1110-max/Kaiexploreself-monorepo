@@ -48,7 +48,7 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
       label: z.string().describe(`The theoretical label of this step, e.g., "Step 1: Root Cause Analysis"`),
       description: z.string().describe(`A brief explanation of what this step entails`),
       question: z.string().describe(`The specific question asking the teacher to reflect on this step`)
-    })).length(3) // Changed from 5 to 3 to optimize speed and keep it simpler for the user
+    })).min(1).max(5) // Changed from exact length to range for better fallback
   });
   
   const structuredLlm = chatModel.withStructuredOutput(stepSchema);
@@ -56,8 +56,33 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
   
   const init_info = summarizeProfilicInfo(agenda.initialNarrative);
   
-  const result = await chain.invoke({ init_info: init_info, theme: thread.theme });
-  return result;
+  try {
+    const result = await chain.invoke({ init_info: init_info, theme: thread.theme });
+    return result;
+  } catch (error) {
+    console.error("Error generating dynamic steps, using fallback:", error);
+    // Fallback steps if LLM fails
+    return {
+      theoryName: "General Problem Solving Framework",
+      steps: [
+        {
+          label: "Step 1: Identify the Root Cause",
+          description: "Understand the underlying reasons behind the teaching challenge.",
+          question: "What do you think is the main root cause of this issue in your classroom?"
+        },
+        {
+          label: "Step 2: Brainstorm Solutions",
+          description: "Generate potential pedagogical interventions.",
+          question: "What are 1-2 specific actions or interventions you could try to address this?"
+        },
+        {
+          label: "Step 3: Plan for Evaluation",
+          description: "Determine how to measure the success of the intervention.",
+          question: "How will you know if your intervention is successful? What evidence will you collect?"
+        }
+      ]
+    };
+  }
 }
 
 export default generateThemeSteps;
