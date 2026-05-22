@@ -96,27 +96,29 @@ This section details every page, panel, and button in the platform, explaining t
 ### Stage 2: Theme Exploration & Scaffolding
 **Page: Exploration Interface**
 *   **Layout & Linear Flow:** The page uses a split-screen design. The left/center area focuses entirely on one specific step at a time, while the right panel displays a real-time, synchronized AI summary of the progress.
-    *   *Logic/Principle:* Prevents information overload. By displaying only one theme per page ("Step-by-step"), teachers can focus on solving one problem before moving to the next, reducing cognitive load.
+    *   *Logic/Principle:* Prevents information overload. By replacing the previous infinite-scrolling layout with a "One step per page" linear approach, teachers can focus on solving one problem before moving to the next, reducing cognitive load.
 *   **Navigation Header:** 
     *   *Function:* Displays the current progress (e.g., "Step 2 of 3") and contains **"Previous"** and **"Next Step"** buttons.
-    *   *Logic/Principle:* Ensures a guided, linear progression through the complex action research themes while retaining the freedom to navigate backward.
+    *   *Logic/Principle:* Ensures a guided, linear progression through the action research themes while retaining the freedom to navigate backward.
 *   **Left Sidebar (Outline):**
     *   *Function:* Displays a navigational tree of the user's initial challenges and selected themes. Once a theme has been answered, a green checkmark (✅) appears.
     *   *Logic:* Helps users maintain a mental map of their exploration process and provides a clear visual indicator of completed steps.
-*   **Panel: AMTI Step-by-Step Guidance (Center Panel)**
-    *   *Function:* Instead of generating generic questions, the system now asks exactly 10 questions corresponding to the 10 AMTI steps (Motivation, Purpose, Inquiry Question, etc.) for the chosen theme.
-    *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the current AMTI step.
-    *   *Pagination:* Contains internal "Previous Step" and "Next Step" buttons to navigate through the 10 AMTI dimensions one by one.
+*   **Panel: Dynamic Step-by-Step Guidance (Center Panel)**
+    *   *Function:* Instead of forcing rigid academic frameworks, the AI now dynamically generates a rapid, practical 3-step solution framework specifically tailored to the chosen theme.
+    *   *UI Elements:* 
+        *   **Applied Framework/Theory Name:** Explicitly shows the underlying educational or design-thinking theory used to generate the steps (e.g., "Constructivist Learning Theory").
+        *   **Step Description & Question:** Each step clearly describes its purpose (Description) and asks a highly targeted question that aligns strictly with that purpose.
+    *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the current step.
+    *   *Robust Fallback:* If the AI encounters a timeout or generation error, the system automatically degrades gracefully to a pre-defined "General Problem Solving Framework" to ensure the user never experiences a frozen screen or infinite loading.
     *   **Toggle: `Keywords to Guide Your Expression`:** Shows/hides suggested vocabulary to help users articulate their thoughts professionally.
     *   **AI Tip Box & Button `See New Tips`:** Provides concrete examples and starting points on the right side. Clicking the button cycles through different hints.
         *   *Logic/Principle:* Vygotskian scaffolding. Provides just enough support to help the teacher formulate a plan without doing the thinking for them.
-    *   **Button: `Get More Question Suggestions`:** Generates alternative prompts if the current question doesn't resonate with the user.
 *   **Button: `Explore Other Themes` & Modal Dialog:**
     *   *Function:* Opens a pop-up with alternative AI-generated themes.
     *   *Modal Elements:* Clickable **Theme Cards**, a **`See Other Expressions`** button to reword themes, a **Pinned Themes** section to save interests, and a **Custom Theme Input** ("Add Myself") to allow manual topic entry.
     *   *Logic/Principle:* Encourages divergent thinking before converging on a specific research plan.
 *   **Right Panel: Real-time Theme Document Preview:**
-    *   *Function:* Displays a dynamically updating, 10-box read-only preview of the Action Research Plan specific to the current theme. As the user answers the AMTI questions on the left, their responses instantly populate the corresponding sections on the right.
+    *   *Function:* Displays a dynamically updating read-only preview of the drafted steps for the current theme. As the user answers the questions on the left, their responses instantly populate the corresponding sections on the right.
     *   *Logic/Principle:* Provides immediate, synthesized feedback at every step, visually reinforcing how small answers build up to a complete academic document.
 *   **Button: `Finish & Go to Live Document` (Bottom Right):**
     *   *Function:* Transitions to the final synthesis stage once the user has explored enough themes.
