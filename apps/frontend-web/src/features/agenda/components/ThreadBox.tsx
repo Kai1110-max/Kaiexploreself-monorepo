@@ -70,19 +70,6 @@ export const ThreadBox = (props: { tid: string }) => {
     }
   }, [currentQ, dispatch, props.tid]);
 
-  const sectionsList = [
-    { title: '0. Charter & Researcher Agreement', key: 'charter' },
-    { title: '1. Motivation & Purpose', key: 'motivation' },
-    { title: '2. Specific Purpose', key: 'purpose' },
-    { title: '3. Inquiry Question', key: 'inquiryQuestion' },
-    { title: '4. Theory Bridging & Target', key: 'theoryBridging' },
-    { title: '5. Data & Tools', key: 'dataAndTools' },
-    { title: '6. Intervention Design', key: 'interventionDesign' },
-    { title: '7. Sense-making & Interpretation', key: 'senseMaking' },
-    { title: '8. Interpretation & Reflection', key: 'reflection' },
-    { title: '9. Decision Making (Next Steps)', key: 'decisionMaking' }
-  ];
-
   return (<Card
         ref={ref}
         title={<span className='font-bold text-blue-800 text-lg'>{thread.theme}</span>}
@@ -100,11 +87,9 @@ export const ThreadBox = (props: { tid: string }) => {
             onChange={(c) => setCurrentAmtiStep(c)}
             className="overflow-x-auto whitespace-nowrap pb-2"
             items={allQuestions.map((q, idx) => ({
-              title: sectionsList[idx]?.title || q.question.label || `Step ${idx + 1}`,
+              title: q.question.label || `Step ${idx + 1}`,
               status: q.response && q.response.length > 5 ? 'finish' : (idx === currentAmtiStep ? 'process' : 'wait')
             }))}
-
-
           />
         </div>
 

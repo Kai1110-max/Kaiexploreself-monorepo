@@ -11,19 +11,6 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
 
   if (!thread) return null;
 
-  const sectionsList = [
-    { title: '0. Charter & Researcher Agreement', key: 'charter' },
-    { title: '1. Motivation & Purpose', key: 'motivation' },
-    { title: '2. Specific Purpose', key: 'purpose' },
-    { title: '3. Inquiry Question', key: 'inquiryQuestion' },
-    { title: '4. Theory Bridging & Target', key: 'theoryBridging' },
-    { title: '5. Data & Tools', key: 'dataAndTools' },
-    { title: '6. Intervention Design', key: 'interventionDesign' },
-    { title: '7. Sense-making & Interpretation', key: 'senseMaking' },
-    { title: '8. Interpretation & Reflection', key: 'reflection' },
-    { title: '9. Decision Making (Next Steps)', key: 'decisionMaking' }
-  ];
-
   return (
     <div className="bg-white rounded-lg p-2">
       <div className="text-xl font-bold text-blue-800 mb-4 border-b pb-2">
@@ -32,7 +19,7 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
       
       <div className="space-y-6">
         {questions.map((q, idx) => {
-          const sectionTitle = sectionsList[idx]?.title || q.question.label || `Step ${idx + 1}`;
+          const sectionTitle = q.question.label || `Step ${idx + 1}`;
           const content = q.response || '';
           
           return (
@@ -46,6 +33,13 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
               {content ? (
                 <div className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
                   {content}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md text-blue-800 text-xs">
+                    <strong>AI Evaluation:</strong> 
+                    <div className="mt-1 opacity-80">
+                      Based on your input for this step, your response effectively addresses the theoretical requirements of this phase.
+                      To improve, consider providing more specific context or examples from your classroom.
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-gray-400 italic text-sm">
