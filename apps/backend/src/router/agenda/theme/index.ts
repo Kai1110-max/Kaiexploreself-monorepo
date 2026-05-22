@@ -79,7 +79,7 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
         const newQASet = new QASet({
           tid: tid,
           question: { label: question.label, content: question.content },
-          selected: index === 0, // Auto-select the first question so they start on Step 1
+          selected: true, // ALWAYS TRUE for AMTI steps so they are all active
         });
         return newQASet.save();
       });
