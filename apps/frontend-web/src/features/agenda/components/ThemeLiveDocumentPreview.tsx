@@ -15,6 +15,11 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
     <div className="bg-white rounded-lg p-2">
       <div className="text-xl font-bold text-blue-800 mb-4 border-b pb-2">
         Theme Draft: {thread.theme}
+        {thread.theoryName && (
+          <div className="text-sm font-normal text-gray-500 mt-1">
+            Based on: {thread.theoryName}
+          </div>
+        )}
       </div>
       
       <div className="space-y-6">
@@ -43,8 +48,8 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
                 </div>
               ) : (
                 <div className="text-gray-400 italic text-sm">
-                  Not filled yet. Complete this step on the left.
-                </div>
+                Not filled yet. Complete this step on the left.
+              </div>
               )}
             </Card>
           );

@@ -62,12 +62,14 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
     if (thread?.questions.length == 0 || !thread.questions) {
       console.log('Generating dynamic steps for theme....');
       
-      const generatedSteps = await generateThemeSteps(req.user, req.agenda, thread);
+      const generationResult = await generateThemeSteps(req.user, req.agenda, thread);
+      const generatedSteps = (generationResult as any).steps;
+      const theoryName = (generationResult as any).theoryName;
 
       const qaPromises = generatedSteps.map(async (step: any) => {
         const newQASet = new QASet({
           tid: tid,
-          question: { label: step.label, content: step.question },
+          question: { label: step.label, content: step.question, description: step.description },
           selected: true, // ALWAYS TRUE so they are all active
         });
         return newQASet.save();
@@ -79,7 +81,10 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
 
       const updatedThread = await ThreadItem.findByIdAndUpdate(
         tid,
-        { $push: { questions: { $each: qaSetIds } } },
+        { 
+          $push: { questions: { $each: qaSetIds } },
+          theoryName: theoryName
+        },
         { new: true }
       );
 

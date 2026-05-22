@@ -45,7 +45,7 @@ export interface IAIGuide {
 }
 
 export interface IQASetBase {
-  question: {label?: string; content: string},
+  question: {label?: string; content: string; description?: string},
   keywords: string[],
   selected: boolean,
   response: string,
@@ -64,6 +64,7 @@ export interface IQASetWithIds extends IQASetBase {
 export interface IThreadBase {
   theme: string;
   summary?: string;
+  theoryName?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -7,7 +7,8 @@ import {
 } from 'antd';
 import {
   DeleteOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from '../../../redux/hooks';
 import { ShortcutManager } from '../../../services/shortcut';
@@ -58,7 +59,7 @@ export const ThreadBox = (props: { tid: string }) => {
   }, [props.tid, entry?.isIntersecting, entry?.boundingClientRect?.top, entry?.boundingClientRect?.bottom, inView])
 
   if (!thread || allQuestions.length === 0) {
-    return <LoadingIndicator title="Loading AMTI Steps..." />;
+    return <LoadingIndicator title="Loading theoretical steps for this theme..." />;
   }
 
   const currentQ = allQuestions[currentAmtiStep];
@@ -81,6 +82,12 @@ export const ThreadBox = (props: { tid: string }) => {
         />
         
         <div className="mb-6">
+          {thread.theoryName && (
+            <div className="mb-4 px-3 py-2 bg-indigo-50 text-indigo-800 rounded-md border border-indigo-100 text-sm font-medium flex items-center">
+              <InfoCircleOutlined className="mr-2" />
+              Applied Framework: {thread.theoryName}
+            </div>
+          )}
           <Steps 
             size="small"
             current={currentAmtiStep}
@@ -88,6 +95,7 @@ export const ThreadBox = (props: { tid: string }) => {
             className="overflow-x-auto whitespace-nowrap pb-2"
             items={allQuestions.map((q, idx) => ({
               title: q.question.label || `Step ${idx + 1}`,
+              description: q.question.description ? <div className="text-xs max-w-[150px] whitespace-normal mt-1">{q.question.description}</div> : null,
               status: q.response && q.response.length > 5 ? 'finish' : (idx === currentAmtiStep ? 'process' : 'wait')
             }))}
           />

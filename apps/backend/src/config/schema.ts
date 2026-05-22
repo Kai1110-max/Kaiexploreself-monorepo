@@ -22,6 +22,7 @@ export interface IThreadORM extends IThreadBase, Document {
   _id: mongoose.Types.ObjectId
   questions: Array<mongoose.Types.ObjectId | IQASetORM>
   aid: mongoose.Types.ObjectId
+  theoryName?: string;
 }
 
 export interface IAgendaORM extends IAgendaBase, Document {
@@ -64,7 +65,8 @@ export const QASetSchema = new Schema({
   question: {
     type: {
       label: {type: String},
-      content: {type: String, required: true}
+      content: {type: String, required: true},
+      description: {type: String}
     },
     required: true
   },
@@ -85,6 +87,7 @@ QASetSchema.set('timestamps', true);
 export const ThreadItemSchema = new Schema({
    aid: {type: Schema.Types.ObjectId, ref: 'Agenda', required: true},
    theme: {type: String, required: true},
+   theoryName: {type: String, required: false},
    questions: {type: [Schema.Types.ObjectId], ref: 'QASet', required: true, default: []},
    summary: {type: String, required: false, default: undefined},
    createdAt: {type: Date, default: Date.now},
