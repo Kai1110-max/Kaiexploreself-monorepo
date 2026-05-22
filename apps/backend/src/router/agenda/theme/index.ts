@@ -111,7 +111,7 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
           theoryName: theoryName
         },
         { new: true }
-      );
+      ).populate('questions');
 
       console.log(updatedThread);
 
