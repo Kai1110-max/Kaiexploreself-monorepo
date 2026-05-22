@@ -1,8 +1,8 @@
 import { MouseEventHandler, useCallback, useMemo, useState} from 'react';
 import { Tooltip, ConfigProvider, Input, Space, Timeline, Button, Form } from 'antd';
-import { pinTheme, populateNewThread, setHoveringOutlineThreadId, setThemeSelectorOpen, threadSelectors, unpinTheme } from '../reducer';
+import { pinTheme, populateNewThread, setHoveringOutlineThreadId, setThemeSelectorOpen, threadSelectors, unpinTheme, questionSelectors } from '../reducer';
 import { useDispatch, useSelector } from '../../../redux/hooks';
-import { ListBulletIcon, ArchiveBoxIcon, ArrowTurnUpLeftIcon, MinusCircleIcon } from '@heroicons/react/20/solid';
+import { ListBulletIcon, ArchiveBoxIcon, ArrowTurnUpLeftIcon, MinusCircleIcon, CheckCircleIcon } from '@heroicons/react/20/solid';
 import { PanelGroup } from '../../../components/PanelGroup';
 import { ShortcutManager } from '../../../services/shortcut';
 import { postInteractionData } from '../../../api_call/postInteractionData';
@@ -22,6 +22,7 @@ const OUTLINE_PANEL_CLASS =
 
 export const OutlinePanel = () => {
   const threads = useSelector(threadSelectors.selectAll);
+  const questions = useSelector(questionSelectors.selectAll);
 
   const dispatch = useDispatch()
 
@@ -29,10 +30,13 @@ export const OutlinePanel = () => {
 
   const themeListTimelineItems = useMemo(() => {
     const timelineItems = threads?.map((thread) => {
+      const threadQuestions = questions.filter(q => q.tid === thread._id && q.selected);
+      const isDone = threadQuestions.length > 0 && threadQuestions.some(q => q.response && q.response.length > 0);
+      
       return {
         children: (
           <div
-            className={OUTLINE_PANEL_CLASS}
+            className={OUTLINE_PANEL_CLASS + " flex items-center justify-between"}
             onMouseEnter={()=>{dispatch(setHoveringOutlineThreadId(thread._id))}}
             onMouseLeave={()=>{dispatch(setHoveringOutlineThreadId(undefined))}}
             onClick={() => {
@@ -42,7 +46,8 @@ export const OutlinePanel = () => {
               });
             }}
           >
-            {thread.theme}
+            <span>{thread.theme}</span>
+            {isDone && <CheckCircleIcon className="w-4 h-4 text-green-500 ml-2 flex-shrink-0" />}
           </div>
         ),
       };
@@ -51,17 +56,18 @@ export const OutlinePanel = () => {
       {
         children: (
           <div
-            className={OUTLINE_PANEL_CLASS}
+            className={OUTLINE_PANEL_CLASS + " flex items-center justify-between"}
             onClick={() => {
               ShortcutManager.instance.requestFocus({ type: 'narrative' });
             }}
           >
-            {t("Narrative.InitialNarrative")}
+            <span>{t("Narrative.InitialNarrative")}</span>
+            <CheckCircleIcon className="w-4 h-4 text-green-500 ml-2 flex-shrink-0" />
           </div>
         ),
       },
     ].concat(timelineItems as any);
-  }, [threads]);
+  }, [threads, questions]);
 
   return (
     <PanelGroup

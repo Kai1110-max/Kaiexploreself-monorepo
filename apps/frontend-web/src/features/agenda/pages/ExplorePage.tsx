@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OutlinePanel, PinnedThemesPanel } from '../components/sidebar-views';
 import ThemeBox from '../components/ThemeBox';
 import { ThreadBox } from '../components/ThreadBox';
 import { Card,  Button } from 'antd';
 import { useDispatch, useSelector } from '../../../redux/hooks';
 import { Navigate, useNavigate } from 'react-router-dom';
-import {enterReviewStage, getNewThemes, resetNewThemes, selectFloatingHeader, setThemeSelectorOpen, threadSelectors } from '../reducer';
+import {enterReviewStage, getNewThemes, resetNewThemes, selectFloatingHeader, setThemeSelectorOpen, threadSelectors, getNewSummary, selectedQuestionsSelector } from '../reducer';
 import { LightBulbIcon } from '@heroicons/react/24/solid';
 import { useInView } from 'react-intersection-observer';
 import { ShortcutManager } from '../../../services/shortcut';
@@ -14,9 +14,10 @@ import { useTranslation } from 'react-i18next';
 import classNames from 'classnames'
 import { SessionStatus } from '@core';
 import { InfoPopover } from '../../../components/InfoPopover';
-import { ChevronDoubleLeftIcon } from '@heroicons/react/20/solid';
+import { ChevronDoubleLeftIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import LinesEllipsis from 'react-lines-ellipsis'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC'
+import { SummaryPanel } from '../components/SummaryPanel';
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis)
 
 const SidePanel = () => {
@@ -65,9 +66,6 @@ const SidePanel = () => {
         <OutlinePanel />
         {false && <PinnedThemesPanel />}
       </div>
-      <div className='border-t p-2 shadow-slate-600 shadow-2xl'>
-        <Button disabled={isThemeSelectorOpen} className='w-full' onClick={handleEndSession}>{t("Summary.Open")}<InfoPopover title={t("Summary.Button")} content={t("Summary.ButtonHint")}/></Button>
-      </div>
     </>
   );
 };
@@ -80,6 +78,7 @@ const NewThemeButtonPopover = () => {
 export const ExplorerPage = () => {
 
   const [t] = useTranslation()
+  const navigate = useNavigate()
 
   const title = useSelector(state => state.agenda.title)
 
@@ -108,6 +107,37 @@ export const ExplorerPage = () => {
     dispatch(setThemeSelectorOpen(true));
   }, []);
 
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const maxStepIndex = threadIds.length;
+  const prevThreadCount = useRef(threadIds.length);
+
+  const currentTid = currentStepIndex > 0 && currentStepIndex <= maxStepIndex ? threadIds[currentStepIndex - 1] : undefined;
+  const currentQuestions = useSelector(state => currentTid ? selectedQuestionsSelector(state, currentTid) : []);
+  const isCurrentStepDone = currentStepIndex === 0 || (currentQuestions.length > 0 && currentQuestions.some(q => q.response && q.response.length > 0));
+
+  useEffect(() => {
+    // When a new theme is added, jump to the new step
+    if (threadIds.length > prevThreadCount.current) {
+      setCurrentStepIndex(threadIds.length);
+    }
+    prevThreadCount.current = threadIds.length;
+  }, [threadIds.length]);
+
+  const goNext = useCallback(() => {
+    if (currentStepIndex < maxStepIndex) {
+      setCurrentStepIndex(prev => prev + 1);
+      dispatch(getNewSummary());
+    } else {
+      onThemeSelectionButtonClick();
+    }
+  }, [currentStepIndex, maxStepIndex, onThemeSelectionButtonClick, dispatch]);
+
+  const goPrev = useCallback(() => {
+    if (currentStepIndex > 0) {
+      setCurrentStepIndex(prev => prev - 1);
+    }
+  }, [currentStepIndex]);
+
   const scrollViewRef = useRef<HTMLDivElement>(null);
 
   const narrativeCardRef = useRef<HTMLDivElement>(null);
@@ -118,7 +148,16 @@ export const ExplorerPage = () => {
         switch (event.type) {
           case 'narrative':
             {
+              setCurrentStepIndex(0);
               scrollViewRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            break;
+          case 'thread':
+            {
+              const index = threadIds.indexOf(event.id);
+              if (index >= 0) {
+                setCurrentStepIndex(index + 1);
+              }
             }
             break;
         }
@@ -127,7 +166,7 @@ export const ExplorerPage = () => {
     return () => {
       focusRequestSubscription.unsubscribe();
     };
-  }, []);
+  }, [threadIds]);
 
   const {width: scrollBarWidth} = useScrollbarSize()
 
@@ -147,54 +186,80 @@ export const ExplorerPage = () => {
         <div className="basis-1/6 min-w-[200px] md:min-w-[300px] bg-white border-r-[1px] flex flex-col">
           <SidePanel />
         </div>
-        <div className="flex-1 relative">
-          {(floatingHeader != null) && (
-          <div className="absolute top-0 left-0 z-50 animate-slidein-down" style={scrollbarSafeRightStyle}>
-            <div className="container px-4 md:px-8">
-              <div className="px-6 border-b  bg-white/80 border-gray-200 text-black py-4 text-lg font-bold shadow-lg backdrop-blur-sm">{floatingHeader}</div>
-            </div>
-          </div>
-        )}
-          <div
-            className="overflow-y-scroll h-screen overflow-x-hidden"
-            ref={scrollViewRef}
-          >
-            <ThemeBox />
-            <div className="container px-4 md:px-8 py-4 md:py-8 relative">
-              <Card ref={narrativeCardRef} title={`${t("Narrative.InitialNarrative")} - ${title}`}>
-                <span className="text-gray-600 leading-7">
-                  {initialNarrative}
-                </span>
-              </Card>
-              {
-                threadIds.map((threadId) => (
-                  <ThreadBox key={threadId} tid={threadId}/>
-                ))
-              }
-              <Button
-                key={'new-theme-btn-bottom'}
-                ref={ref}
-                type="primary"
-                className={`w-full border-none shadow-lg h-12 mt-4 ${focusOnThemeButton ? 'outline animate-focus-indicate':''}`}
-                icon={themeButtonIcon}
-                onClick={onThemeSelectionButtonClick}
-              >{themeButtonLabel}
-                <NewThemeButtonPopover/>
+        <div className="flex-1 flex overflow-hidden relative bg-gray-50">
+          <div className="flex-1 flex flex-col relative border-r border-gray-200">
+            {/* Header with Prev/Next buttons */}
+            <div className="flex items-center justify-between p-4 border-b bg-white shadow-sm z-10">
+              <Button 
+                icon={<ChevronLeftIcon className="w-5 h-5" />} 
+                onClick={goPrev} 
+                disabled={currentStepIndex === 0}
+                className="flex items-center"
+              >
+                {t("Navigation.Previous") || "Previous"}
+              </Button>
+              <span className="font-semibold text-gray-600">
+                Step {currentStepIndex + 1} of {maxStepIndex + 1}
+              </span>
+              <Button 
+                type={isCurrentStepDone ? "primary" : "default"}
+                onClick={goNext}
+                className={`flex items-center ${isCurrentStepDone ? 'animate-pulse shadow-md bg-blue-600 hover:bg-blue-500 border-none' : ''}`}
+              >
+                {currentStepIndex === maxStepIndex ? t("Exploration.ShowMoreThemes") || "Explore Other Themes" : t("Navigation.Next") || "Next Step"}
+                {currentStepIndex !== maxStepIndex && <ChevronRightIcon className="w-5 h-5 ml-1" />}
               </Button>
             </div>
 
-            {inView === false ? (
-              <div className="absolute bottom-0 left-0 px-4 mx:px-8 bg-gradient-to-t from-white to-white/0 py-8" style={scrollbarSafeRightStyle}>
-                <div className="container">
+            <div
+              className="overflow-y-auto flex-1 p-4 md:p-8"
+              ref={scrollViewRef}
+            >
+              <ThemeBox />
+              
+              <div className="relative">
+                {currentStepIndex === 0 && (
+                  <Card ref={narrativeCardRef} title={`${t("Narrative.InitialNarrative")} - ${title}`}>
+                    <span className="text-gray-600 leading-7">
+                      {initialNarrative}
+                    </span>
+                  </Card>
+                )}
+
+                {currentStepIndex > 0 && currentStepIndex <= maxStepIndex && (
+                  <ThreadBox key={threadIds[currentStepIndex - 1]} tid={threadIds[currentStepIndex - 1]} />
+                )}
+                
+                {currentStepIndex === maxStepIndex && (
                   <Button
+                    key={'new-theme-btn-bottom'}
+                    ref={ref}
                     type="primary"
-                    className="w-full border-none h-12 mt-4 shadow-lg shadow-teal-900/50 animate-slidein-up"
+                    className={`w-full border-none shadow-lg h-12 mt-8 ${focusOnThemeButton ? 'outline animate-focus-indicate':''}`}
                     icon={themeButtonIcon}
                     onClick={onThemeSelectionButtonClick}
-                  >{themeButtonLabel}<NewThemeButtonPopover/></Button>
-                </div>
+                  >{themeButtonLabel}
+                    <NewThemeButtonPopover/>
+                  </Button>
+                )}
               </div>
-            ) : null}
+            </div>
+          </div>
+          
+          <div className="w-[40%] min-w-[300px] bg-white p-4 md:p-8 overflow-y-auto shadow-inner z-0">
+            <SummaryPanel />
+            <div className="mt-8 pt-8 border-t border-gray-100">
+               <Button 
+                 type="primary" 
+                 className='w-full h-12 text-base font-semibold shadow-md bg-emerald-600 hover:bg-emerald-500 border-none' 
+                 onClick={async () => {
+                   await dispatch(enterReviewStage());
+                   navigate("./summary");
+                 }}
+               >
+                 {t("Summary.Open") || "Finish & Go to Live Document"}
+               </Button>
+            </div>
           </div>
         </div>
       </div>
