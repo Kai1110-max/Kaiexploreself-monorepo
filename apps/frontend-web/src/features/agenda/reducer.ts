@@ -141,14 +141,14 @@ const agendaSlice = createSlice({
         if (key == 'threads') {
           const questions =
             action.payload.threads?.reduce(
-              (prev: Array<IQASetWithIds>, curr) => prev.concat(curr.questions),
+              (prev: Array<IQASetWithIds>, curr) => prev.concat((curr.questions || []).filter((q: any) => q != null)),
               []
             ) || [];
           // Handle threads
           const threadMapped: Array<IThreadWithQuestionIds> =
             action.payload.threads?.map((thread) => ({
               ...thread,
-              questions: thread.questions.map((q) => q._id),
+              questions: (thread.questions || []).filter((q) => q != null).map((q) => q._id || q),
             })) || [];
           threadEntityAdapter.setAll(state.threadEntityState, threadMapped);
           questionEntityAdapter.setAll(state.questionEntityState, questions);
@@ -635,7 +635,7 @@ export function populateNewThread(
               dispatch(agendaSlice.actions.updateThread({
                 ...newThread,
                 theoryName: populateResult.threadData.theoryName,
-                questions: populateResult.threadData.questions.map((q: any) => q._id || q)
+                questions: (populateResult.threadData.questions || []).filter((q: any) => q != null).map((q: any) => q._id || q)
               }));
               handlers?.onQuestionsGenerated?.(newThread._id);
             }

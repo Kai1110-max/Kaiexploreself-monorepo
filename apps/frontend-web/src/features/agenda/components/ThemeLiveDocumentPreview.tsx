@@ -6,7 +6,7 @@ import { IQASetWithIds } from '@core';
 export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
   const thread = useSelector(state => threadSelectors.selectById(state, tid));
   const questions = useSelector(state => 
-    thread ? thread.questions.map(qid => questionSelectors.selectById(state, qid)).filter(q => q !== undefined) : []
+    thread ? (thread.questions || []).map(qid => questionSelectors.selectById(state, qid)).filter(q => q !== undefined) : []
   ) as IQASetWithIds[];
 
   if (!thread) return null;

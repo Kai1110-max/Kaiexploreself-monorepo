@@ -27,7 +27,7 @@ export const ThreadBox = (props: { tid: string }) => {
 
   const thread = useSelector(state => threadSelectors.selectById(state, props.tid))
   const allQuestions = useSelector(state => 
-    thread ? thread.questions.map(qid => questionSelectors.selectById(state, qid)).filter(q => q !== undefined) : []
+    thread ? (thread.questions || []).map(qid => questionSelectors.selectById(state, qid)).filter(q => q !== undefined) : []
   ) as IQASetWithIds[];
 
   const [currentAmtiStep, setCurrentAmtiStep] = useState(0);
