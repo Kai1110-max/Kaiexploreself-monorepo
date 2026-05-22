@@ -89,9 +89,14 @@ This section details every page, panel, and button in the platform, explaining t
 
 ### Stage 2: Theme Exploration & Scaffolding
 **Page: Exploration Interface**
+*   **Layout & Linear Flow:** The page uses a split-screen design. The left/center area focuses entirely on one specific step at a time, while the right panel displays a real-time, synchronized AI summary of the progress.
+    *   *Logic/Principle:* Prevents information overload. By displaying only one theme per page ("Step-by-step"), teachers can focus on solving one problem before moving to the next, reducing cognitive load.
+*   **Navigation Header:** 
+    *   *Function:* Displays the current progress (e.g., "Step 2 of 3") and contains **"Previous"** and **"Next Step"** buttons.
+    *   *Logic/Principle:* Ensures a guided, linear progression through the complex action research themes while retaining the freedom to navigate backward.
 *   **Left Sidebar (Outline):**
-    *   *Function:* Displays a navigational tree of the user's initial challenges and selected themes.
-    *   *Logic:* Helps users maintain a mental map of their exploration process, ensuring they don't lose track of their original intent.
+    *   *Function:* Displays a navigational tree of the user's initial challenges and selected themes. Once a theme has been answered, a green checkmark (✅) appears.
+    *   *Logic:* Helps users maintain a mental map of their exploration process and provides a clear visual indicator of completed steps.
 *   **Panel: Specific Theme Scaffolding (e.g., "capturing and maintaining student attention")**
     *   *Function:* Presents an AI-generated specific question related to the selected theme.
     *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the AI's question.
@@ -103,13 +108,16 @@ This section details every page, panel, and button in the platform, explaining t
     *   *Function:* Opens a pop-up with alternative AI-generated themes.
     *   *Modal Elements:* Clickable **Theme Cards**, a **`See Other Expressions`** button to reword themes, a **Pinned Themes** section to save interests, and a **Custom Theme Input** ("Add Myself") to allow manual topic entry.
     *   *Logic/Principle:* Encourages divergent thinking before converging on a specific research plan.
-*   **Button: `View AI Summary` (Bottom Left):**
-    *   *Function:* Transitions to the final synthesis stage once the user has explored enough.
+*   **Right Panel: Synchronized AI Summary:**
+    *   *Function:* Displays a dynamically updating AI summary of the user's progress on the right side of the screen. 
+    *   *Logic/Principle:* Provides immediate, synthesized feedback at every step.
+*   **Button: `Finish & Go to Live Document` (Bottom Right):**
+    *   *Function:* Transitions to the final synthesis stage once the user has explored enough themes.
 
 ### Stage 3: Synthesis & Live Document Co-writing
 **Page: Summary & Live Document Dashboard**
-*   **Panels: "Exploration History" & "AI Summary":**
-    *   *Function:* Synthesizes the entire brainstorming session into a cohesive academic narrative.
+*   **Panels: "Exploration History" & "Final AI Summary":**
+    *   *Function:* The final page synthesizes the entire brainstorming session across all steps into a cohesive academic narrative.
     *   **Button: `View New Summary`:** Regenerates the synthesis if the user is unsatisfied.
 *   **Panel: "Live Action Research Document" (The Core Engine):**
     *   *Function:* The main workspace where the 10 AMTI modules are filled out and evaluated.
