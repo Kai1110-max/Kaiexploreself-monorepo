@@ -97,9 +97,10 @@ This section details every page, panel, and button in the platform, explaining t
 *   **Left Sidebar (Outline):**
     *   *Function:* Displays a navigational tree of the user's initial challenges and selected themes. Once a theme has been answered, a green checkmark (✅) appears.
     *   *Logic:* Helps users maintain a mental map of their exploration process and provides a clear visual indicator of completed steps.
-*   **Panel: Specific Theme Scaffolding (e.g., "capturing and maintaining student attention")**
-    *   *Function:* Presents an AI-generated specific question related to the selected theme.
-    *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the AI's question.
+*   **Panel: AMTI Step-by-Step Guidance (Center Panel)**
+    *   *Function:* Instead of generating generic questions, the system now asks exactly 10 questions corresponding to the 10 AMTI steps (Motivation, Purpose, Inquiry Question, etc.) for the chosen theme.
+    *   *Text Area ("Write down freely"):* For the user to brainstorm solutions to the current AMTI step.
+    *   *Pagination:* Contains internal "Previous Step" and "Next Step" buttons to navigate through the 10 AMTI dimensions one by one.
     *   **Toggle: `Keywords to Guide Your Expression`:** Shows/hides suggested vocabulary to help users articulate their thoughts professionally.
     *   **AI Tip Box & Button `See New Tips`:** Provides concrete examples and starting points on the right side. Clicking the button cycles through different hints.
         *   *Logic/Principle:* Vygotskian scaffolding. Provides just enough support to help the teacher formulate a plan without doing the thinking for them.
@@ -108,9 +109,9 @@ This section details every page, panel, and button in the platform, explaining t
     *   *Function:* Opens a pop-up with alternative AI-generated themes.
     *   *Modal Elements:* Clickable **Theme Cards**, a **`See Other Expressions`** button to reword themes, a **Pinned Themes** section to save interests, and a **Custom Theme Input** ("Add Myself") to allow manual topic entry.
     *   *Logic/Principle:* Encourages divergent thinking before converging on a specific research plan.
-*   **Right Panel: Synchronized AI Summary:**
-    *   *Function:* Displays a dynamically updating AI summary of the user's progress on the right side of the screen. 
-    *   *Logic/Principle:* Provides immediate, synthesized feedback at every step.
+*   **Right Panel: Real-time Theme Document Preview:**
+    *   *Function:* Displays a dynamically updating, 10-box read-only preview of the Action Research Plan specific to the current theme. As the user answers the AMTI questions on the left, their responses instantly populate the corresponding sections on the right.
+    *   *Logic/Principle:* Provides immediate, synthesized feedback at every step, visually reinforcing how small answers build up to a complete academic document.
 *   **Button: `Finish & Go to Live Document` (Bottom Right):**
     *   *Function:* Transitions to the final synthesis stage once the user has explored enough themes.
 
