@@ -87,9 +87,11 @@ export const ThreadBox = (props: { tid: string }) => {
             onChange={(c) => setCurrentAmtiStep(c)}
             className="overflow-x-auto whitespace-nowrap pb-2"
             items={allQuestions.map((q, idx) => ({
-              title: q.question.label || \`Step \${idx + 1}\`,
+              title: q.question.label || `Step ${idx + 1}`,
               status: q.response && q.response.length > 5 ? 'finish' : (idx === currentAmtiStep ? 'process' : 'wait')
             }))}
+
+
           />
         </div>
 
