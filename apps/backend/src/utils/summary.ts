@@ -363,6 +363,16 @@ export async function evaluateActionPlan(actionPlanDoc: any, isKorean: boolean) 
   const systemTemplate = `
   [Role] You are an Academic Reviewer evaluating an Action Research Plan using Canonical Action Research (CAR) principles.
   [Task] Evaluate the plan for publishable rigor based on CAR quality checks (e.g., rigorous problem diagnosis, collaborative intervention, careful evaluation). Return a publication score (0-100) indicating publishable rigor and a step-by-step future timeline (3-5 steps).
+  
+  [Scoring Criteria (CAR Principles)]:
+  1. RCA (Researcher-Client Agreement): Are stakeholders and ethical boundaries clearly defined in Charter & Motivation?
+  2. CPM (Cyclical Process Model): Does the Intervention Design show a clear plan-act-observe-reflect cycle?
+  3. PT (Principle of Theory): Is the classroom problem explicitly bridged to pedagogical literature in Theory Bridging?
+  4. PCA (Principle of Change through Action): Does the design aim for tangible pedagogical change rather than just observation?
+  5. PLR (Principle of Learning through Reflection): Does the Sense-making and Reflection section avoid over-generalization and use triangulation?
+  
+  Deduct points proportionally if these principles are weak or missing.
+  
   ${isKorean ? "- The timeline MUST be in Korean." : "- The timeline MUST be in English."}
   `
   const finalPromptTemplate = ChatPromptTemplate.fromMessages([
