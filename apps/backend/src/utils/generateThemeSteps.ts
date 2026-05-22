@@ -19,7 +19,7 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
   For each step, provide:
   - 'label': the theoretical phase (e.g., "1. Empathize & Identify")
   - 'description': a brief explanation of what this step means in the context of the theory.
-  - 'question': a specific question that prompts the teacher to reflect and write about that phase.
+  - 'question': a specific question that prompts the teacher to reflect and write about that phase. CRITICAL: The question MUST strictly align with the 'description' of this step and directly address the user's specific theme.
   
   All outputs must be ${language}. Be extremely concise and fast.
 
@@ -47,7 +47,7 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
     steps: z.array(z.object({
       label: z.string().describe(`The theoretical label of this step, e.g., "Step 1: Root Cause Analysis"`),
       description: z.string().describe(`A brief explanation of what this step entails`),
-      question: z.string().describe(`The specific question asking the teacher to reflect on this step`)
+      question: z.string().describe(`The specific question asking the teacher to reflect on this step. Must align with the description.`)
     })).min(1).max(5) // Changed from exact length to range for better fallback
   });
   
