@@ -635,7 +635,7 @@ export function populateNewThread(
               dispatch(agendaSlice.actions.updateThread({
                 ...newThread,
                 theoryName: populateResult.threadData.theoryName,
-                questions: populateResult.threadData.questions
+                questions: populateResult.threadData.questions.map((q: any) => q._id || q)
               }));
               handlers?.onQuestionsGenerated?.(newThread._id);
             }
