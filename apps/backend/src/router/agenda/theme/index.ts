@@ -60,20 +60,33 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
   try {
     const thread = await ThreadItem.findById(tid);
     if (thread?.questions.length == 0 || !thread.questions) {
-      console.log('generate three questions....');
-      const questions = await generateQuestions(req.user, req.agenda, thread, 3);
-      const qaPromises = questions.map(async (question, index) => {
+      console.log('Generating AMTI questions for theme step-by-step guidance....');
+      
+      const amtiQuestions = [
+        { label: 'Charter', content: `What are the boundaries, stakeholders, and ethical considerations for exploring this theme (${thread.theme})?` },
+        { label: 'Motivation', content: `What is your underlying personal or institutional motivation for addressing this theme?` },
+        { label: 'Purpose', content: `What is the specific, measurable goal you want to achieve regarding this theme?` },
+        { label: 'Inquiry Question', content: `What is the core research question you want to answer about this theme?` },
+        { label: 'Theory Bridging', content: `What pedagogical theories or existing literature support your approach to this theme?` },
+        { label: 'Data & Tools', content: `What specific data (e.g., surveys, logs, observations) will you collect to measure progress on this theme?` },
+        { label: 'Intervention Design', content: `What specific instructional changes or interventions will you introduce to address this theme?` },
+        { label: 'Sense-making', content: `How do you plan to analyze the collected data to find patterns regarding this theme?` },
+        { label: 'Reflection', content: `How will you ensure your findings are rigorous and avoid over-generalization?` },
+        { label: 'Decision Making', content: `How will the results from this inquiry inform your next teaching cycle?` }
+      ];
+
+      const qaPromises = amtiQuestions.map(async (question, index) => {
         const newQASet = new QASet({
           tid: tid,
-          question: { content: question.question },
-          selected: false,
+          question: { label: question.label, content: question.content },
+          selected: index === 0, // Auto-select the first question so they start on Step 1
         });
         return newQASet.save();
       });
       const savedQASets = await Promise.all(qaPromises);
       const qaSetIds = savedQASets.map((qa) => qa._id);
 
-      console.log('Generated questions - ', qaSetIds);
+      console.log('Generated AMTI questions - ', qaSetIds);
 
       const updatedThread = await ThreadItem.findByIdAndUpdate(
         tid,

@@ -18,6 +18,7 @@ import { ChevronDoubleLeftIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroi
 import LinesEllipsis from 'react-lines-ellipsis'
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC'
 import { SummaryPanel } from '../components/SummaryPanel';
+import { ThemeLiveDocumentPreview } from '../components/ThemeLiveDocumentPreview';
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis)
 
 const SidePanel = () => {
@@ -249,7 +250,11 @@ export const ExplorerPage = () => {
           </div>
           
           <div className="w-[40%] min-w-[300px] bg-white p-4 md:p-8 overflow-y-auto shadow-inner z-0">
-            <SummaryPanel />
+            {currentTid ? (
+              <ThemeLiveDocumentPreview tid={currentTid as string} />
+            ) : (
+              <SummaryPanel />
+            )}
             <div className="mt-8 pt-8 border-t border-gray-100">
                <Button 
                  type="primary" 
