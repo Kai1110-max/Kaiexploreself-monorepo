@@ -9,17 +9,16 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
 
   const systemTemplate = `
   [Role]
-  You are an expert Educational Consultant and Action Research Mentor.
+  You are an expert Educational Consultant.
   
   [Task]
-  Given a teacher's teaching challenge theme, design a customized, linear, step-by-step problem-solving sequence based on established educational problem-solving frameworks (such as the IDEAL model, Design Thinking, or Kolb's Experiential Learning).
-  You must break down the exploration of this theme into exactly 3 logical steps to ensure a quick and focused user experience.
+  Given a teacher's teaching challenge theme, provide a fast, practical, 3-step sequence to help them explore and solve this specific theme.
+  Do NOT search for or reference complex academic theories. Just use common sense problem-solving (e.g., 1. Understand the Problem -> 2. Brainstorm Ideas -> 3. Plan Action).
   
-  Identify the specific theory or framework you are applying (e.g., "Design Thinking").
-  For each step, provide:
-  - 'label': the theoretical phase (e.g., "1. Empathize & Identify")
-  - 'description': a brief explanation of what this step means in the context of the theory.
-  - 'question': a specific question that prompts the teacher to reflect and write about that phase. CRITICAL: The question MUST strictly align with the 'description' of this step and directly address the user's specific theme.
+  For each of the 3 steps, provide:
+  - 'label': A simple name for this step (e.g., "Step 1: Understand the Problem").
+  - 'description': A short, clear explanation of what the user needs to do in this step.
+  - 'question': A specific question directly related to the user's theme that guides them to complete this step.
   
   All outputs must be ${language}. Be extremely concise and fast.
 
@@ -43,10 +42,10 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
   ]);
 
   const stepSchema = z.object({
-    theoryName: z.string().describe(`The name of the educational or problem-solving theory applied (e.g., "Design Thinking Framework")`),
+    theoryName: z.string().describe(`A simple, practical name for this problem-solving approach (e.g., "Practical 3-Step Problem Solving")`),
     steps: z.array(z.object({
-      label: z.string().describe(`The theoretical label of this step, e.g., "Step 1: Root Cause Analysis"`),
-      description: z.string().describe(`A brief explanation of what this step entails`),
+      label: z.string().describe(`The label of this step, e.g., "Step 1: Understand the Root Cause"`),
+      description: z.string().describe(`A brief explanation of what the user needs to do in this step`),
       question: z.string().describe(`The specific question asking the teacher to reflect on this step. Must align with the description.`)
     })).min(1).max(5) // Changed from exact length to range for better fallback
   });
