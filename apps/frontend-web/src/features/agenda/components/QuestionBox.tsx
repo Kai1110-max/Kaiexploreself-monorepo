@@ -37,9 +37,9 @@ export const QuestionBox = (props: { qid: string, tid: string }) => {
   const token = useSelector(state => state.auth.token)
 
   const question = useSelector(state => questionSelectors.selectById(state, props.qid))
-  const response = question.response
-  const keywords = question.keywords
-  const comment = question.aiGuides.length > 0 ? question.aiGuides[question.aiGuides.length-1].content : null;
+  const response = question?.response || ''
+  const keywords = question?.keywords || []
+  const comment = question?.aiGuides?.length > 0 ? question.aiGuides[question.aiGuides.length-1].content : null;
   const [lastSavedResponse, setLastSavedResponse] = useState('');
   const [isInputFieldActive, setIsInputFieldActive] = useState(false);
   const isQuestionBoxActive = useSelector(state => state.agenda.recentlyActiveQuestionId == props.qid)
@@ -56,17 +56,17 @@ export const QuestionBox = (props: { qid: string, tid: string }) => {
 
   const getNewKeywordsHandler = useCallback((opt: number=2) => {
     dispatch(getNewKeywords(props.tid, props.qid, opt))
-  },[props.qid])
+  },[props.qid, props.tid, dispatch])
 
   useEffect(() => {
-    if (!keywords.length) {
+    if (keywords && !keywords.length && question) {
       getNewKeywordsHandler()
     }
-  },[keywords])
+  },[keywords, getNewKeywordsHandler, question])
 
   const getNewCommentHandler = useCallback(() => {
     dispatch(getNewComment(props.tid, props.qid, response))
-  },[props.qid, props.tid, response])
+  },[props.qid, props.tid, response, dispatch])
 
   const determineChangeType = (prevText: string, newText: string) => {
     const diffs: Change[] = diffChars(prevText, newText);
@@ -166,11 +166,11 @@ export const QuestionBox = (props: { qid: string, tid: string }) => {
     }
   }, [response, isInputFieldActive, saveResponse]);
 
-  useEffect(() => { 
-    if(question.aiGuides.length === 0) {
+  useEffect(() => {
+    if(question && question.aiGuides?.length === 0) {
       getNewCommentHandler()
-    } 
-  },[])
+    }
+  },[question, getNewCommentHandler])
 
   const [shouldAnimateComment, setShouldAnimateComment] = useState(false)
 
@@ -199,10 +199,14 @@ export const QuestionBox = (props: { qid: string, tid: string }) => {
 
   const switch_id = `switch-qk-${props.qid}`
 
+  if (!question) {
+    return null;
+  }
+
   return (
     <div ref={viewRef} className={`p-3 rounded-lg my-6 first:mt-0 border border-transparent transition-all ${isQuestionBoxActive === true ? "!border-gray-300 shadow-2xl bg-white" : "bg-slate-50/25"}`} onClickCapture={onQuestionBoxClickCapture}>
       <Flex vertical={false}>
-        <div className="pb-2 pl-1"><span className='text-teal-500 text-3xl font-light italic'>Q.</span> {question.question.content} </div>
+        <div className="pb-2 pl-1"><span className='text-teal-500 text-3xl font-light italic'>Q.</span> {question.question?.content} </div>
       </Flex>
        {<Row>
         <div className={`transition-all border-dashed ${isQuestionKeywordsShown ? "bg-transparent" : "bg-transparent"} rounded-lg p-2 w-full mb-2`}>

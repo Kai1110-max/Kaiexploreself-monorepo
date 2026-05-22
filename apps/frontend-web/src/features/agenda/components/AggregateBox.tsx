@@ -38,8 +38,8 @@ export const AggregateBox = () => {
       </div>
       {filteredQuestions.map(q => 
       <div className='pb-2' key={q._id}>
-        <div className="pb-2 pl-1 flex items-baseline gap-x-2"><span className='text-teal-500 text-3xl font-light italic'>Q.</span> <span className='font-semibold'>{q.question.content}</span> </div>
-        <div className='ml-10 mt-2 p-2 bg-slate-100'>{q.response}</div>
+        <div className="pb-2 pl-1 flex items-baseline gap-x-2"><span className='text-teal-500 text-3xl font-light italic'>Q.</span> <span className='font-semibold'>{q?.question?.content}</span> </div>
+        <div className='ml-10 mt-2 p-2 bg-slate-100'>{q?.response}</div>
       </div>)}
     </div>
   )

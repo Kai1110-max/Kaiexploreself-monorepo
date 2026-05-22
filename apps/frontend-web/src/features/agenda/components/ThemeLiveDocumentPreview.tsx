@@ -24,8 +24,8 @@ export const ThemeLiveDocumentPreview = ({ tid }: { tid: string }) => {
       
       <div className="space-y-6">
         {questions.map((q, idx) => {
-          const sectionTitle = q.question.label || `Step ${idx + 1}`;
-          const content = q.response || '';
+          const sectionTitle = q?.question?.label || `Step ${idx + 1}`;
+          const content = q?.response || '';
           
           return (
             <Card 
