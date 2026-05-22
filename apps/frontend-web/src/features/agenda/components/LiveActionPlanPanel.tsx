@@ -305,7 +305,8 @@ export const LiveActionPlanPanel = () => {
           className="text-gray-700 leading-relaxed"
         />
         {renderAgenticFeedback(sectionKey)}
-        {renderPeerReviews(sectionKey)}
+        {/* Temporarily hiding peer reviews per user request */}
+        {/* {renderPeerReviews(sectionKey)} */}
       </Card>
     )
   }
