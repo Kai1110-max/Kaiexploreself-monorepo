@@ -148,7 +148,7 @@ const agendaSlice = createSlice({
           const threadMapped: Array<IThreadWithQuestionIds> =
             action.payload.threads?.map((thread) => ({
               ...thread,
-              questions: (thread.questions || []).filter((q) => q != null).map((q) => q._id || q),
+              questions: (thread.questions || []).filter((q: any) => q != null).map((q: any) => q._id || q) as string[],
             })) || [];
           threadEntityAdapter.setAll(state.threadEntityState, threadMapped);
           questionEntityAdapter.setAll(state.questionEntityState, questions);
