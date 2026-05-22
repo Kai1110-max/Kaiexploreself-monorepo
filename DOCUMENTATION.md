@@ -70,6 +70,12 @@ Teachers do not have to fill out the 10 modules in order. The document is fully 
 *Note: This feature is accessed via the **"Evaluate Publication Chance"** button at the top of the Live Document.*
 *   **Inquiry Consistency Map:** The AI generates a diagnostic matrix showing `[Good] Strong Links` and `[Fix] Weak Links`. For example, it will flag a warning if your "Data Tools" cannot answer your "Inquiry Question".
 *   **Publication Rigor Score:** The system calculates a probability score (0-100%) reflecting how well the current document adheres to the 5 CAR principles. It also generates a timeline of recommended future actions to increase the chance of acceptance at venues like CHI or AIED.
+    *   *Calculation Mechanics:* The AI acts as an Academic Reviewer and evaluates the document against the following Canonical Action Research (CAR) principles, deducting points proportionally if principles are weak or missing:
+        1. **RCA (Researcher-Client Agreement):** Are stakeholders and ethical boundaries clearly defined in the Charter & Motivation sections?
+        2. **CPM (Cyclical Process Model):** Does the Intervention Design show a clear plan-act-observe-reflect cycle?
+        3. **PT (Principle of Theory):** Is the classroom problem explicitly bridged to pedagogical literature in Theory Bridging?
+        4. **PCA (Principle of Change through Action):** Does the design aim for tangible pedagogical change rather than just observation?
+        5. **PLR (Principle of Learning through Reflection):** Does the Sense-making and Reflection section avoid over-generalization and use triangulation?
 
 ### 3.3 Critical Friend Reviews (CIDA Community Framework)
 To support peer review, colleagues can leave comments under specific modules. The AI evaluates the colleague's comment and attaches an "AI Structural Check" badge to ensure the feedback is methodologically sound and constructive.
