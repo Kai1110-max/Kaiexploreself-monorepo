@@ -77,8 +77,10 @@ Teachers do not have to fill out the 10 modules in order. The document is fully 
         4. **PCA (Principle of Change through Action):** Does the design aim for tangible pedagogical change rather than just observation?
         5. **PLR (Principle of Learning through Reflection):** Does the Sense-making and Reflection section avoid over-generalization and use triangulation?
 
+<!-- 
 ### 3.3 Critical Friend Reviews (CIDA Community Framework)
 To support peer review, colleagues can leave comments under specific modules. The AI evaluates the colleague's comment and attaches an "AI Structural Check" badge to ensure the feedback is methodologically sound and constructive.
+-->
 
 ---
 
