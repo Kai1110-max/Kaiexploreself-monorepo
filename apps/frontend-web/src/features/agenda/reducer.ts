@@ -634,8 +634,8 @@ export function populateNewThread(
               // Also update the thread to include the new theoryName and question IDs
               dispatch(agendaSlice.actions.updateThread({
                 ...newThread,
-                theoryName: populateResult.threadData.theoryName,
-                questions: (populateResult.threadData.questions || []).filter((q: any) => q != null).map((q: any) => q._id || q)
+                theoryName: populateResult.threadData?.theoryName,
+                questions: (populateResult.threadData?.questions || populateResult.questions || []).filter((q: any) => q != null).map((q: any) => q._id || q)
               }));
               handlers?.onQuestionsGenerated?.(newThread._id);
             }

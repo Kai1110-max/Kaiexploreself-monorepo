@@ -117,7 +117,7 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
 
       return res.json({
         threadData: updatedThread,
-        questions: savedQASets
+        questions: updatedThread?.questions || savedQASets
       });
     }
 
