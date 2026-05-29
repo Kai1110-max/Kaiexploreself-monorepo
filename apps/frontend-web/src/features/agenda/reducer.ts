@@ -629,16 +629,17 @@ export function populateNewThread(
               state.agenda.agendaId,
               newThread._id
             );
-            if (populateResult && populateResult.questions) {
-              dispatch(agendaSlice.actions.setQuestions(populateResult.questions));
-              // Also update the thread to include the new theoryName and question IDs
-              dispatch(agendaSlice.actions.updateThread({
-                ...newThread,
-                theoryName: populateResult.threadData?.theoryName,
-                questions: (populateResult.threadData?.questions || populateResult.questions || []).filter((q: any) => q != null).map((q: any) => q._id || q)
-              }));
-              handlers?.onQuestionsGenerated?.(newThread._id);
+            
+            // As per user request: to completely avoid the Redux mapping "white screen" issue,
+            // we bypass local state updates and simply trigger a smooth page reload.
+            // Since the data is already saved in the database, the reload will fetch the perfect state.
+            if (populateResult) {
+              setTimeout(() => {
+                window.location.reload();
+              }, 100);
+              return;
             }
+            
           } catch (err) {
             console.log('Err in populating thread: ', err);
           } finally {
