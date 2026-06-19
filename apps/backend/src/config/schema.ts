@@ -1,4 +1,4 @@
-import { IThreadBase, IUserBase, IQASetBase, SessionStatus, IUserBrowserSessionBase, IAgendaBase } from "@core";
+import { IThreadBase, IUserBase, IQASetBase, SessionStatus, IUserBrowserSessionBase, IAgendaBase, RoleplayAgentType, IRoleplaySessionBase, IRoleplayMessageBase } from "@core";
 import mongoose, {Schema, Document, mongo} from "mongoose";
 import { InteractionType, InteractionBase } from "@core";
 import * as nanoid from 'nanoid'
@@ -21,8 +21,18 @@ export interface IQASetORM extends IQASetBase, Document {
 export interface IThreadORM extends IThreadBase, Document {
   _id: mongoose.Types.ObjectId
   questions: Array<mongoose.Types.ObjectId | IQASetORM>
+  roleplaySessionId?: mongoose.Types.ObjectId | IRoleplaySessionORM
   aid: mongoose.Types.ObjectId
   theoryName?: string;
+}
+
+export interface IRoleplayMessageORM extends IRoleplayMessageBase, Document {
+  _id: mongoose.Types.ObjectId;
+}
+
+export interface IRoleplaySessionORM extends IRoleplaySessionBase, Document {
+  _id: mongoose.Types.ObjectId;
+  messages: Array<mongoose.Types.ObjectId | IRoleplayMessageORM>;
 }
 
 export interface IAgendaORM extends IAgendaBase, Document {
@@ -89,12 +99,30 @@ export const ThreadItemSchema = new Schema({
    theme: {type: String, required: true},
    theoryName: {type: String, required: false},
    questions: {type: [Schema.Types.ObjectId], ref: 'QASet', required: true, default: []},
+   roleplaySessionId: {type: Schema.Types.ObjectId, ref: 'RoleplaySession', required: false},
    summary: {type: String, required: false, default: undefined},
    createdAt: {type: Date, default: Date.now},
    updatedAt: {type: Date}
  });
  
 ThreadItemSchema.set('timestamps', true)
+
+export const RoleplayMessageSchema = new Schema({
+  sender: {type: String, enum: Object.values(RoleplayAgentType), required: true},
+  content: {type: String, required: true},
+  timestamp: {type: Date, default: Date.now}
+});
+
+export const RoleplaySessionSchema = new Schema({
+  tid: {type: Schema.Types.ObjectId, ref: 'ThreadItem', required: true},
+  childProfile: {type: String, required: true, default: "A child experiencing emotional distress."},
+  status: {type: String, enum: ['active', 'completed'], default: 'active'},
+  messages: {type: [Schema.Types.ObjectId], ref: 'RoleplayMessage', default: []},
+  createdAt: {type: Date, default: Date.now},
+  updatedAt: {type: Date}
+});
+
+RoleplaySessionSchema.set('timestamps', true);
 
 export const BrowserSessionSchema = new Schema<BrowserSessionORM>({
   localTimezone: {type: String, nullable: true, default: null},
@@ -198,6 +226,8 @@ InteractionSchema.set('timestamps', true);
 
 export const QASet = mongoose.model<IQASetORM>('QASet', QASetSchema)
 export const ThreadItem = mongoose.model<IThreadORM>('ThreadItem', ThreadItemSchema)
+export const RoleplayMessage = mongoose.model<IRoleplayMessageORM>('RoleplayMessage', RoleplayMessageSchema);
+export const RoleplaySession = mongoose.model<IRoleplaySessionORM>('RoleplaySession', RoleplaySessionSchema);
 export const AgendaItem = mongoose.model<IAgendaORM>('AgendaItem', AgendaSchema)
 export const User = mongoose.model<IUserORM>('User', UserSchema)
 export const Interaction = mongoose.model<InteractionORM>('Interaction', InteractionSchema);

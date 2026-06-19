@@ -72,6 +72,7 @@ export interface IThreadBase {
 export interface IThreadWithQuestionIds extends IThreadBase {
   _id: string,
   questions: Array<string>,
+  roleplaySessionId?: string,
   aid: string
 }
 
@@ -79,7 +80,37 @@ export interface IThreadWithQuestionIds extends IThreadBase {
 export interface IThreadAllPopulated extends IThreadBase {
   _id: string,
   questions: Array<IQASetWithIds>,
+  roleplaySession?: IRoleplaySessionPopulated,
   aid: string
+}
+
+export enum RoleplayAgentType {
+  Child = 'child',
+  Moderator = 'moderator',
+  Parent = 'parent'
+}
+
+export interface IRoleplayMessageBase {
+  sender: RoleplayAgentType;
+  content: string;
+  timestamp: Date;
+}
+
+export interface IRoleplayMessageObj extends IRoleplayMessageBase {
+  _id: string;
+}
+
+export interface IRoleplaySessionBase {
+  tid: string; // Thread ID
+  childProfile: string; // e.g. "7 year old, prone to tantrums"
+  status: 'active' | 'completed';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IRoleplaySessionPopulated extends IRoleplaySessionBase {
+  _id: string;
+  messages: Array<IRoleplayMessageObj>;
 }
 
 export enum SessionStatus{

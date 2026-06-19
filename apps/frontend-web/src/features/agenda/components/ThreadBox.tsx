@@ -15,6 +15,7 @@ import { ShortcutManager } from '../../../services/shortcut';
 import { getNewQuestions, questionSelectors, selectedQuestionIdsSelector, selectQuestion, setFloatingHeaderFlag, threadSelectors, updateQuestionResponse } from '../reducer';
 import { useInView } from 'react-intersection-observer';
 import { QuestionBox } from './QuestionBox';
+import { RoleplayChat } from './RoleplayChat';
 import { LoadingIndicator } from '../../../components/LoadingIndicator';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownIcon, PencilIcon } from '@heroicons/react/20/solid';
@@ -122,6 +123,10 @@ export const ThreadBox = (props: { tid: string }) => {
           >
             Next Step
           </Button>
+        </div>
+
+        <div className="mt-8 pt-6 border-t-2 border-dashed border-indigo-100">
+          <RoleplayChat tid={props.tid} />
         </div>
       </Card>)
 };

@@ -4,6 +4,7 @@ import { assertThemeIdParamMiddleward, RequestWithAgenda } from '../../middlewar
 import generateThemeSteps from '../../../utils/generateThemeSteps';
 import { body, validationResult } from 'express-validator';
 import questionRouter from './question'
+import roleplayRouter from './roleplay'
 import generateThemes from 'apps/backend/src/utils/generateThemes';
 
 const router = express.Router();
@@ -135,5 +136,6 @@ router.post('/:tid/populate', async (req: RequestWithAgenda, res) => {
 });
 
 router.use("/:tid/questions", assertThemeIdParamMiddleward, questionRouter)
+router.use("/:tid/roleplay", assertThemeIdParamMiddleward, roleplayRouter)
 
 export default router;
