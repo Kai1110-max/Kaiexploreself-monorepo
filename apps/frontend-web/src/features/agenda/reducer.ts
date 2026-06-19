@@ -1183,3 +1183,5 @@ export const {
   appendPeerReview,
 } = agendaSlice.actions;
 export default agendaSlice.reducer;
+// Note: createAgenda is located in userSlice.ts, not agendaSlice.ts
+

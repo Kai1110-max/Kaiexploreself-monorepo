@@ -56,7 +56,7 @@ export const InitialNarrativePage = () => {
     );
     if(newAgendaId != null){
       console.log(newAgendaId)
-      navigate(`../${newAgendaId}`, {replace: true})
+      navigate(`/app/agendas/${newAgendaId}`, {replace: true})
     }
   }, [navigate]);
 

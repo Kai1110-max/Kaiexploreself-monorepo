@@ -162,6 +162,9 @@ export function updateDidTutorial(
     }
   }
 
+import createThreadItem from '../../api_call/createThreadItem';
+import populateThread from '../../api_call/populateThread';
+
 export function createAgenda(
     narrative: string
   ): AppThunk<Promise<string|null>> {
@@ -181,11 +184,32 @@ export function createAgenda(
             }
           );
 
-          const newAgenda: IAgendaWithThemeIds = response.data.agenda
+          const newAgenda: IAgendaWithThemeIds = response.data.agenda;
   
           dispatch(
             userSlice.actions.appendAgenda(newAgenda)
           );
+          
+          // --- AUTO-CREATE THEME FOR ROLEPLAY ---
+          try {
+            const autoTheme = "Parent Training Simulation Scenario";
+            const newThread = await createThreadItem(
+              state.auth.token,
+              newAgenda._id,
+              autoTheme
+            );
+            if (newThread) {
+               await populateThread(
+                 state.auth.token,
+                 newAgenda._id,
+                 newThread._id
+               );
+            }
+          } catch(e) {
+            console.error("Failed to auto-create theme for roleplay:", e);
+          }
+          // --- END AUTO-CREATE ---
+
           return newAgenda._id
         } catch (err) {
           console.log('Err in setting narrative: ', err);

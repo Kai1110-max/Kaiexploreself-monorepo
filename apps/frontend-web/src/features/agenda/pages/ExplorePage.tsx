@@ -207,9 +207,10 @@ export const ExplorerPage = () => {
               <Button 
                 type={isCurrentStepDone ? "primary" : "default"}
                 onClick={goNext}
-                className={`flex items-center ${isCurrentStepDone ? 'animate-pulse shadow-md bg-blue-600 hover:bg-blue-500 border-none' : ''}`}
+                disabled={currentStepIndex === maxStepIndex}
+                className={`flex items-center ${isCurrentStepDone && currentStepIndex !== maxStepIndex ? 'animate-pulse shadow-md bg-blue-600 hover:bg-blue-500 border-none' : ''}`}
               >
-                {currentStepIndex === maxStepIndex ? t("Exploration.ShowMoreThemes") || "Explore Other Themes" : t("Navigation.Next") || "Next Step"}
+                {t("Navigation.Next") || "Next Step"}
                 {currentStepIndex !== maxStepIndex && <ChevronRightIcon className="w-5 h-5 ml-1" />}
               </Button>
             </div>
@@ -232,28 +233,29 @@ export const ExplorerPage = () => {
                 {currentStepIndex > 0 && currentStepIndex <= maxStepIndex && currentTid && (
                   <ThreadBox key={currentTid as string} tid={currentTid as string} />
                 )}
-                
-                {currentStepIndex === maxStepIndex && (
-                  <Button
-                    key={'new-theme-btn-bottom'}
-                    ref={ref}
-                    type="primary"
-                    className={`w-full border-none shadow-lg h-12 mt-8 ${focusOnThemeButton ? 'outline animate-focus-indicate':''}`}
-                    icon={themeButtonIcon}
-                    onClick={onThemeSelectionButtonClick}
-                  >{themeButtonLabel}
-                    <NewThemeButtonPopover/>
-                  </Button>
-                )}
               </div>
             </div>
           </div>
           
           <div className="w-[40%] min-w-[300px] bg-white p-4 md:p-8 overflow-y-auto shadow-inner z-0">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Your Training Documentation</h2>
+            <div className="bg-blue-50 text-blue-800 p-3 rounded-lg mb-6 text-sm">
+              Use the insights from your roleplay session on the left to write down your reflections and plans here. The final document will be composed entirely of your own writings.
+            </div>
+            
             {currentTid ? (
-              <ThemeLiveDocumentPreview tid={currentTid as string} />
+              <div className="flex flex-col gap-4 h-[500px]">
+                {/* Manual Documentation Editor placeholder */}
+                <div className="flex-1 bg-white border rounded-lg p-4 shadow-sm">
+                   <div className="text-sm font-semibold text-gray-500 mb-2">Step Reflection / Plan:</div>
+                   <textarea 
+                     className="w-full h-full min-h-[300px] p-2 border-none outline-none resize-none"
+                     placeholder="Based on the simulation, what did you learn and what is your plan?"
+                   />
+                </div>
+              </div>
             ) : (
-              <SummaryPanel />
+              <div className="text-gray-500 italic">Select a step to begin your documentation.</div>
             )}
             <div className="mt-8 pt-8 border-t border-gray-100">
                <Button 
@@ -264,7 +266,7 @@ export const ExplorerPage = () => {
                    navigate("./summary");
                  }}
                >
-                 {t("Summary.Open") || "Finish & Go to Live Document"}
+                 {t("Summary.Open") || "Finish & Go to Final Document"}
                </Button>
             </div>
           </div>

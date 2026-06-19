@@ -32,7 +32,7 @@ Rules:
 
   const prompt = ChatPromptTemplate.fromMessages(messages as any);
   const chain = prompt.pipe(chatModel);
-  const init_info = summarizeProfilicInfo(agenda.initialNarrative);
+  const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
 
   const response = await chain.invoke({
     init_info,
@@ -62,7 +62,7 @@ Rules:
 
   const prompt = ChatPromptTemplate.fromMessages(messages as any);
   const chain = prompt.pipe(chatModel);
-  const init_info = summarizeProfilicInfo(agenda.initialNarrative);
+  const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
 
   const response = await chain.invoke({
     init_info,
