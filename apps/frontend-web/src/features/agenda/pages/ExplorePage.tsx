@@ -114,6 +114,11 @@ export const ExplorerPage = () => {
   const maxStepIndex = threadIds.length;
   const prevThreadCount = useRef(threadIds.length);
 
+  const [aiHint, setAiHint] = useState<string>('');
+  const [hintLoading, setHintLoading] = useState(false);
+  const token = useSelector(state => state.auth.token);
+  const agendaId = useSelector(state => state.agenda.agendaId);
+
   const currentTid = currentStepIndex > 0 && currentStepIndex <= maxStepIndex ? threadIds[currentStepIndex - 1] : undefined;
   const currentQuestions = useSelector(state => currentTid ? selectedQuestionsSelector(state, currentTid as string) : EMPTY_ARRAY);
   const isCurrentStepDone = currentStepIndex === 0 || (currentQuestions.length > 0 && currentQuestions.some(q => q.response && q.response.length > 0));
@@ -245,21 +250,57 @@ export const ExplorerPage = () => {
             
             {currentTid ? (
               <div className="flex flex-col gap-4 h-[500px]">
-                {/* Manual Documentation Editor placeholder */}
-                <div className="flex-1 bg-white border rounded-lg p-4 shadow-sm relative">
-                   <div className="text-sm font-semibold text-gray-500 mb-2">Step Reflection / Plan:</div>
+                <div className="flex-1 bg-white border rounded-lg p-4 shadow-sm relative flex flex-col">
+                   <div className="text-sm font-semibold text-gray-500 mb-2">Step {currentStepIndex}: {currentQuestions[0]?.question?.label || 'Reflection'}</div>
+                   <div className="text-xs text-gray-400 mb-3">{currentQuestions[0]?.question?.description}</div>
                    <textarea 
-                     className="w-full h-[80%] min-h-[300px] p-2 border-none outline-none resize-none text-gray-700 leading-relaxed"
-                     placeholder="Based on the simulation, what did you learn and what is your plan?"
+                     className="w-full flex-1 p-2 border-none outline-none resize-none text-gray-700 leading-relaxed bg-gray-50 rounded"
+                     placeholder="Based on the roleplay simulation on the left, type your insights here..."
                      value={currentQuestions[0]?.response || ''}
                      onChange={(e) => {
                         dispatch(updateQuestion({_id: currentQuestions[0]?._id, response: e.target.value}))
                      }}
                    />
-                   <div className="absolute bottom-4 left-4 right-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-800">
-                     <span className="font-bold">💡 AI Writing Hint:</span> 
-                     <br/>
-                     Look at how the Moderator corrected you in the roleplay. Did you use "Emotion Validation"? Write down exactly how you will phrase it next time in reality.
+                   
+                   {/* Dynamic AI Hint Generation Area */}
+                   <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-800">
+                     <div className="flex justify-between items-center mb-1">
+                       <span className="font-bold">💡 AI Writing Hint</span>
+                       <Button 
+                         size="small" 
+                         type="link" 
+                         loading={hintLoading}
+                         onClick={async () => {
+                           if(token && agendaId && currentTid) {
+                             setHintLoading(true);
+                             try {
+                               const res = await fetch(\`/api/v1/agendas/\${agendaId}/themes/\${currentTid}/roleplay/hint\`, {
+                                 method: 'POST',
+                                 headers: {
+                                   'Content-Type': 'application/json',
+                                   'Authorization': \`Bearer \${token}\`
+                                 },
+                                 body: JSON.stringify({
+                                   stepLabel: currentQuestions[0]?.question?.label,
+                                   stepDescription: currentQuestions[0]?.question?.description,
+                                   currentText: currentQuestions[0]?.response || ''
+                                 })
+                               });
+                               const data = await res.json();
+                               if(data.hint) {
+                                 setAiHint(data.hint);
+                               }
+                             } catch(e) { console.error(e); }
+                             setHintLoading(false);
+                           }
+                         }}
+                       >
+                         Generate contextual hint
+                       </Button>
+                     </div>
+                     <div className="text-gray-700">
+                       {aiHint || "Click 'Generate contextual hint' to get AI suggestions based on your roleplay session."}
+                     </div>
                    </div>
                 </div>
               </div>

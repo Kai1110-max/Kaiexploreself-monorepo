@@ -2,7 +2,7 @@ import express from 'express';
 import { RoleplaySession, RoleplayMessage, ThreadItem } from '../../../config/schema';
 import type { RequestWithTheme } from '../../middlewares';
 import { RoleplayAgentType } from '@core';
-import { generateChildResponse, generateModeratorResponse } from '../../../utils/generateRoleplayResponse';
+import { generateChildResponse, generateModeratorResponse, generateRoleplayHint } from '../../../utils/generateRoleplayResponse';
 
 const router = express.Router({ mergeParams: true });
 
@@ -93,6 +93,27 @@ router.post('/message', async (req: RequestWithTheme, res) => {
     return res.json(updatedSession);
   } catch (err) {
     console.error('Error sending roleplay message:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/hint', async (req: RequestWithTheme, res) => {
+  const { stepLabel, stepDescription, currentText } = req.body;
+  try {
+    const thread = await ThreadItem.findById(req.theme._id);
+    if (!thread || !thread.roleplaySessionId) {
+      return res.status(404).json({ error: "Roleplay session not found." });
+    }
+
+    const session = await RoleplaySession.findById(thread.roleplaySessionId).populate('messages');
+    if (!session) {
+      return res.status(404).json({ error: "Session not found." });
+    }
+
+    const hint = await generateRoleplayHint(req.agenda, session, stepLabel, stepDescription, currentText);
+    return res.json({ hint });
+  } catch (err) {
+    console.error('Error generating hint:', err);
     res.status(500).json({ error: err.message });
   }
 });

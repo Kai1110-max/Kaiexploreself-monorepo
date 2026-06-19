@@ -41,6 +41,34 @@ Rules:
   return response.content.toString();
 }
 
+export async function generateRoleplayHint(agenda: IAgendaORM, session: IRoleplaySessionORM, stepLabel: string, stepDescription: string, currentText: string): Promise<string> {
+  let transcript = "";
+  session.messages.forEach((m: any) => {
+    if (m.sender === RoleplayAgentType.Child) transcript += `Child: ${m.content}\n`;
+    else if (m.sender === RoleplayAgentType.Parent) transcript += `Parent: ${m.content}\n`;
+    else if (m.sender === RoleplayAgentType.Moderator) transcript += `Coach: ${m.content}\n`;
+  });
+
+  const systemPrompt = `You are a helpful Parent Training AI Coach.
+The parent is currently writing their documentation for a specific step: "${stepLabel} - ${stepDescription}".
+They have already typed: "${currentText}"
+
+Here is their roleplay history with the simulated child:
+${transcript}
+
+Task: Provide ONE short, highly specific hint (1-2 sentences) on what they should write next for this step, based strictly on what happened in the roleplay. Focus on guiding them to dig deeper.
+Do NOT write the documentation for them. Just prompt them.`;
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemPrompt],
+    ["user", "Give me a hint."]
+  ]);
+  const chain = prompt.pipe(chatModel);
+  const response = await chain.invoke({});
+
+  return response.content.toString();
+}
+
 export async function generateModeratorResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newParentMessage: string, childResponse: string): Promise<string> {
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
 

@@ -9,22 +9,26 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
 
   const systemTemplate = `
   [Role]
-  You are an expert Educational Consultant.
+  You are an expert Clinical Child Psychologist and Parent Training Coach.
   
   [Task]
-  Given a teacher's teaching challenge theme, provide a fast, practical, 3-step sequence to help them explore and solve this specific theme.
-  Do NOT search for or reference complex academic theories. Just use common sense problem-solving (e.g., 1. Understand the Problem -> 2. Brainstorm Ideas -> 3. Plan Action).
+  Given a parent's challenge, provide a 3-step Parent Management Training (PMT) framework sequence (specifically the ABC Model: Antecedent, Behavior, Consequence) to help them analyze and solve this specific theme.
+  
+  The 3 steps must strictly follow this logic:
+  - Step 1: Identify Antecedents (Triggers)
+  - Step 2: Analyze the Target Behavior
+  - Step 3: Plan the Consequence (Response/Intervention)
   
   For each of the 3 steps, provide:
-  - 'label': A simple name for this step (e.g., "Step 1: Understand the Problem").
-  - 'description': A short, clear explanation of what the user needs to do in this step.
-  - 'question': A specific question directly related to the user's theme that guides them to complete this step.
+  - 'label': A simple name for this step (e.g., "Step 1: Identify the Trigger").
+  - 'description': A short, clear explanation of what the parent needs to do in this step.
+  - 'question': A specific, empathetic question directly related to the user's theme that guides them to start reflecting on this step.
   
   All outputs must be ${language}. Be extremely concise and fast.
 
   [Input]
-  <initial_information/>: Client's initial brief introductory of difficulty, and the client's background.
-  <theme_of_session/>: The specific theme the teacher wants to explore.
+  <initial_information/>: Parent's initial brief introductory of difficulty.
+  <theme_of_session/>: The specific scenario the parent wants to explore.
   `;
 
   const systemMessage = SystemMessagePromptTemplate.fromTemplate(systemTemplate);
@@ -62,22 +66,22 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
     console.error("Error generating dynamic steps, using fallback:", error);
     // Fallback steps if LLM fails
     return {
-      theoryName: "General Problem Solving Framework",
+      theoryName: "Parent Management Training (ABC Model)",
       steps: [
         {
-          label: "Step 1: Identify the Root Cause",
-          description: "Understand the underlying reasons behind the teaching challenge.",
-          question: "What do you think is the main root cause of this issue in your classroom?"
+          label: "Step 1: Identify Antecedents",
+          description: "Understand the triggers that occur immediately before the child's difficult behavior.",
+          question: "What specific events, times, or interactions usually trigger this behavior?"
         },
         {
-          label: "Step 2: Brainstorm Solutions",
-          description: "Generate potential pedagogical interventions.",
-          question: "What are 1-2 specific actions or interventions you could try to address this?"
+          label: "Step 2: Analyze Behavior",
+          description: "Describe the child's specific actions without judgment.",
+          question: "What exactly does the child do? Try to describe it as if you were watching a video recording."
         },
         {
-          label: "Step 3: Plan for Evaluation",
-          description: "Determine how to measure the success of the intervention.",
-          question: "How will you know if your intervention is successful? What evidence will you collect?"
+          label: "Step 3: Plan Consequence",
+          description: "Determine how you will respond to the behavior to either decrease it or encourage better alternatives.",
+          question: "How do you usually react? How might you change your reaction next time?"
         }
       ]
     };
