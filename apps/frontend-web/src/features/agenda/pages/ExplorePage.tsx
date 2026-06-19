@@ -5,7 +5,7 @@ import { ThreadBox } from '../components/ThreadBox';
 import { Card,  Button } from 'antd';
 import { useDispatch, useSelector } from '../../../redux/hooks';
 import { Navigate, useNavigate } from 'react-router-dom';
-import {enterReviewStage, getNewThemes, resetNewThemes, selectFloatingHeader, setThemeSelectorOpen, threadSelectors, getNewSummary, selectedQuestionsSelector } from '../reducer';
+import {enterReviewStage, getNewThemes, resetNewThemes, selectFloatingHeader, setThemeSelectorOpen, threadSelectors, getNewSummary, selectedQuestionsSelector, updateQuestion } from '../reducer';
 import { LightBulbIcon } from '@heroicons/react/24/solid';
 import { useInView } from 'react-intersection-observer';
 import { ShortcutManager } from '../../../services/shortcut';
@@ -246,12 +246,21 @@ export const ExplorerPage = () => {
             {currentTid ? (
               <div className="flex flex-col gap-4 h-[500px]">
                 {/* Manual Documentation Editor placeholder */}
-                <div className="flex-1 bg-white border rounded-lg p-4 shadow-sm">
+                <div className="flex-1 bg-white border rounded-lg p-4 shadow-sm relative">
                    <div className="text-sm font-semibold text-gray-500 mb-2">Step Reflection / Plan:</div>
                    <textarea 
-                     className="w-full h-full min-h-[300px] p-2 border-none outline-none resize-none"
+                     className="w-full h-[80%] min-h-[300px] p-2 border-none outline-none resize-none text-gray-700 leading-relaxed"
                      placeholder="Based on the simulation, what did you learn and what is your plan?"
+                     value={currentQuestions[0]?.response || ''}
+                     onChange={(e) => {
+                        dispatch(updateQuestion({_id: currentQuestions[0]?._id, response: e.target.value}))
+                     }}
                    />
+                   <div className="absolute bottom-4 left-4 right-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-yellow-800">
+                     <span className="font-bold">💡 AI Writing Hint:</span> 
+                     <br/>
+                     Look at how the Moderator corrected you in the roleplay. Did you use "Emotion Validation"? Write down exactly how you will phrase it next time in reality.
+                   </div>
                 </div>
               </div>
             ) : (
