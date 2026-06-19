@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "../../../redux/hooks"
 import { SessionStatus } from "@core"
 import { Button, Tooltip, Card } from "antd"
 import { ChevronDoubleLeftIcon } from "@heroicons/react/20/solid"
-import { questionSelectors, threadSelectors } from "../reducer"
+import { abortReviewStage, questionSelectors, threadSelectors } from "../reducer"
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons"
 
 type QuestionRefs = {
@@ -14,15 +14,17 @@ type QuestionRefs = {
 
 export const SummaryPage = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const agendaId = useAgendaIdInRoute()
   const title = useSelector(state => state.agenda.title)
   const sessionStatus = useSelector(state => state.agenda.sessionStatus)
   const threads = useSelector(threadSelectors.selectAll)
   const questions = useSelector(questionSelectors.selectAll)
 
-  const onReturnClick = useCallback(()=>{
-    navigate("/app/agendas")
-  }, [navigate])
+  const onReturnClick = useCallback(async ()=>{
+    await dispatch(abortReviewStage());
+    navigate(`/app/agendas/${agendaId}`);
+  }, [navigate, dispatch, agendaId])
 
   if(sessionStatus === SessionStatus.Exploring){
     return <Navigate to={`/app/agendas/${agendaId}`}/>
