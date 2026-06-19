@@ -32,14 +32,12 @@
     "ThemeCount_other": "{{count}} themes"
   },
   "Narrative": {
-    "Title": "Jot down Your Teaching Challenges",
-    "Prompt": "Every teacher faces challenges in their classrooms. Feel free to write about any aspect of the teaching difficulty or student learning issue that comes to mind. Afterwards, the AI mentor will suggest various Action Research topics for you to think about regarding your teaching improvement, and through simple writing activities, it aims to help you better formulate an Action Research problem and design an intervention. Remember, all of your writing will be completely confidential.",
-    "Placeholder": "Write your teaching challenges here.",
-    "Complete": "Start Exploring Action Research Topics",
+    "Title": "Jot down Your Parenting Challenges",
+    "Prompt": "Every parent faces challenges. Feel free to write about any aspect of a parenting difficulty or child behavioral issue that comes to mind. Afterwards, the AI coach will simulate this scenario and guide you through Parent Management Training (PMT) roleplays to practice your skills. Remember, all of your writing will be completely confidential.",
+    "Placeholder": "Write your parenting challenges here.",
+    "Complete": "Start Exploring Parent Training Scenarios",
     "Back": "Back to Previous Screen",
-    "BackConfirm": "Discard the current writing and go back to the previous screen?",
-    "InitialNarrative": "My Teaching Challenges",
-    "Helper": "Please freely write about what has been challenging in your teaching practice or presenting learning difficulties for your students lately. Before AI can assist you in formulating an Action Research problem, this is a process for you to articulate the challenges you are encountering. **This is not a text meant to be shared with others.** Nobody will check, judge, or critique it. Do not worry about spelling, grammar, or punctuation when writing."
+    "WarnEmpty": "Please provide your parenting challenge before starting."
   },
   "Exploration": {
     "ShowMoreThemes": "Explore Other Themes",
