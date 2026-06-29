@@ -1,0 +1,155 @@
+{
+  "SignIn": {
+    "Title": "家长培训模拟器",
+    "Passcode": {
+      "Prompt": "password"
+    },
+    "Enter": "登录"
+  },
+  "Reset": {
+    "Title": "Initialize contents",
+    "Confirm": "Are you sure you want to reset all contents and go back to the beginning? This action cannot be undone."
+  },
+  "SignOut": {
+    "Title": "Sign Out",
+    "Confirm": "Are you sure you want to sign out? Your progress will be saved."
+  },
+  "Profile": {
+    "Title": "Enter User Information",
+    "Name": {
+      "Prompt": "Please let the AI know the name or nickname you would like to be referred to as.",
+      "Placeholder": "Name or Nickname"
+    }
+  },
+  "Header": {
+    "UsernamePlaceholder": "User"
+  },
+  "Agendas": {
+    "Title": "我的训练模块",
+    "New": "探索新模块",
+    "ThemeCount_zero": "No themes",
+    "ThemeCount_one": "1 theme",
+    "ThemeCount_other": "{{count}} themes"
+  },
+  "Narrative": {
+    "Title": "记录您的育儿困境",
+    "Prompt": "每个家长都会面临挑战。请随意写下您想到的任何育儿困难或孩子的行为问题。之后，AI教练将模拟这个场景，并引导您进行家长管理训练（PMT）角色扮演，以练习您的技能。",
+    "Placeholder": "在这里写下您的育儿挑战。",
+    "Complete": "开始探索家长训练场景",
+    "Back": "返回上一页",
+    "WarnEmpty": "Please provide your parenting challenge before starting."
+  },
+  "Exploration": {
+    "ShowMoreThemes": "Explore Other Themes",
+    "ShowMoreThemesInitial": "Explore Related Themes"
+  },
+  "Theme": {
+    "Title": "Explore New Themes",
+    "CustomTitle": "🤔 Is there no topic that interests you?",
+    "MoreThemes": "See More Themes",
+    "AltExpressions": "See Other Expressions",
+    "Add": "Add",
+    "AddMyself": "Add Myself",
+    "Generating": "Generating themes to explore",
+    "NoTheme": "No themes added yet.",
+    "PinTitle": "Pinned Themes",
+    "Tooltip": {
+      "NewThread": "Click to open a new thread with this theme.",
+      "PinTheme": "Pin the theme to revisit it later.",
+      "UnpinTheme": "Remove this theme from the pinned list.",
+      "ThemeVariation": "Get variations for this theme."
+    },
+    "UndoDelete": "Undo Theme Deletion",
+    "Questions": {
+      "Title": "Questions to Think About",
+      "Generating": "Generating questions...",
+      "Answer": "Write Response",
+      "NewQuestion": "Get New Question Suggestions",
+      "More": "Get More Question Suggestions",
+      "RequestHelp": "See New Tips",
+      "AnswerPlaceholder": "Write down freely",
+      "NoQuestionPlaceholder": "Choose one of the questions from the list below to think about.",
+      "JotDown": "Write Response"
+    },
+    "Keywords": {
+      "More": "See More Keywords",
+      "Generating": "Generating keywords",
+      "HelperKeywords": "Keywords to Guide Your Expression",
+      "Tooltip": {
+        "Description": "Press this when it's hard to think. It will show you words that help draw out expressions or thoughts from your mind."
+      }
+    },
+    "Comments": {
+      "Tooltip": {
+        "Title": "AI comment",
+        "Description": "Refer to this when you're unsure how to continue writing. It can help guide your thoughts."
+      }
+    },
+    "Tour": {
+      "Intro": {
+        "Title": "Explore the Topics Window",
+        "Description": "Welcome to the {{title}} window!{{newline}}Press the {{next}} button to proceed with the guide."
+      },
+      "Themes": {
+        "Title": "AI Generated Themes",
+        "Description": "Explore themes generated from your stories."
+      },
+      "Variants": {
+        "Description": "Explore various expressions on similar topics."
+      },
+      "OneTheme": {
+        "Description": "Pressing on a theme will generate a detailed discussion on it."
+      },
+      "MoreThemes": {
+        "Title": "More Themes",
+        "Description": "Want to see more themes? AI can generate more, though there are limits."
+      },
+      "PinThemes": {
+        "Title": "Pinning Themes",
+        "Description": "Want to save a theme to explore later? {{newline}} Press {{bookmark}} icon to store it in the pinned theme list."
+      },
+      "PinnedThemes": {
+        "Title": "Pinned Themes",
+        "Description": "The pinned {{bookmark}} themes are listed here and you can explore them anytime later."
+      },
+      "CreateTheme": {
+        "Title": "Create Your Own Theme",
+        "Description": "If you want to add a theme of your own, go ahead and write it!"
+      },
+      "Next": "Next",
+      "Previous": "Previous",
+      "Complete": "Complete"
+    }
+  },
+  "Summary": {
+    "Button": "View AI Summary",
+    "ButtonHint": "You can check the AI summary distilled from the current exploration.",
+    "Title": "AI Summary",
+    "Open": "View AI Summary",
+    "Generating": "Generating summary",
+    "More": "View New Summary",
+    "Complete": "End session",
+    "CompleteConfirm": "End the exploration session?",
+    "CompleteMessage": "The session has ended. Thank you :).",
+    "BackToExplore": "Go back to the Exploration Page",
+    "Aggregate": "'s Exploration History",
+    "FinalReflection": "Through this exploration, what have you learned or newly realized about yourself and your situation? Feel free to write down whatever comes to mind.",
+    "NoSummaries": "No AI summaries yet."
+  },
+  "Labels": {
+    "Apply": "Apply",
+    "Submit": "Submit",
+    "WrapUp": "Wrap Up Exploration",
+    "Press": "Press to Confirm",
+    "Finish": "Finish",
+    "ShowHelp": "Show Help"
+  },
+  "Outline": {
+    "Title": "Outline"
+  },
+  "Auth": {},
+  "Info": {
+    "NewTheme": "You can browse themes related to your personal challenge.",
+    "Outline": "Lists up the expanded themes in order."
+  }
+}

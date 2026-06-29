@@ -18,6 +18,7 @@ const ExplorerPage = lazy(() => import('../features/agenda/pages/ExplorePage'))
 const SummaryPage = lazy(()=>import('../features/agenda/pages/SummaryPage'))
 
 const InitialNarrativePage = lazy(()=>import('../features/user/pages/InitialNarrativePage'))
+const Module1IntroPage = lazy(()=>import('../features/user/pages/Module1IntroPage'))
 const LoginPage = lazy(()=>import('../features/auth/pages/LoginPage'))
 const ProfilePage = lazy(()=>import('../features/user/pages/ProfilePage'))
 
@@ -87,6 +88,7 @@ export const MainRouter = () => {
                 <Route element={<SignedInScreenFrame withHeader={true} />}>
                   <Route index element={<AgendaListPage />} />
                   <Route path="new" element={<InitialNarrativePage />} />
+                  <Route path="module1" element={<Module1IntroPage />} />
                 </Route>
                 <Route path=":agendaId">
                   <Route element={<SignedInScreenFrame withHeader={false} />}>

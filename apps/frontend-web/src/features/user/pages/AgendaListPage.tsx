@@ -42,7 +42,7 @@ const AgendaView = (props: {agendaId: string}) => {
 
 export const AgendaListPage  = () => {
 
-    const [t] = useTranslation()
+    const { t, i18n } = useTranslation()
 
     const navigate = useNavigate()
 
@@ -61,9 +61,30 @@ export const AgendaListPage  = () => {
     if (userName == null || userName.length == 0) {
         return <Navigate to="/app/profile" />;
       } else return <div className="h-full overflow-y-auto"><div className="container px-4">
-        <h1>{t("Agendas.Title")}</h1>
+        
+        {/* Modules Section */}
+        <h1 className="mt-6 mb-4 text-xl font-bold">{i18n.language === 'en' ? 'Training Modules' : '训练模块'}</h1>
         <div className="grid grid-cols-1 gap-4 mb-8">
-            <Button type="primary" size="large" onClick={onNewAgendaClick}>
+            <div 
+              className="card-button-wrapper bg-blue-50 border-blue-200 hover:bg-blue-100 transition cursor-pointer p-4 rounded-lg border"
+              onClick={() => navigate("module1")}
+            >
+              <div className="flex justify-between items-baseline">
+                  <div className="select-none font-semibold text-blue-700 text-lg">
+                    {i18n.language === 'en' ? 'Module 1: My Emotional Radar' : '模块 1：我的情感雷达'}
+                  </div>
+              </div>
+              <div className="select-none mt-2 text-sm text-blue-600">
+                {i18n.language === 'en' 
+                  ? 'Practice observing your first emotional reaction when your child throws a tantrum.' 
+                  : '练习在孩子发脾气时，觉察并记录您的第一情绪反应。'}
+              </div>
+            </div>
+        </div>
+
+        <h1 className="mt-8 mb-4 text-xl font-bold">{t("Agendas.Title")}</h1>
+        <div className="grid grid-cols-1 gap-4 mb-8">
+            <Button type="primary" size="large" onClick={onNewAgendaClick} style={{ display: 'none' }}>
                 <div className="select-none">{t("Agendas.New")}</div>
             </Button>
             {

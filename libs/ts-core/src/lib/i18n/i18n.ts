@@ -2,8 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import translationEN from './en/translation.json';
 import translationKR from './kr/translation.json';
-
-console.log(translationEN)
+import translationZH from './zh/translation.json';
 
 const resources = {
   en: {
@@ -12,6 +11,9 @@ const resources = {
   kr: {
     translation: translationKR,
   },
+  zh: {
+    translation: translationZH,
+  }
 };
 
 i18n
@@ -20,7 +22,7 @@ i18n
   .use(initReactI18next)
   .init({
     lng: 'en',
-    supportedLngs: ['en', 'kr'],
+    supportedLngs: ['en', 'kr', 'zh'],
     fallbackLng: 'en',
     debug: true,
     interpolation: {
@@ -30,9 +32,6 @@ i18n
     react: {
       useSuspense: true
     }
-    // backend: {
-    //   loadPath: '/locales/{{lng}}/{{ns}}.json',
-    // },
   });
 
 export default i18n;

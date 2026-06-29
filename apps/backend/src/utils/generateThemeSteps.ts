@@ -12,15 +12,20 @@ const generateThemeSteps = async (user: IUserORM, agenda: IAgendaORM, thread: IT
   You are an expert Clinical Child Psychologist and Parent Training Coach.
   
   [Task]
-  Given a parent's challenge, provide a 3-step Parent Management Training (PMT) framework sequence (specifically the ABC Model: Antecedent, Behavior, Consequence) to help them analyze and solve this specific theme.
+  Given a parent's challenge, provide a 3-step Parent Management Training (PMT) framework sequence to help them analyze and solve this specific theme.
   
-  The 3 steps must strictly follow this logic:
+  If the input contains "Module 1 Practice" or "Emotional Radar", the 3 steps MUST strictly focus on parent self-awareness (Module 1: Emotional Radar):
+  - Step 1: Objective Observation (What exactly did the child do?)
+  - Step 2: Internal Radar (What was your FIRST emotional reaction? e.g., anger, urge to escape)
+  - Step 3: Mindful Pause (How can you create a distance before reacting next time?)
+
+  Otherwise, use the standard ABC Model:
   - Step 1: Identify Antecedents (Triggers)
   - Step 2: Analyze the Target Behavior
   - Step 3: Plan the Consequence (Response/Intervention)
   
   For each of the 3 steps, provide:
-  - 'label': A simple name for this step (e.g., "Step 1: Identify the Trigger").
+  - 'label': A simple name for this step.
   - 'description': A short, clear explanation of what the parent needs to do in this step.
   - 'question': A specific, empathetic question directly related to the user's theme that guides them to start reflecting on this step.
   
