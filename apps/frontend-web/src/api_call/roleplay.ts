@@ -4,12 +4,13 @@ import { IRoleplaySessionPopulated } from '@core';
 export const startRoleplaySession = async (
   token: string,
   agendaId: string,
-  tid: string
+  tid: string,
+  language: string = 'en'
 ): Promise<IRoleplaySessionPopulated | null> => {
   try {
     const response = await Http.axios.post(
       `/agendas/${agendaId}/themes/${tid}/roleplay/start`,
-      {},
+      { language },
       { headers: Http.makeSignedInHeader(token) }
     );
     return response.data;
@@ -23,17 +24,51 @@ export const sendRoleplayMessage = async (
   token: string,
   agendaId: string,
   tid: string,
-  content: string
+  content: string,
+  language: string = 'en'
 ): Promise<IRoleplaySessionPopulated | null> => {
   try {
     const response = await Http.axios.post(
       `/agendas/${agendaId}/themes/${tid}/roleplay/message`,
-      { content },
+      { content, language },
       { headers: Http.makeSignedInHeader(token) }
     );
     return response.data;
   } catch (err) {
     console.error('Error sending roleplay message:', err);
+    return null;
+  }
+};
+
+export interface IStepScore {
+  stepName: string;
+  score: number;
+  feedback: string;
+}
+
+export interface IRoleplayEvaluation {
+  score: number;
+  stepScores: IStepScore[];
+  strengths: string[];
+  improvements: string[];
+  coachMessage: string;
+}
+
+export const evaluateRoleplaySession = async (
+  token: string,
+  agendaId: string,
+  tid: string,
+  language: string = 'en'
+): Promise<IRoleplayEvaluation | null> => {
+  try {
+    const response = await Http.axios.post(
+      `/agendas/${agendaId}/themes/${tid}/roleplay/evaluate`,
+      { language },
+      { headers: Http.makeSignedInHeader(token) }
+    );
+    return response.data;
+  } catch (err) {
+    console.error('Error evaluating roleplay:', err);
     return null;
   }
 };

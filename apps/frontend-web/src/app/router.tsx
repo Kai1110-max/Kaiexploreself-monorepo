@@ -16,6 +16,7 @@ const AgendaRoute = lazy(() => import('../features/agenda/components/AgendaRoute
 
 const ExplorerPage = lazy(() => import('../features/agenda/pages/ExplorePage'))
 const SummaryPage = lazy(()=>import('../features/agenda/pages/SummaryPage'))
+const Module1RoleplayPage = lazy(() => import('../features/agenda/pages/Module1RoleplayPage'))
 
 const InitialNarrativePage = lazy(()=>import('../features/user/pages/InitialNarrativePage'))
 const Module1IntroPage = lazy(()=>import('../features/user/pages/Module1IntroPage'))
@@ -97,6 +98,9 @@ export const MainRouter = () => {
                     </Route>
                     <Route element={<AgendaRoute />}>
                       <Route path="summary" element={<SummaryPage />} />
+                    </Route>
+                    <Route element={<AgendaRoute />}>
+                      <Route path="roleplay" element={<Module1RoleplayPage />} />
                     </Route>
                   </Route>
                 </Route>
