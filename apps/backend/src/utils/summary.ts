@@ -54,9 +54,14 @@ export async function generateTitleFromNarrative(user: IUserORM, narrative: stri
   const structuredLlm = chatModel.withStructuredOutput(summarySchema)
   const chain = finalPromptTemplate.pipe(structuredLlm)
   
-  const result = await chain.invoke({story: narrative, user_name: user_name})
-
-  return result.title
+  try {
+    const result = await chain.invoke({ story: narrative, user_name: user_name })
+    return result.title
+  } catch (error) {
+    const trimmed = (narrative || '').replace(/\s+/g, ' ').trim()
+    const base = trimmed.length ? trimmed.slice(0, 48) : (isKorean ? '새 세션' : 'New Session')
+    return trimmed.length > 48 ? `${base}...` : base
+  }
 }
 
 export async function summarizeThread(tid: string, option='default') {
