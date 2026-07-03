@@ -5,6 +5,44 @@ import { IRoleplaySessionORM, IAgendaORM } from "../config/schema";
 import { RoleplayAgentType } from "@core";
 import { summarizeProfilicInfo } from './summary';
 
+function fallbackChildResponse(newParentMessage: string, language: string) {
+  const msg = (newParentMessage || '').toLowerCase();
+  const isCoachTalkZh = /我(很|特别|有点|真的)?(生气|烦|焦虑|着急|崩溃|想哭|想打|想吼|受不了)/.test(newParentMessage || '');
+  const isCoachTalkEn = /\b(i\s*(am|'m)\s*(angry|upset|anxious|frustrated)|i\s*want\s*to\s*(yell|hit)|i\s*feel)\b/.test(msg);
+
+  if (language === 'zh') {
+    if (isCoachTalkZh) return "*在地上大哭*";
+    return "不要！我穿不上！鞋子坏了！呜呜！";
+  }
+
+  if (isCoachTalkEn) return "*crying loudly on the floor*";
+  return "No! I can't do it! The shoe is stupid! Waaah!";
+}
+
+function fallbackModeratorResponse(newParentMessage: string, childResponse: string, language: string) {
+  const msg = (newParentMessage || '').toLowerCase();
+  const isSelfReflectionZh = /我(很|特别|有点|真的)?(生气|烦|焦虑|着急|崩溃|想哭|想打|想吼|受不了)/.test(newParentMessage || '');
+  const isSelfReflectionEn = /\b(i\s*(am|'m)\s*(angry|upset|anxious|frustrated)|i\s*want\s*to\s*(yell|hit)|i\s*feel)\b/.test(msg);
+
+  if (language === 'zh') {
+    if (isSelfReflectionZh) {
+      return "你能觉察到自己此刻的情绪非常重要，这种着急/生气在赶时间时很常见。先深呼吸一下，接下来请试着对童童说一句接纳感受的话，例如：“你是不是很挫败？”";
+    }
+    return "你可以先用一句话接纳童童的情绪（例如：“你很挫败对吗？”），再给出界限（例如：“可以生气，但不能扔鞋。”），最后给一个小选择来帮他开始行动。";
+  }
+
+  if (isSelfReflectionEn) {
+    return "Noticing your own emotion is a strong first step—feeling rushed/angry is common. Take one breath, then try one validating line to Tongtong like: “You’re really frustrated right now.”";
+  }
+  return "Try a simple sequence: validate first (“You’re frustrated”), then set a limit (“You can be upset, but you can’t throw shoes”), then offer one small choice to help him re-engage.";
+}
+
+function fallbackHint(language: string) {
+  return language === 'zh'
+    ? "提示：先写下“我当时的第一情绪反应是什么”，再写“我对孩子说了哪一句接纳情绪的话”，最后写“我设定了什么界限/给了什么选择”。"
+    : "Hint: write (1) your first emotional reaction, (2) the exact validation line you used, and (3) the limit/choice you offered.";
+}
+
 export async function generateChildResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newParentMessage: string, language: string = 'en'): Promise<string> {
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
   
@@ -40,11 +78,14 @@ Rules:
   ]);
   const chain = prompt.pipe(chatModel);
 
-  const response = await chain.invoke({
-    newParentMessage
-  });
-
-  return response.content.toString();
+  try {
+    const response = await chain.invoke({
+      newParentMessage
+    });
+    return response.content.toString();
+  } catch (error) {
+    return fallbackChildResponse(newParentMessage, language);
+  }
 }
 
 export async function generateRoleplayHint(agenda: IAgendaORM, session: IRoleplaySessionORM, stepLabel: string, stepDescription: string, currentText: string): Promise<string> {
@@ -70,9 +111,13 @@ Do NOT write the documentation for them. Just prompt them.`;
     ["user", "Give me a hint."]
   ]);
   const chain = prompt.pipe(chatModel);
-  const response = await chain.invoke({});
-
-  return response.content.toString();
+  try {
+    const response = await chain.invoke({});
+    return response.content.toString();
+  } catch (error) {
+    const inferredLang = /[\u4e00-\u9fff]/.test(`${stepLabel}${stepDescription}${currentText}`) ? 'zh' : 'en';
+    return fallbackHint(inferredLang);
+  }
 }
 
 export async function generateModeratorResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newParentMessage: string, childResponse: string, language: string = 'en'): Promise<string> {
@@ -101,12 +146,15 @@ Rules:
   ]);
   const chain = prompt.pipe(chatModel);
 
-  const response = await chain.invoke({
-    newParentMessage,
-    childResponse
-  });
-
-  return response.content.toString();
+  try {
+    const response = await chain.invoke({
+      newParentMessage,
+      childResponse
+    });
+    return response.content.toString();
+  } catch (error) {
+    return fallbackModeratorResponse(newParentMessage, childResponse, language);
+  }
 }
 
 export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IRoleplaySessionORM, language: string = 'en') {
