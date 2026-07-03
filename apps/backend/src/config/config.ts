@@ -1,13 +1,13 @@
 import { ChatZhipuAI } from '@langchain/community/chat_models/zhipuai';
 
 const chatModel = new ChatZhipuAI({
+  zhipuAIApiKey: process.env.ZHIPUAI_API_KEY || "5a8ce15272e841d6a36a5e5b5c8b5083.RmQYB1waqZDKNEtM",
   model: "glm-4-flash",
-  zhipuAIApiKey: "d9e8316dfa9d82136e0d3c01f6004b31.S35Yk60bKz3fA24z",
 });
 
 const llmModel = new ChatZhipuAI({
+  zhipuAIApiKey: process.env.ZHIPUAI_API_KEY || "5a8ce15272e841d6a36a5e5b5c8b5083.RmQYB1waqZDKNEtM",
   model: "glm-4-flash",
-  zhipuAIApiKey: "d9e8316dfa9d82136e0d3c01f6004b31.S35Yk60bKz3fA24z",
 });
 
 // const uid = '668bcb49eea1742b895f0fe8'
