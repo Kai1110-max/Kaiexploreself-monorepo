@@ -89,7 +89,7 @@ export const Module1IntroPage = () => {
 
   const startModule = useCallback(async () => {
     setLoading(true);
-    const moduleNarrative = "Module 1 Practice: The parent is practicing 'Emotional Radar' (觉察情绪). The child is throwing a severe tantrum. The parent needs to observe their own first emotional reaction (e.g., wanting to escape, getting angry, or wanting to comfort) before acting.";
+    const moduleNarrative = "Module 1 Practice: 6-year-old Lele wakes up crying and refuses to go to school because a classmate told others not to play with him. The parent needs to practice Emotion Coaching skills.";
     const newAgendaId = await dispatch(createAgenda(moduleNarrative));
     if (newAgendaId != null) {
       navigate(`/app/agendas/${newAgendaId}/roleplay`, { replace: true });

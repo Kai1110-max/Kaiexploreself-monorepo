@@ -115,6 +115,7 @@ export const RoleplayMessageSchema = new Schema({
 
 export const RoleplaySessionSchema = new Schema({
   tid: {type: Schema.Types.ObjectId, ref: 'ThreadItem', required: true},
+  practiceMode: {type: Number, default: 3}, // 1: User=Child/AI=Novice, 2: User=Child/AI=Expert, 3: User=Parent/AI=Child
   childProfile: {type: String, required: true, default: "A child experiencing emotional distress."},
   status: {type: String, enum: ['active', 'completed'], default: 'active'},
   messages: {type: [Schema.Types.ObjectId], ref: 'RoleplayMessage', default: []},

@@ -12,8 +12,9 @@ function fallbackHint(language: string) {
     : "Hint: write (1) your first emotional reaction, (2) the exact validation line you used, and (3) the limit/choice you offered.";
 }
 
-export async function generateChildResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newParentMessage: string, language: string = 'en'): Promise<string> {
+export async function generatePartnerResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<string> {
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
+  const practiceMode = session.practiceMode || 3;
   
   let transcript = "";
   session.messages.forEach((m: any) => {
@@ -23,10 +24,39 @@ export async function generateChildResponse(agenda: IAgendaORM, session: IRolepl
   });
 
   const languageInstruction = language === 'zh' 
-    ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words, including stage directions like *crying* (use *大哭* instead)."
+    ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const systemPrompt = `You are an AI acting as a specific child in a parent training simulation.
+  let systemPrompt = "";
+
+  if (practiceMode === 1) {
+    systemPrompt = `You are an AI acting as a NOVICE PARENT in a roleplay simulation. 
+The user is playing the role of 6-year-old Lele who doesn't want to go to school and is angry.
+Your goal is to act like a typical novice parent who dismisses emotions, rushes the child, or yells. 
+Do NOT use good emotion coaching skills. Invalidate the child's feelings, offer bribes, or use threats.
+
+Here is the conversation history so far:
+${transcript}
+
+Rules:
+1. Act entirely in character as the novice parent.
+2. Keep your responses short (1-2 sentences).
+3. You ${languageInstruction}`;
+  } else if (practiceMode === 2) {
+    systemPrompt = `You are an AI acting as an EXPERT PARENT in a roleplay simulation. 
+The user is playing the role of 6-year-old Lele who doesn't want to go to school and is angry.
+Your goal is to demonstrate PERFECT Emotion Coaching skills (Notice, Connect, Empathize, Label, Set Limits). 
+Respond to the child's (user's) anger with extreme patience, empathy, and validation.
+
+Here is the conversation history so far:
+${transcript}
+
+Rules:
+1. Act entirely in character as the expert parent.
+2. Keep your responses concise but highly empathetic.
+3. You ${languageInstruction}`;
+  } else {
+    systemPrompt = `You are an AI acting as a specific child in a parent training simulation.
 Your goal is to simulate realistic challenging behavior based on your profile, to help the parent practice their parenting skills.
 The child's profile is: ${session.childProfile}
 
@@ -34,33 +64,28 @@ Here is the conversation history so far:
 ${transcript}
 
 Rules:
-1. Act entirely in character as the specific child described in the profile (e.g., 4-year-old Tongtong). Do not break character.
-2. Be difficult, resistant, and deeply absorbed in your specific frustration (e.g., the shoes), especially if the parent uses poor communication (like yelling or rushing you).
-3. If the parent uses good Emotion Coaching skills (e.g., noticing your frustration, validating your sadness/anger without judgment), you can slightly de-escalate, but maintain the realism of a toddler's emotional state.
-4. Keep your responses short, age-appropriate, and focused on your immediate problem.
+1. Act entirely in character as the specific child described in the profile (e.g., 6-year-old Lele). Do not break character.
+2. Be difficult, resistant, and deeply absorbed in your specific frustration, especially if the parent uses poor communication.
+3. If the parent uses good Emotion Coaching skills, you can slightly de-escalate, but maintain the realism of a child's emotional state.
+4. Keep your responses short, age-appropriate.
 5. You ${languageInstruction}
-6. VERY IMPORTANT: If the parent's message is clearly addressed to the "Coach" (e.g., they are describing their own feelings, like "I feel angry" or "I want to hit him"), DO NOT respond directly to that. In that case, just output an ambient action like ${language === 'zh' ? '"*在地上大哭*"' : '"*crying loudly on the floor*"'} or ${language === 'zh' ? '"*把鞋子踢飞*"' : '"*kicking the shoes away*"'} using the target language. Only interact when the parent speaks to YOU (the child).`;
+6. VERY IMPORTANT: If the parent's message is clearly addressed to the "Coach" (e.g., "I feel angry"), DO NOT respond directly to that. In that case, just output an ambient action like ${language === 'zh' ? '"*在地上大哭*"' : '"*crying loudly*"'} using the target language.`;
+  }
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "{newParentMessage}"]
+    ["user", "{newUserMessage}"]
   ]);
   const chain = prompt.pipe(chatModel);
 
   try {
     const response = await chain.invoke({
-      newParentMessage
+      newUserMessage
     });
     return response.content.toString();
   } catch (error) {
-    console.error("Error generating child response:", error);
-    // If LLM fails, return a graceful fallback so the demo doesn't break
-    const isCoachTalkEn = /\b(i\s*(am|'m)\s*(angry|upset|anxious|frustrated)|i\s*want\s*to\s*(yell|hit)|i\s*feel)\b/.test((newParentMessage || '').toLowerCase());
-    if (language === 'zh') {
-      return "*在地上大哭* (Fallback)";
-    }
-    if (isCoachTalkEn) return "*crying loudly on the floor* (Fallback)";
-    return "No! I can't do it! The shoe is stupid! Waaah! (Fallback)";
+    console.error("Error generating partner response:", error);
+    throw error;
   }
 }
 
@@ -96,45 +121,68 @@ Do NOT write the documentation for them. Just prompt them.`;
   }
 }
 
-export async function generateModeratorResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newParentMessage: string, childResponse: string, language: string = 'en'): Promise<string> {
+export async function generateModeratorResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, partnerResponse: string, language: string = 'en'): Promise<string> {
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
+  const practiceMode = session.practiceMode || 3;
 
   const languageInstruction = language === 'zh' 
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const systemPrompt = `You are an objective AI Moderator and Parent Coach observing a roleplay between a Parent and a Simulated Child.
-The parent's initial problem is: ${init_info}
+  let systemPrompt = "";
 
-Your goal is to guide the parent through the "Emotional Radar" exercise.
-Analyze the parent's latest message ("{newParentMessage}") and the child's reaction ("{childResponse}").
+  if (practiceMode === 1) {
+    systemPrompt = `You are an objective AI Moderator and Coach observing a roleplay between a Simulated Novice Parent and a User acting as a Child.
+Your goal is to guide the user to experience what it feels like to be a child whose emotions are invalidated.
+Analyze the user's message ("{newUserMessage}") and the AI parent's reaction ("{partnerResponse}").
 
 Rules:
-1. PHASE 1 (Self-Reflection): If the parent is answering your initial question about their OWN emotions (e.g., "I feel angry", "I want to yell"), VALIDATE their feelings first. Acknowledge that it's normal to feel that way. THEN, instruct them to turn their attention to the child and try to use Emotion Coaching (e.g., "It's completely normal to feel a fire in your heart when you are rushing. Now that you've noticed it, take a breath. What will you say to Tongtong right now?").
-2. PHASE 2 (Coaching): If the parent is talking to the child, point out if they used a good skill (e.g., emotion validation) or a poor one (e.g., escalation, invalidation). Suggest what they should try next.
+1. Point out how the AI Parent's response is likely making the child (the user) feel worse.
+2. Encourage the user to act out their frustration naturally. 
 3. Be concise (2-3 sentences max).
-4. Address the parent directly (e.g., "Notice how your question escalated the situation.").
+4. Give general advice, NOT specific copy-pasted responses.
 5. You ${languageInstruction}`;
+  } else if (practiceMode === 2) {
+    systemPrompt = `You are an objective AI Moderator and Coach observing a roleplay between a Simulated Expert Parent and a User acting as a Child.
+Your goal is to help the user notice the good Emotion Coaching skills the AI Parent is using.
+Analyze the user's message ("{newUserMessage}") and the AI parent's reaction ("{partnerResponse}").
+
+Rules:
+1. Point out the specific Emotion Coaching skill (e.g., validating, labeling) the AI Parent just used.
+2. Ask the user how it feels to be on the receiving end of that good parenting.
+3. Be concise (2-3 sentences max).
+4. Give general advice, NOT specific copy-pasted responses.
+5. You ${languageInstruction}`;
+  } else {
+    systemPrompt = `You are an objective AI Moderator and Parent Coach observing a roleplay between a Parent (the user) and a Simulated Child.
+The parent's initial problem is: ${init_info}
+
+Your goal is to guide the parent through the "Emotion Coaching" exercise.
+Analyze the parent's latest message ("{newUserMessage}") and the child's reaction ("{partnerResponse}").
+
+Rules:
+1. Provide GENERAL advice on what they should try to do next (e.g., "Think about how to validate the child's emotion before solving the problem"), but NEVER provide exact scripts or tailored sentences to copy-paste. We want them to think and learn, not cheat.
+2. Point out if they used a good skill (e.g., emotion validation) or a poor one (e.g., escalation, invalidation).
+3. Be concise (2-3 sentences max).
+4. Address the parent directly.
+5. You ${languageInstruction}`;
+  }
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "Parent said: {newParentMessage}\nChild reacted: {childResponse}"]
+    ["user", "User said: {newUserMessage}\nPartner reacted: {partnerResponse}"]
   ]);
   const chain = prompt.pipe(chatModel);
 
   try {
     const response = await chain.invoke({
-      newParentMessage,
-      childResponse
+      newUserMessage,
+      partnerResponse
     });
     return response.content.toString();
   } catch (error) {
     console.error("Error generating moderator response:", error);
-    // If LLM fails, return a graceful fallback so the demo doesn't break
-    if (language === 'zh') {
-      return "你能觉察到自己的情绪非常好。现在深呼吸，试着用刚刚学过的方法，接纳童童的情绪并设定界限吧。(Fallback)";
-    }
-    return "Noticing your own emotion is a great first step. Take a breath, and now try validating Tongtong's emotion while setting a limit. (Fallback)";
+    throw error;
   }
 }
 

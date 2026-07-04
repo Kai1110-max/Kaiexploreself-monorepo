@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
 
-export const RoleplayChat = ({ tid }: { tid: string }) => {
+export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceMode?: number }) => {
   const { i18n } = useTranslation();
   const token = useSelector(state => state.auth.token);
   const agendaId = useSelector(state => state.agenda.agendaId);
@@ -25,14 +25,25 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
     const initSession = async () => {
       if (token && agendaId && tid) {
         setLoading(true);
-        // Note: You can pass i18n.language here if the API is updated to support it
-        const res = await startRoleplaySession(token, agendaId, tid, i18n.language);
-        setSession(res);
+        try {
+          const response = await fetch(`/api/v1/agendas/${agendaId}/themes/${tid}/roleplay/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ language: i18n.language, practiceMode })
+          });
+          const res = await response.json();
+          setSession(res);
+        } catch (e) {
+          console.error(e);
+        }
         setLoading(false);
       }
     };
     initSession();
-  }, [token, agendaId, tid, i18n.language]);
+  }, [token, agendaId, tid, i18n.language, practiceMode]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,20 +56,34 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
     setMessage('');
     setSending(true);
 
+    const userRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Child : RoleplayAgentType.Parent;
+
     // Optimistically add user message
     if (session) {
       setSession({
         ...session,
         messages: [
           ...session.messages,
-          { _id: 'temp', sender: RoleplayAgentType.Parent, content: userMsg, timestamp: new Date() }
+          { _id: 'temp', sender: userRole, content: userMsg, timestamp: new Date() }
         ]
       });
     }
 
-    const updatedSession = await sendRoleplayMessage(token, agendaId, tid, userMsg, i18n.language);
-    if (updatedSession) {
-      setSession(updatedSession);
+    try {
+      const response = await fetch(`/api/v1/agendas/${agendaId}/themes/${tid}/roleplay/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: userMsg, language: i18n.language, practiceMode })
+      });
+      const updatedSession = await response.json();
+      if (updatedSession && !updatedSession.error) {
+        setSession(updatedSession);
+      }
+    } catch (e) {
+      console.error(e);
     }
     setSending(false);
   };
@@ -70,10 +95,22 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
   const handleEvaluate = async () => {
     if (!token || !agendaId || !tid) return;
     setEvaluating(true);
-    const result = await evaluateRoleplaySession(token, agendaId, tid, i18n.language);
-    if (result) {
-      setEvaluation(result);
-      setIsModalVisible(true);
+    try {
+      const response = await fetch(`/api/v1/agendas/${agendaId}/themes/${tid}/roleplay/evaluate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ language: i18n.language, practiceMode })
+      });
+      const result = await response.json();
+      if (result && !result.error) {
+        setEvaluation(result);
+        setIsModalVisible(true);
+      }
+    } catch (e) {
+      console.error(e);
     }
     setEvaluating(false);
   };
@@ -94,13 +131,13 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
 
       <div className="chat-container h-96 overflow-y-auto p-4 bg-white border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4">
         {session?.messages?.map((msg, idx) => {
-          const isParent = msg.sender === RoleplayAgentType.Parent;
+          const isUser = (practiceMode === 1 || practiceMode === 2) ? msg.sender === RoleplayAgentType.Child : msg.sender === RoleplayAgentType.Parent;
           const isModerator = msg.sender === RoleplayAgentType.Moderator;
-          const isChild = msg.sender === RoleplayAgentType.Child;
+          const isPartner = !isUser && !isModerator;
 
           return (
-            <div key={msg._id || idx} className={`flex w-full ${isParent ? 'justify-end' : 'justify-start'}`}>
-              {!isParent && (
+            <div key={msg._id || idx} className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'}`}>
+              {!isUser && (
                 <Avatar 
                   icon={isModerator ? <SafetyCertificateOutlined /> : <RobotOutlined />} 
                   className={`mr-2 ${isModerator ? 'bg-amber-500' : 'bg-rose-500'}`} 
@@ -108,21 +145,23 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
               )}
               
               <div className={`max-w-[75%] p-3 rounded-xl ${
-                isParent ? 'bg-blue-500 text-white rounded-tr-none' : 
+                isUser ? 'bg-blue-500 text-white rounded-tr-none' : 
                 isModerator ? 'bg-amber-50 border border-amber-200 text-amber-900 rounded-tl-none shadow-sm' : 
                 'bg-rose-50 border border-rose-200 text-rose-900 rounded-tl-none font-medium shadow-sm'
               }`}>
                 <div className="text-xs opacity-70 mb-1 font-semibold uppercase tracking-wider">
-                  {isParent 
+                  {isUser 
                     ? (i18n.language === 'en' ? 'You' : '您') 
                     : isModerator 
                       ? (i18n.language === 'en' ? 'Coach (Moderator)' : '教练（引导者）') 
-                      : (i18n.language === 'en' ? 'Simulated Child' : '模拟孩子')}
+                      : (practiceMode === 1 || practiceMode === 2) 
+                        ? (i18n.language === 'en' ? 'Simulated Parent' : '模拟家长')
+                        : (i18n.language === 'en' ? 'Simulated Child' : '模拟孩子')}
                 </div>
                 <div>{msg.content}</div>
               </div>
 
-              {isParent && <Avatar icon={<UserOutlined />} className="ml-2 bg-blue-600" />}
+              {isUser && <Avatar icon={<UserOutlined />} className="ml-2 bg-blue-600" />}
             </div>
           );
         })}
@@ -161,7 +200,7 @@ export const RoleplayChat = ({ tid }: { tid: string }) => {
         >
           {i18n.language === 'en' ? 'Send' : '发送'}
         </Button>
-        {session && session.messages.length > 2 && (
+        {session && session.messages.length > 2 && practiceMode === 3 && (
           <Button 
             type="default" 
             onClick={handleEvaluate} 

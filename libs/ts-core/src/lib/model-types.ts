@@ -102,6 +102,7 @@ export interface IRoleplayMessageObj extends IRoleplayMessageBase {
 
 export interface IRoleplaySessionBase {
   tid: string; // Thread ID
+  practiceMode?: number;
   childProfile: string; // e.g. "7 year old, prone to tantrums"
   status: 'active' | 'completed';
   createdAt: Date;
