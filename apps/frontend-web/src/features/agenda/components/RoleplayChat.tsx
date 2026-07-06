@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
 
-export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceMode?: number }) => {
+export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { tid: string, practiceMode?: number, onPracticeComplete?: () => void }) => {
   const { i18n } = useTranslation();
   const token = useSelector(state => state.auth.token);
   const agendaId = useSelector(state => state.agenda.agendaId);
@@ -59,12 +59,13 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
     const userRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Child : RoleplayAgentType.Parent;
 
     // Optimistically add user message
+    const tempId = `temp-${Date.now()}`;
     if (session) {
       setSession({
         ...session,
         messages: [
           ...session.messages,
-          { _id: 'temp', sender: userRole, content: userMsg, timestamp: new Date() }
+          { _id: tempId, sender: userRole, content: userMsg, timestamp: new Date() }
         ]
       });
     }
@@ -115,18 +116,31 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
     setEvaluating(false);
   };
 
+  const renderScenarioDescription = () => {
+    if (practiceMode === 1) {
+      return i18n.language === 'en'
+        ? "In this practice, YOU are playing the role of 6-year-old Lele. You are angry because a classmate told others not to play with you, and you refuse to go to school. The AI will act as a 'Novice Parent' who uses poor communication skills (e.g., yelling, bribing, dismissing your feelings). Your goal is to react naturally as a child whose emotions are being ignored—feel free to get angrier or throw a tantrum!"
+        : "在这个练习中，您将扮演6岁的乐乐。您因为同学不跟您玩而非常生气，哭闹着不想去上学。AI将扮演一个“新手家长”，他会使用错误的沟通方式（比如吼叫、说教、否定您的情绪）。您的目标是像一个情绪被忽视的孩子那样做出真实的反应——请尽情展现您的愤怒和抗拒！";
+    } else if (practiceMode === 2) {
+      return i18n.language === 'en'
+        ? "In this practice, YOU are still playing the role of 6-year-old Lele. You are angry and refuse to go to school. This time, the AI will act as an 'Expert Parent' who uses perfect Emotion Coaching skills. Your goal is to experience what it feels like to be truly heard and validated. React naturally to the AI parent's guidance, and allow yourself to slowly calm down as they empathize with you."
+        : "在这个练习中，您依然扮演6岁的乐乐，生气且不想去上学。但这一次，AI将扮演一位“专家家长”，他会完美地运用情绪辅导技巧来引导您。您的目标是体验“被真正倾听和接纳”是什么感觉。请根据AI家长的回应做出真实的反应，感受自己的情绪是如何慢慢平复的。";
+    } else {
+      return i18n.language === 'en'
+        ? "In this final practice, YOU are the Parent. The AI is playing the role of 6-year-old Lele who refuses to go to school. Your goal is to practice the '5-Step Emotion Coaching Method' (Notice, Connect, Empathize, Label, Set Limits). The AI Coach will observe your responses and provide guidance. If you do well, Lele will calm down!"
+        : "在最终的练习中，您将回归“家长”的角色。AI将扮演那个哭闹着不想去上学的乐乐。您的目标是亲自实践刚才学到的“情绪辅导五步法”（觉察、链接、共情、表达、界限）。AI教练会在一旁观察并给予提示。如果您做得好，乐乐的情绪就会逐渐平复！";
+    }
+  };
+
   return (
     <Card title={i18n.language === 'en' ? "Dual-Agent Roleplay Simulator" : "双智能体角色扮演模拟器"} className="shadow-md rounded-xl overflow-hidden border-indigo-200">
-      <div className="bg-slate-50 p-3 rounded-lg mb-4 text-sm text-slate-600 border border-slate-200">
-        <strong>{i18n.language === 'en' ? "Scenario:" : "场景设定："}</strong> {
-          (!session?.childProfile || session.childProfile === "A child experiencing emotional distress.")
-            ? (i18n.language === 'en' ? "A child experiencing emotional distress." : "一个正在经历情绪困扰的孩子。")
-            : session.childProfile
-        }
-        <br/>
-        {i18n.language === 'en' 
-          ? "Practice your Parent Management Training (PMT) skills here. The Simulated Child will react realistically, and the AI Coach will provide guidance." 
-          : "在此练习您的家长管理训练（PMT）技能。模拟孩子会做出真实的反应，AI教练会为您提供指导。"}
+      <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-700 border border-slate-200 shadow-inner">
+        <div className="font-bold text-indigo-700 mb-2 text-base">
+          {i18n.language === 'en' ? "Your Mission in this Practice:" : "您在此练习中的任务："}
+        </div>
+        <div className="leading-relaxed">
+          {renderScenarioDescription()}
+        </div>
       </div>
 
       <div className="chat-container h-96 overflow-y-auto p-4 bg-white border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4">
@@ -180,7 +194,11 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
         <Input.TextArea 
           value={message}
           onChange={e => setMessage(e.target.value)}
-          placeholder={i18n.language === 'en' ? "Type your response to the child here..." : "在此输入您对孩子的回应..."}
+          placeholder={
+            practiceMode === 1 || practiceMode === 2 
+              ? (i18n.language === 'en' ? "Type your response as the angry child (Lele)..." : "作为生气的乐乐，在此输入您的回应...")
+              : (i18n.language === 'en' ? "Type your response to the child here..." : "作为家长，在此输入您对孩子的回应...")
+          }
           autoSize={{ minRows: 2, maxRows: 4 }}
           onPressEnter={(e) => {
             if (!e.shiftKey) {
@@ -200,7 +218,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
         >
           {i18n.language === 'en' ? 'Send' : '发送'}
         </Button>
-        {session && session.messages.length > 2 && practiceMode === 3 && (
+        {session && session.messages.length > 2 && (
           <Button 
             type="default" 
             onClick={handleEvaluate} 
@@ -218,8 +236,26 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
         onOk={() => setIsModalVisible(false)}
         onCancel={() => setIsModalVisible(false)}
         footer={[
-          <Button key="ok" type="primary" onClick={() => setIsModalVisible(false)} className="bg-indigo-600">
-            {i18n.language === 'en' ? "Got it" : "好的，知道了"}
+          (!evaluation?.passed) && (
+            <Button key="retry" onClick={() => setIsModalVisible(false)}>
+              {i18n.language === 'en' ? "Try Again" : "再试一次"}
+            </Button>
+          ),
+          <Button 
+            key="ok" 
+            type="primary" 
+            onClick={() => {
+              setIsModalVisible(false);
+              if (evaluation?.passed && onPracticeComplete) {
+                onPracticeComplete();
+              }
+            }} 
+            className="bg-indigo-600"
+          >
+            {evaluation?.passed 
+              ? (i18n.language === 'en' ? "Proceed to Next Step" : "继续下一步")
+              : (i18n.language === 'en' ? "Got it" : "好的，知道了")
+            }
           </Button>
         ]}
         width={600}
@@ -227,9 +263,12 @@ export const RoleplayChat = ({ tid, practiceMode = 3 }: { tid: string, practiceM
         {evaluation && (
           <div className="flex flex-col gap-6 py-4">
             <div className="text-center">
-              <Progress type="dashboard" percent={evaluation.score} strokeColor={evaluation.score >= 80 ? '#52c41a' : '#faad14'} />
+              <Progress type="dashboard" percent={evaluation.score} strokeColor={evaluation.passed ? '#52c41a' : '#ff4d4f'} />
               <Typography.Title level={4} className="mt-4">
-                {i18n.language === 'en' ? "Overall Score" : "综合得分"}
+                {evaluation.passed 
+                  ? (i18n.language === 'en' ? "Practice Passed! 🎉" : "练习通过！🎉")
+                  : (i18n.language === 'en' ? "Practice Failed 😢" : "练习未通过 😢")
+                }
               </Typography.Title>
             </div>
 

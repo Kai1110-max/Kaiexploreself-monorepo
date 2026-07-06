@@ -187,21 +187,44 @@ Rules:
 }
 
 export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IRoleplaySessionORM, language: string = 'en') {
-  const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
-
+  const practiceMode = session.practiceMode || 3;
   let transcript = "";
   session.messages.forEach((m: any) => {
-    if (m.sender === RoleplayAgentType.Child) transcript += `Child: ${m.content}\n`;
-    else if (m.sender === RoleplayAgentType.Parent) transcript += `Parent: ${m.content}\n`;
-    else if (m.sender === RoleplayAgentType.Moderator) transcript += `Coach: ${m.content}\n`;
+    const sender = m.sender === RoleplayAgentType.Child ? 'Child' : m.sender === RoleplayAgentType.Parent ? 'Parent' : 'Coach';
+    transcript += `${sender}: ${m.content}\n`;
   });
 
-  const languageInstruction = language === 'zh' 
+  const isZh = language === 'zh';
+  const languageInstruction = isZh 
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a parent's performance in a roleplay simulation.
-The parent's initial problem is: ${init_info}
+  let systemPrompt = "";
+
+  if (practiceMode === 1) {
+    systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a roleplay exercise.
+The user was acting as a 6-year-old child (Lele) whose emotions were being dismissed by an AI 'Novice Parent'.
+Your goal is to evaluate if the user successfully acted out the frustration and escalation of a child being ignored.
+
+Evaluate the transcript based on these criteria:
+1. Did the user express resistance or anger?
+2. Did the user's responses reflect feeling invalidated?
+3. Was the user immersed in the role?
+
+You ${languageInstruction}`;
+  } else if (practiceMode === 2) {
+    systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a roleplay exercise.
+The user was acting as a 6-year-old child (Lele) whose emotions were being validated by an AI 'Expert Parent'.
+Your goal is to evaluate if the user successfully experienced the de-escalation process of being heard.
+
+Evaluate the transcript based on these criteria:
+1. Did the user show a shift from anger to being calmer/cooperative?
+2. Did the user respond to the empathy?
+3. Was the user immersed in the role?
+
+You ${languageInstruction}`;
+  } else {
+    systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a parent's performance in a roleplay simulation.
 The goal of the exercise was to practice the "5-Step Emotion Coaching Method":
 Step 1: Notice the child's emotion (觉察情绪).
 Step 2: Recognize the emotion as an opportunity for connection (视为连接机会).
@@ -209,45 +232,40 @@ Step 3: Listen empathetically and validate the feelings (倾听并接纳).
 Step 4: Help the child verbally label their emotions (帮助标记情绪).
 Step 5: Set limits while exploring problem-solving strategies (设定界限/解决问题).
 
-Here is the complete transcript of the roleplay:
-${transcript}
-
 Task: Provide a structured evaluation of the parent's performance.
-1. 'score': The overall score (Sum of the 5 step scores, max 100).
-2. 'stepScores': Evaluate EACH of the 5 steps individually. For each step, provide a score from 0 to 20, and a brief 1-sentence feedback explaining why they received this score for this specific step.
-3. 'strengths': An array of 1-3 specific things they did well overall.
-4. 'improvements': An array of 1-3 specific things they could improve overall.
-5. 'coachMessage': A warm, encouraging concluding message summarizing their effort and providing a final piece of advice.
 
 You ${languageInstruction}`;
+  }
 
   const evaluationSchema = z.object({
-    score: z.number().describe("Overall score out of 100 (sum of step scores)"),
+    score: z.number().describe("Overall score out of 100"),
+    passed: z.boolean().describe("true if the user successfully completed the goal of the practice (score >= 60), false otherwise"),
     stepScores: z.array(z.object({
-      stepName: z.string().describe("Name of the step (e.g., 'Step 1: Notice the emotion')"),
-      score: z.number().describe("Score for this step (0-20)"),
-      feedback: z.string().describe("1 sentence explaining why this score was given for this step")
-    })).describe("Detailed scoring for each of the 5 Emotion Coaching steps"),
-    strengths: z.array(z.string()).describe("List of 1 to 3 strengths demonstrated by the parent"),
+      stepName: z.string().describe("Name of the evaluated aspect or step"),
+      score: z.number().describe("Score for this aspect (0-20)"),
+      feedback: z.string().describe("1 sentence explaining why this score was given")
+    })).describe("Detailed scoring for 5 aspects (each out of 20, totaling 100)"),
+    strengths: z.array(z.string()).describe("List of 1 to 3 strengths demonstrated by the user"),
     improvements: z.array(z.string()).describe("List of 1 to 3 areas for improvement"),
     coachMessage: z.string().describe("A warm, encouraging closing message from the coach")
   });
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "Evaluate the transcript."]
+    ["user", "Here is the transcript:\n{transcript}\n\nEvaluate the transcript."]
   ]);
 
   const structuredLlm = chatModel.withStructuredOutput(evaluationSchema);
   const chain = prompt.pipe(structuredLlm);
 
   try {
-    const result = await chain.invoke({});
+    const result = await chain.invoke({ transcript });
     return result;
   } catch (error) {
     console.error("Error generating roleplay evaluation:", error);
     return {
       score: 80,
+      passed: true,
       stepScores: [
         { stepName: "Step 1", score: 20, feedback: "Good" },
         { stepName: "Step 2", score: 20, feedback: "Good" },
@@ -255,9 +273,9 @@ You ${languageInstruction}`;
         { stepName: "Step 4", score: 10, feedback: "Okay" },
         { stepName: "Step 5", score: 10, feedback: "Okay" }
       ],
-      strengths: [language === 'zh' ? "努力参与了角色扮演" : "Participated in the roleplay actively"],
-      improvements: [language === 'zh' ? "可以尝试更多地倾听孩子的感受" : "Could try listening to the child's feelings more"],
-      coachMessage: language === 'zh' ? "感谢您的参与！情绪辅导是一个长期的过程，慢慢来，您会做得越来越好的。" : "Thank you for participating! Emotion coaching is a long-term process. Take your time, you will get better and better."
+      strengths: [isZh ? "努力参与了角色扮演" : "Participated in the roleplay actively"],
+      improvements: [isZh ? "可以尝试更多地倾听感受" : "Could try listening to the feelings more"],
+      coachMessage: isZh ? "感谢您的参与！情绪辅导是一个长期的过程，慢慢来，您会做得越来越好的。" : "Thank you for participating! Emotion coaching is a long-term process. Take your time, you will get better and better."
     };
   }
 }

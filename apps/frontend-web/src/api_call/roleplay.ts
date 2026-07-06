@@ -1,5 +1,6 @@
 import { Http } from '../net/http';
 import { IRoleplaySessionPopulated } from '@core';
+import { IRoleplayEvaluation } from '@core';
 
 export const startRoleplaySession = async (
   token: string,
@@ -40,19 +41,7 @@ export const sendRoleplayMessage = async (
   }
 };
 
-export interface IStepScore {
-  stepName: string;
-  score: number;
-  feedback: string;
-}
-
-export interface IRoleplayEvaluation {
-  score: number;
-  stepScores: IStepScore[];
-  strengths: string[];
-  improvements: string[];
-  coachMessage: string;
-}
+export type { IRoleplayEvaluation };
 
 export const evaluateRoleplaySession = async (
   token: string,

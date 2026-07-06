@@ -114,6 +114,15 @@ export interface IRoleplaySessionPopulated extends IRoleplaySessionBase {
   messages: Array<IRoleplayMessageObj>;
 }
 
+export interface IRoleplayEvaluation {
+  score: number;
+  passed?: boolean;
+  stepScores?: { stepName: string; score: number; feedback: string }[];
+  strengths: string[];
+  improvements: string[];
+  coachMessage: string;
+}
+
 export enum SessionStatus{
   Exploring = "Exploring", 
   Reviewing = "Reviewing",

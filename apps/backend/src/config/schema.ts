@@ -108,7 +108,7 @@ export const ThreadItemSchema = new Schema({
 ThreadItemSchema.set('timestamps', true)
 
 export const RoleplayMessageSchema = new Schema({
-  sender: {type: String, enum: Object.values(RoleplayAgentType), required: true},
+  sender: {type: String, enum: ['parent', 'child', 'moderator'], required: true},
   content: {type: String, required: true},
   timestamp: {type: Date, default: Date.now}
 });
