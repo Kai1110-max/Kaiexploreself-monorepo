@@ -6,12 +6,13 @@ export const startRoleplaySession = async (
   token: string,
   agendaId: string,
   tid: string,
-  language: string = 'en'
+  language: string = 'en',
+  practiceMode: number = 3
 ): Promise<IRoleplaySessionPopulated | null> => {
   try {
     const response = await Http.axios.post(
       `/agendas/${agendaId}/themes/${tid}/roleplay/start`,
-      { language },
+      { language, practiceMode },
       { headers: Http.makeSignedInHeader(token) }
     );
     return response.data;
@@ -26,12 +27,13 @@ export const sendRoleplayMessage = async (
   agendaId: string,
   tid: string,
   content: string,
-  language: string = 'en'
+  language: string = 'en',
+  practiceMode: number = 3
 ): Promise<IRoleplaySessionPopulated | null> => {
   try {
     const response = await Http.axios.post(
       `/agendas/${agendaId}/themes/${tid}/roleplay/message`,
-      { content, language },
+      { content, language, practiceMode },
       { headers: Http.makeSignedInHeader(token) }
     );
     return response.data;
@@ -47,12 +49,13 @@ export const evaluateRoleplaySession = async (
   token: string,
   agendaId: string,
   tid: string,
-  language: string = 'en'
+  language: string = 'en',
+  practiceMode: number = 3
 ): Promise<IRoleplayEvaluation | null> => {
   try {
     const response = await Http.axios.post(
       `/agendas/${agendaId}/themes/${tid}/roleplay/evaluate`,
-      { language },
+      { language, practiceMode },
       { headers: Http.makeSignedInHeader(token) }
     );
     return response.data;

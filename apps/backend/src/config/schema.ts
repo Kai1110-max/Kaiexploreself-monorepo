@@ -108,9 +108,11 @@ export const ThreadItemSchema = new Schema({
 ThreadItemSchema.set('timestamps', true)
 
 export const RoleplayMessageSchema = new Schema({
-  sender: {type: String, enum: ['parent', 'child', 'moderator'], required: true},
-  content: {type: String, required: true},
-  timestamp: {type: Date, default: Date.now}
+  sender: { type: String, enum: Object.values(RoleplayAgentType), required: true },
+  content: { type: String, required: true },
+  action: { type: String },
+  emotion: { type: String, enum: ['angry', 'sad', 'resistant', 'calm', 'neutral'] },
+  timestamp: { type: Date, default: Date.now }
 });
 
 export const RoleplaySessionSchema = new Schema({
@@ -119,6 +121,7 @@ export const RoleplaySessionSchema = new Schema({
   childProfile: {type: String, required: true, default: "A child experiencing emotional distress."},
   status: {type: String, enum: ['active', 'completed'], default: 'active'},
   messages: {type: [Schema.Types.ObjectId], ref: 'RoleplayMessage', default: []},
+  cachedEvaluation: { type: Schema.Types.Mixed }, // Allow storing the JSON evaluation
   createdAt: {type: Date, default: Date.now},
   updatedAt: {type: Date}
 });

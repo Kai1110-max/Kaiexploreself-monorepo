@@ -93,6 +93,8 @@ export enum RoleplayAgentType {
 export interface IRoleplayMessageBase {
   sender: RoleplayAgentType;
   content: string;
+  action?: string;
+  emotion?: 'angry' | 'sad' | 'resistant' | 'calm' | 'neutral';
   timestamp: Date;
 }
 
@@ -105,6 +107,7 @@ export interface IRoleplaySessionBase {
   practiceMode?: number;
   childProfile: string; // e.g. "7 year old, prone to tantrums"
   status: 'active' | 'completed';
+  cachedEvaluation?: IRoleplayEvaluation; // Add this to store the evaluation
   createdAt: Date;
   updatedAt: Date;
 }

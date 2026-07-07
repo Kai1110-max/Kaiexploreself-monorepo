@@ -2,7 +2,7 @@ import express from 'express';
 import { RoleplaySession, RoleplayMessage, ThreadItem } from '../../../config/schema';
 import type { RequestWithTheme } from '../../middlewares';
 import { RoleplayAgentType } from '@core';
-import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation } from '../../../utils/generateRoleplayResponse';
+import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation, generateCoachDirectResponse } from '../../../utils/generateRoleplayResponse';
 
 const router = express.Router({ mergeParams: true });
 
@@ -95,27 +95,48 @@ router.post('/message', async (req: RequestWithTheme, res) => {
     });
     await userMsg.save();
     session.messages.push(userMsg._id);
+    
+    // Any new message resets the session status to active, invalidating the cached evaluation
+    session.status = 'active';
     await session.save();
 
-    // 2. Generate AI Response
-    const aiResponseStr = await generatePartnerResponse(req.agenda, session, content, language);
-    const aiMsg = new RoleplayMessage({
-      sender: aiRole,
-      content: aiResponseStr
-    });
-    await aiMsg.save();
-    session.messages.push(aiMsg._id);
+    const isToCoach = content.toLowerCase().includes('@coach') || content.includes('@教练');
 
-    // 3. Generate Moderator Feedback
-    const modResponseStr = await generateModeratorResponse(req.agenda, session, content, aiResponseStr, language);
-    const modMsg = new RoleplayMessage({
-      sender: RoleplayAgentType.Moderator,
-      content: modResponseStr
-    });
-    await modMsg.save();
-    session.messages.push(modMsg._id);
+    if (isToCoach) {
+      // Direct question to the coach
+      const modResponseStr = await generateCoachDirectResponse(req.agenda, session, content, language);
+      const modMsg = new RoleplayMessage({
+        sender: RoleplayAgentType.Moderator,
+        content: modResponseStr
+      });
+      await modMsg.save();
+      session.messages.push(modMsg._id);
+      await session.save();
+    } else {
+      // 2. Generate AI Response (Structured JSON now!)
+      const aiResponse = await generatePartnerResponse(req.agenda, session, content, language);
+      const aiMsg = new RoleplayMessage({
+        sender: aiRole,
+        content: aiResponse.dialogue || "...", // Fallback if dialogue is empty but action exists
+        action: aiResponse.action,
+        emotion: aiResponse.emotion
+      });
+      await aiMsg.save();
+      session.messages.push(aiMsg._id);
 
-    await session.save();
+      // 3. Generate Moderator Feedback
+      // Note: Moderator needs to know the dialogue and action. 
+      const partnerFullResponse = `${aiResponse.dialogue} ${aiResponse.action ? `[Action: ${aiResponse.action}]` : ''}`;
+      const modResponseStr = await generateModeratorResponse(req.agenda, session, content, partnerFullResponse, language);
+      const modMsg = new RoleplayMessage({
+        sender: RoleplayAgentType.Moderator,
+        content: modResponseStr
+      });
+      await modMsg.save();
+      session.messages.push(modMsg._id);
+
+      await session.save();
+    }
 
     const updatedSession = await RoleplaySession.findById(session._id).populate('messages');
     return res.json(updatedSession);
@@ -146,7 +167,7 @@ router.post('/hint', async (req: RequestWithTheme, res) => {
   }
 });
 
-// Evaluate the roleplay session
+    // Evaluate the roleplay session
 router.post('/evaluate', async (req: RequestWithTheme, res) => {
   const { language, practiceMode = 3 } = req.body;
 
@@ -161,11 +182,38 @@ router.post('/evaluate', async (req: RequestWithTheme, res) => {
       return res.status(404).json({ error: "Session not found." });
     }
 
+    // Check if we already have a cached evaluation AND no new messages have been added
+    // To check if new messages were added, we can store the length of messages at the time of evaluation.
+    // For a robust check, let's look at the cachedEvaluation.
+    // If it exists, and the user hasn't sent new messages since it was created, return the cache.
+    // We can verify this by checking if the session status is 'completed'. 
+    // BUT we need it to update if the user sent more messages.
+    // In our /message route, we set status to 'active' whenever a new message is sent!
+    if (session.status === 'completed' && session.cachedEvaluation) {
+       return res.json(session.cachedEvaluation);
+    }
+
     // Call the LLM to generate the structured evaluation
     const evaluation = await generateRoleplayEvaluation(req.agenda, session, language);
     
-    // Optionally update the session status to completed
+    // Calculate accurate score based on steps (MUST BE EXACT MATH)
+    let totalScore = 0;
+    if (evaluation.stepScores && Array.isArray(evaluation.stepScores)) {
+      evaluation.stepScores.forEach((step: any) => {
+        // Enforce 5-point increments (0, 5, 10, 15, 20)
+        step.score = Math.round(step.score / 5) * 5;
+        if (step.score > 20) step.score = 20;
+        if (step.score < 0) step.score = 0;
+        
+        totalScore += step.score;
+      });
+      evaluation.score = totalScore;
+      evaluation.passed = totalScore >= 60;
+    }
+
+    // Update the session status to completed and cache the result
     session.status = 'completed';
+    session.cachedEvaluation = evaluation as any;
     await session.save();
 
     return res.json(evaluation);
