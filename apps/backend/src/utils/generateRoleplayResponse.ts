@@ -433,7 +433,16 @@ ${formatInstruction}`;
       throw new Error("No JSON object found in response");
     }
     
-    const result = JSON.parse(jsonMatch[0]);
+    let result;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.log("Evaluation parse failed, attempting to clean JSON string:", parseError);
+      // Remove invisible control characters (like unescaped newlines) that break JSON.parse
+      const cleanedJson = jsonMatch[0].replace(/[\u0000-\u001F]+/g, "");
+      result = JSON.parse(cleanedJson);
+    }
+    
     return result;
   } catch (error) {
     console.error("Error generating roleplay evaluation:", error);
