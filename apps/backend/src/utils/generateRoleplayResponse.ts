@@ -295,7 +295,7 @@ export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IR
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the user said in the transcript as evidence (e.g., 'Because you said \"...\", it shows...'). If the user didn't say anything relevant, state what was missing. DO NOT invent quotes.";
+  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the USER said in the transcript as evidence (e.g., 'Because the user said \"...\", it shows...'). DO NOT quote what the AI/Partner said. If the user didn't say anything relevant, state what was missing. DO NOT invent quotes.";
 
   const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT:
 {{
