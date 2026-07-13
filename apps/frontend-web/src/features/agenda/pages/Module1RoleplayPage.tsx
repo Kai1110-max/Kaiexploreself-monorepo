@@ -78,7 +78,114 @@ export const Module1RoleplayPage = () => {
           {currentStage === 0 && (
             <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col">
               <Tabs defaultActiveKey="1" className="h-full flex flex-col [&_.ant-tabs-content]:h-full [&_.ant-tabs-tabpane]:h-full">
-                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="1" className="flex flex-col">
+                <Tabs.TabPane tab={i18n.language === 'en' ? 'Learning Materials' : '学习资料'} key="1">
+                  <Carousel arrows dotPosition="bottom" className="h-full bg-slate-50 rounded-lg pb-10">
+                    {/* Slide 1: Theory */}
+                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
+                      <Title level={3} className="text-indigo-600">
+                        {i18n.language === 'en' ? 'The Theory: Emotion Coaching' : '理论基础：情绪辅导'}
+                      </Title>
+                      <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
+                        {i18n.language === 'en' ? (
+                          <div className="space-y-4">
+                            <p><strong>Emotion Coaching</strong>, developed by Dr. John Gottman, is a parenting technique that helps children understand and regulate their emotions. The 5 key steps are:</p>
+                            <ol className="list-decimal pl-6 space-y-2">
+                              <li><strong>Notice the emotion:</strong> Be aware of the child's emotion, even at low intensity.</li>
+                              <li><strong>Recognize as opportunity:</strong> See the emotion as a chance for intimacy and teaching.</li>
+                              <li><strong>Listen and validate:</strong> Empathize and validate their feelings without judgment.</li>
+                              <li><strong>Help label emotions:</strong> Help the child find words to describe what they are feeling.</li>
+                              <li><strong>Set limits & strategies:</strong> Explore solutions while setting boundaries on inappropriate behavior.</li>
+                            </ol>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p>由约翰·戈特曼博士提出的<strong>“情绪辅导”</strong>是一种帮助孩子理解和调节情绪的教养方式。其核心五步法包括：</p>
+                            <ol className="list-decimal pl-6 space-y-2">
+                              <li><strong>觉察情绪：</strong> 在孩子情绪强度较低时就能敏锐察觉。</li>
+                              <li><strong>把握机会：</strong> 将情绪危机视为建立亲密关系和教导的良机。</li>
+                              <li><strong>倾听接纳：</strong> 积极倾听，不带评判地接纳孩子的感受。</li>
+                              <li><strong>标记情绪：</strong> 帮助孩子找到合适的词汇来描述他们的感受。</li>
+                              <li><strong>设定界限：</strong> 在规范不当行为的同时，共同探讨解决问题的策略。</li>
+                            </ol>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Slide 2: Examples */}
+                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
+                      <Title level={3} className="text-indigo-600">
+                        {i18n.language === 'en' ? 'Examples of Application' : '应用案例'}
+                      </Title>
+                      <div className="max-w-3xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
+                        {i18n.language === 'en' ? (
+                          <div className="space-y-6">
+                            <p className="italic text-slate-500 border-l-4 border-slate-300 pl-4">Scenario: Child refuses to go to school because no one plays with them.</p>
+                            <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                              <div className="font-bold text-red-700 mb-1">❌ Dismissing (Novice Parent)</div>
+                              <p>"Stop crying. It's not a big deal. You'll make friends eventually, but you must go to school now."</p>
+                              <p className="text-sm text-red-600 mt-2"><strong>Result:</strong> Child feels unheard and their emotional distress escalates.</p>
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                              <div className="font-bold text-green-700 mb-1">✅ Emotion Coaching (Expert Parent)</div>
+                              <p>"I can see you are feeling really sad and lonely. It hurts when you feel left out by your classmates. It is completely okay to feel that way. Let's think about what we can do, but we still need to get dressed for school."</p>
+                              <p className="text-sm text-green-600 mt-2"><strong>Result:</strong> Child feels understood, calms down, and is more willing to cooperate.</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-6">
+                            <p className="italic text-slate-500 border-l-4 border-slate-300 pl-4">场景：孩子因为没人一起玩而哭闹着拒绝上学。</p>
+                            <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                              <div className="font-bold text-red-700 mb-1">❌ 否定情绪（新手家长）</div>
+                              <p>“别哭了，这有什么大不了的。你总会交到朋友的，现在赶紧去上学！”</p>
+                              <p className="text-sm text-red-600 mt-2"><strong>结果：</strong> 孩子觉得不被理解，挫败感加重，情绪进一步升级。</p>
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                              <div className="font-bold text-green-700 mb-1">✅ 情绪辅导（专家家长）</div>
+                              <p>“我看到你现在觉得很伤心、很孤独。被同学冷落确实让人难受，你有这种感觉是很正常的。我们一起来想办法，但现在还是得穿好衣服去学校。”</p>
+                              <p className="text-sm text-green-600 mt-2"><strong>结果：</strong> 孩子感到被接纳，情绪逐渐平复，更愿意配合家长的引导。</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Slide 3: How to Use */}
+                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
+                      <Title level={3} className="text-indigo-600">
+                        {i18n.language === 'en' ? 'How to Use This Module' : '如何使用本模块'}
+                      </Title>
+                      <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
+                        {i18n.language === 'en' ? (
+                          <div className="space-y-4">
+                            <p>This module uses Dual-Agent AI to simulate real-world interactions:</p>
+                            <ul className="list-disc pl-6 space-y-2">
+                              <li><strong>Practice 1 (Novice):</strong> You play the child. Experience the frustration of being misunderstood by an AI parent.</li>
+                              <li><strong>Practice 2 (Expert):</strong> You play the child. Experience the calming effect of proper Emotion Coaching from the AI.</li>
+                              <li><strong>Practice 3 (Real Practice):</strong> You play the parent. Apply the 5 steps to soothe the AI child.</li>
+                              <li><strong>Evaluation:</strong> You must complete at least 3 turns to be evaluated. Scores are strictly based on your usage of the 5 steps.</li>
+                            </ul>
+                            <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200 text-amber-800">
+                              💡 <strong>Need Help?</strong> Type <code>@coach</code> in the chat anytime to ask for real-time advice from the AI Coach!
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <p>本模块使用双智能体 AI 模拟真实的互动场景：</p>
+                            <ul className="list-disc pl-6 space-y-2">
+                              <li><strong>练习 1（新手）：</strong> 您扮演孩子，体验被 AI 家长忽视情绪的挫败感。</li>
+                              <li><strong>练习 2（专家）：</strong> 您扮演孩子，体验 AI 家长标准情绪辅导带来的平复感。</li>
+                              <li><strong>练习 3（实战）：</strong> 您扮演家长，亲自尝试运用五步法安抚 AI 扮演的暴躁孩子。</li>
+                              <li><strong>系统评分：</strong> 必须对话至少 3 轮才能获取反馈，系统将根据您对五步法的应用进行严格打分。</li>
+                            </ul>
+                            <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200 text-amber-800">
+                              💡 <strong>寻求帮助：</strong> 遇到困难时，随时在对话框输入 <code>@coach</code> 或 <code>@教练</code> 提问，AI 教练会为您提供实时指导！
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Carousel>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2" className="flex flex-col">
                   <div className="flex-1 flex flex-col justify-center items-center">
                     <Title level={2} className="!mb-6 text-indigo-700">
                       {i18n.language === 'en' ? 'Watch: Lele Going to School' : '观看场景：乐乐上学'}
@@ -104,73 +211,6 @@ export const Module1RoleplayPage = () => {
                       </Button>
                     </div>
                   </div>
-                </Tabs.TabPane>
-                <Tabs.TabPane tab={i18n.language === 'en' ? 'Learning Materials' : '学习资料'} key="2">
-                  <Carousel arrows dotPosition="bottom" className="h-full bg-slate-50 rounded-lg pb-10">
-                    {/* Slide 1: Theory */}
-                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
-                      <Title level={3} className="text-indigo-600">
-                        {i18n.language === 'en' ? 'The Theory: Emotion Coaching' : '理论基础：情绪辅导'}
-                      </Title>
-                      <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
-                        {i18n.language === 'en' ? (
-                          <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>Emotion Coaching</strong> is about helping children understand and manage their feelings.</li>
-                            <li>It involves 5 steps: Notice, Connect, Empathize, Label, and Set Limits.</li>
-                            <li>Instead of dismissing negative emotions, we use them as opportunities for connection and teaching.</li>
-                          </ul>
-                        ) : (
-                          <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>情绪辅导</strong> 旨在帮助孩子理解和管理他们的情绪。</li>
-                            <li>它包含 5 个步骤：觉察、链接、共情、表达（标记情绪）和设定界限。</li>
-                            <li>与其否定负面情绪，不如将它们视为建立连接和进行教育的机会。</li>
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                    {/* Slide 2: Examples */}
-                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
-                      <Title level={3} className="text-indigo-600">
-                        {i18n.language === 'en' ? 'Examples of Application' : '应用案例'}
-                      </Title>
-                      <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
-                        {i18n.language === 'en' ? (
-                          <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>Invalidating (Novice):</strong> "Stop crying, it's not a big deal. You have to go to school."</li>
-                            <li><strong>Validating (Expert):</strong> "I see you're really upset. It's hard when friends don't want to play. Let's talk about it, but we still need to get ready for school."</li>
-                          </ul>
-                        ) : (
-                          <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>否定情绪（新手）：</strong> “别哭了，这有什么大不了的。你必须去上学。”</li>
-                            <li><strong>接纳情绪（专家）：</strong> “我看到你现在很难过。朋友不跟你玩确实让人伤心。我们可以聊聊这个，但我们还是得准备去上学。”</li>
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                    {/* Slide 3: How to Use */}
-                    <div className="p-8 h-full flex flex-col justify-center items-center text-center">
-                      <Title level={3} className="text-indigo-600">
-                        {i18n.language === 'en' ? 'How to Use This Module' : '如何使用本模块'}
-                      </Title>
-                      <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
-                        {i18n.language === 'en' ? (
-                          <ol className="list-decimal pl-6 space-y-2">
-                            <li><strong>Watch the video</strong> to understand the context.</li>
-                            <li><strong>Practice 1 & 2:</strong> Play the role of the child to experience different parenting styles.</li>
-                            <li><strong>Practice 3:</strong> Play the parent and apply the 5-step method.</li>
-                            <li>Type <code>@coach</code> anytime to ask for help from the AI Coach.</li>
-                          </ol>
-                        ) : (
-                          <ol className="list-decimal pl-6 space-y-2">
-                            <li><strong>观看视频</strong> 了解背景情况。</li>
-                            <li><strong>练习 1 和 2：</strong> 扮演孩子，体验不同家长风格带来的感受。</li>
-                            <li><strong>练习 3：</strong> 扮演家长，亲自应用五步法。</li>
-                            <li>随时输入 <code>@coach</code> 或 <code>@教练</code> 向 AI 教练寻求帮助。</li>
-                          </ol>
-                        )}
-                      </div>
-                    </div>
-                  </Carousel>
                 </Tabs.TabPane>
               </Tabs>
             </div>
