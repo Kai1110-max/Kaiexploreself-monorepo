@@ -320,17 +320,19 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
   let nextQuestion = "";
   let isConclusion = false;
 
+  const isZh = language === 'zh';
+
   if (practiceMode === 1) {
-    if (userMessageCount === 1) nextQuestion = "家长具体的哪句话或哪个行为，让你产生了这种情绪？";
-    else if (userMessageCount === 2) nextQuestion = "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？";
-    else if (userMessageCount === 3) nextQuestion = "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？";
-    else if (userMessageCount === 4) nextQuestion = "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？";
+    if (userMessageCount === 1) nextQuestion = isZh ? "家长具体的哪句话或哪个行为，让你产生了这种情绪？" : "What specific words or actions from the parent made you feel this way?";
+    else if (userMessageCount === 2) nextQuestion = isZh ? "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？" : "In that difficult moment, what did you most want the parent to say or do?";
+    else if (userMessageCount === 3) nextQuestion = isZh ? "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？" : "If the parent frequently responds this way, what long-term impact might it have on the child's personality?";
+    else if (userMessageCount === 4) nextQuestion = isZh ? "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？" : "Stepping out of the child's role, as a parent, why do you think the mother in the video was so impatient?";
     else isConclusion = true;
   } else {
-    if (userMessageCount === 1) nextQuestion = "对方具体的哪句话或哪个行为，让你感觉到被理解了？";
-    else if (userMessageCount === 2) nextQuestion = "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？";
-    else if (userMessageCount === 3) nextQuestion = "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？";
-    else if (userMessageCount === 4) nextQuestion = "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？";
+    if (userMessageCount === 1) nextQuestion = isZh ? "对方具体的哪句话或哪个行为，让你感觉到被理解了？" : "What specific words or actions from the parent made you feel understood?";
+    else if (userMessageCount === 2) nextQuestion = isZh ? "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？" : "After your emotions were validated, how did your initial feelings of resistance change?";
+    else if (userMessageCount === 3) nextQuestion = isZh ? "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？" : "Growing up in such an accepting environment long-term, how might the child handle setbacks in the future?";
+    else if (userMessageCount === 4) nextQuestion = isZh ? "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？" : "How does the approach in this video inspire you to handle your child's emotions in reality?";
     else isConclusion = true;
   }
 
@@ -345,7 +347,7 @@ YOUR TASK:
    - Explain WHY their feeling or thought makes sense based on the context of the video. 
    - Do NOT just say "I understand". Expand on their point for 2-3 sentences.
 2. ${isConclusion 
-      ? `After your feedback, conclude the session EXACTLY with this sentence: "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。"` 
+      ? `After your feedback, conclude the session EXACTLY with this sentence: "${isZh ? "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" : "Your reflection is very profound. All questions have been asked, and the reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase."}"` 
       : `After your detailed feedback, you MUST append the following question exactly to move the conversation forward. DO NOT add any other questions of your own.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
 
 CRITICAL RULES:
