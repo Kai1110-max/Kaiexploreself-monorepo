@@ -2,7 +2,7 @@ import express from 'express';
 import { RoleplaySession, RoleplayMessage, ThreadItem } from '../../../config/schema';
 import type { RequestWithTheme } from '../../middlewares';
 import { RoleplayAgentType } from '@core';
-import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation, generateCoachDirectResponse } from '../../../utils/generateRoleplayResponse';
+import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation, generateCoachDirectResponse, generateReflectionCoachResponse } from '../../../utils/generateRoleplayResponse';
 
 const router = express.Router({ mergeParams: true });
 
@@ -39,12 +39,12 @@ router.post('/start', async (req: RequestWithTheme, res) => {
     
     if (practiceMode === 1) {
       initialContent = isZh 
-        ? "【练习 1：家长作为孩子，AI作为新手家长】\n你是6岁的乐乐，你现在不想去上学，你很生气。AI将扮演一个缺乏经验的新手家长，请试着展现出孩子在面对不恰当安抚时，情绪是如何变得更糟的。"
-        : "[Practice 1: You as Child, AI as Novice Parent]\nYou are 6-year-old Lele. You don't want to go to school and you are angry. The AI will act as a novice parent. Try to act out how a child's emotion gets worse when facing inappropriate comforting.";
+        ? "刚刚你看完了乐乐上学的第一个视频。在这个视频中，家长的回应方式属于‘忽视型’或‘指责型’。请问看完这段视频，你有什么初步的感受？如果乐乐是你，你听到家长这些话会有什么感觉？"
+        : "You just watched the first video of Lele going to school. In this video, the parent's response is 'dismissive' or 'blaming'. How did you feel after watching this video? If you were Lele, how would you feel hearing these words from your parent?";
     } else if (practiceMode === 2) {
       initialContent = isZh 
-        ? "【练习 2：家长作为孩子，AI作为专家家长】\n你依然是6岁的乐乐。这次AI将扮演一个熟练掌握情绪辅导技巧的专家家长。请根据AI家长的引导，做出真实的反应（逐渐被安抚）。"
-        : "[Practice 2: You as Child, AI as Expert Parent]\nYou are still 6-year-old Lele. This time, the AI will act as an expert parent using Emotion Coaching skills. React naturally to the AI's guidance and let yourself be soothed.";
+        ? "刚刚你看完了乐乐上学的第二个视频。这一次，家长的回应方式是‘情绪辅导型’的。看完这段视频，你的感受和上一个视频有什么不同？如果你是乐乐，这次你会觉得被理解和尊重吗？"
+        : "You just watched the second video. This time, the parent used an 'emotion coaching' approach. How do your feelings differ from the first video? If you were Lele, would you feel understood and respected this time?";
     } else {
       initialContent = isZh 
         ? "【练习 3：家长作为家长，AI作为孩子】\n现在，你是家长，AI将扮演不想上学的乐乐。请运用我们学过的“情绪辅导五步法”来与乐乐沟通。\n\n请直接对乐乐说出你的第一句话："
@@ -84,9 +84,11 @@ router.post('/message', async (req: RequestWithTheme, res) => {
     }
 
     // Determine sender types based on practice mode
-    // Mode 1 & 2: User is Child, AI is Parent. Mode 3: User is Parent, AI is Child.
-    const userRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Child : RoleplayAgentType.Parent;
-    const aiRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Parent : RoleplayAgentType.Child;
+    // For all modes, the user is the Parent learning.
+    const userRole = RoleplayAgentType.Parent;
+    
+    // For mode 1 & 2, the AI is solely the Coach (Moderator). For mode 3, AI is the Child.
+    const aiRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Moderator : RoleplayAgentType.Child;
 
     // 1. Save User Message
     const userMsg = new RoleplayMessage({
@@ -102,9 +104,19 @@ router.post('/message', async (req: RequestWithTheme, res) => {
 
     const isToCoach = content.toLowerCase().includes('@coach') || content.includes('@教练');
 
-    if (isToCoach) {
+    if (isToCoach && practiceMode === 3) {
       // Direct question to the coach
       const modResponseStr = await generateCoachDirectResponse(req.agenda, session, content, language);
+      const modMsg = new RoleplayMessage({
+        sender: RoleplayAgentType.Moderator,
+        content: modResponseStr
+      });
+      await modMsg.save();
+      session.messages.push(modMsg._id);
+      await session.save();
+    } else if (practiceMode === 1 || practiceMode === 2) {
+      // 2. Generate Reflection Coach Response
+      const modResponseStr = await generateReflectionCoachResponse(req.agenda, session, content, language);
       const modMsg = new RoleplayMessage({
         sender: RoleplayAgentType.Moderator,
         content: modResponseStr
@@ -183,12 +195,6 @@ router.post('/evaluate', async (req: RequestWithTheme, res) => {
     }
 
     // Check if we already have a cached evaluation AND no new messages have been added
-    // To check if new messages were added, we can store the length of messages at the time of evaluation.
-    // For a robust check, let's look at the cachedEvaluation.
-    // If it exists, and the user hasn't sent new messages since it was created, return the cache.
-    // We can verify this by checking if the session status is 'completed'. 
-    // BUT we need it to update if the user sent more messages.
-    // In our /message route, we set status to 'active' whenever a new message is sent!
     if (session.status === 'completed' && session.cachedEvaluation) {
        return res.json(session.cachedEvaluation);
     }
@@ -208,7 +214,13 @@ router.post('/evaluate', async (req: RequestWithTheme, res) => {
         totalScore += step.score;
       });
       evaluation.score = totalScore;
-      evaluation.passed = totalScore >= 60;
+      
+      // For practiceMode 1 and 2, there is no pass/fail score requirement.
+      if (practiceMode === 1 || practiceMode === 2) {
+        evaluation.passed = true;
+      } else {
+        evaluation.passed = totalScore >= 60;
+      }
     }
 
     // Update the session status to completed and cache the result

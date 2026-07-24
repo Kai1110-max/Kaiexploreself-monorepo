@@ -54,6 +54,7 @@ router.post(
   '/new',
   signedInUserMiddleware,
   body('narrative').isString().notEmpty(),
+  body('title').optional().isString(),
   async (req: RequestWithUser, res) => {
     const uid = req.user._id;
 
@@ -62,10 +63,13 @@ router.post(
       // Create a new agenda item and return the object
       const initialNarrative: string = req.body.narrative;
 
-      const title: string = await generateTitleFromNarrative(
-        req.user,
-        initialNarrative
-      );
+      let title: string = req.body.title;
+      if (!title) {
+        title = await generateTitleFromNarrative(
+          req.user,
+          initialNarrative
+        );
+      }
 
       const newAgenda = await new AgendaItem({
         uid: uid,
@@ -124,6 +128,29 @@ router.post(
       });
     }
   );
+
+router.post(
+  '/:aid/title',
+  signedInUserMiddleware,
+  body('title').isString().notEmpty(),
+  async (req: RequestWithUser, res) => {
+    const title = req.body.title;
+    const updatedAgenda = await AgendaItem.findOneAndUpdate({
+        _id: req.params.aid,
+        uid: req.user._id
+    }, {
+        title
+    }, { new: true });
+
+    if (!updatedAgenda) {
+      return res.status(404).json({ error: "Agenda not found" });
+    }
+
+    res.json({
+      title: updatedAgenda.title
+    });
+  }
+);
 
 router.post(
   '/:aid/debriefing',

@@ -39,10 +39,10 @@ export const Module1RoleplayPage = () => {
   };
 
   const getPageTitle = () => {
-    if (currentStage === 0) return i18n.language === 'en' ? 'Module 1: Video Scenario' : '模块 1：场景引入';
-    if (currentStage === 1) return i18n.language === 'en' ? 'Practice 1: Novice Parent' : '练习 1：新手家长';
-    if (currentStage === 2) return i18n.language === 'en' ? 'Practice 2: Expert Parent' : '练习 2：专家家长';
-    if (currentStage === 3) return i18n.language === 'en' ? 'Practice 3: Your Turn' : '练习 3：实战演练';
+    if (currentStage === 0) return i18n.language === 'en' ? 'Phase 1: Basic Knowledge' : '第一阶段：基础知识建立';
+    if (currentStage === 1) return i18n.language === 'en' ? 'Phase 2: Reflection (Dismissive Parent)' : '第二阶段：反思（忽视型家长）';
+    if (currentStage === 2) return i18n.language === 'en' ? 'Phase 2: Reflection (Emotion Coaching)' : '第二阶段：反思（教练型家长）';
+    if (currentStage === 3) return i18n.language === 'en' ? 'Phase 3: Practice 3 (Your Turn)' : '第三阶段：角色扮演与实践';
     return i18n.language === 'en' ? 'Module 1: Completed' : '模块 1：已完成';
   };
 
@@ -156,58 +156,56 @@ export const Module1RoleplayPage = () => {
                       <div className="max-w-2xl text-left mt-4 text-lg text-slate-700 leading-relaxed">
                         {i18n.language === 'en' ? (
                           <div className="space-y-4">
-                            <p>This module uses Dual-Agent AI to simulate real-world interactions:</p>
+                            <p>This module is divided into 3 phases:</p>
                             <ul className="list-disc pl-6 space-y-2">
-                              <li><strong>Practice 1 (Novice):</strong> You play the child. Experience the frustration of being misunderstood by an AI parent.</li>
-                              <li><strong>Practice 2 (Expert):</strong> You play the child. Experience the calming effect of proper Emotion Coaching from the AI.</li>
-                              <li><strong>Practice 3 (Real Practice):</strong> You play the parent. Apply the 5 steps to soothe the AI child.</li>
-                              <li><strong>Evaluation:</strong> You must complete at least 3 turns to be evaluated. Scores are strictly based on your usage of the 5 steps.</li>
+                              <li><strong>Phase 1:</strong> Build basic knowledge.</li>
+                              <li><strong>Phase 2:</strong> Watch videos of different parenting styles and reflect with the AI Coach.</li>
+                              <li><strong>Phase 3:</strong> Roleplay Practice. You play the parent and apply the 5 steps to soothe the AI child.</li>
                             </ul>
                             <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200 text-amber-800">
-                              💡 <strong>Need Help?</strong> Type <code>@coach</code> in the chat anytime to ask for real-time advice from the AI Coach!
+                              💡 <strong>Ready?</strong> Click the button below to start Phase 2!
                             </div>
                           </div>
                         ) : (
                           <div className="space-y-4">
-                            <p>本模块使用双智能体 AI 模拟真实的互动场景：</p>
+                            <p>本模块分为三个阶段：</p>
                             <ul className="list-disc pl-6 space-y-2">
-                              <li><strong>练习 1（新手）：</strong> 您扮演孩子，体验被 AI 家长忽视情绪的挫败感。</li>
-                              <li><strong>练习 2（专家）：</strong> 您扮演孩子，体验 AI 家长标准情绪辅导带来的平复感。</li>
-                              <li><strong>练习 3（实战）：</strong> 您扮演家长，亲自尝试运用五步法安抚 AI 扮演的暴躁孩子。</li>
-                              <li><strong>系统评分：</strong> 必须对话至少 3 轮才能获取反馈，系统将根据您对五步法的应用进行严格打分。</li>
+                              <li><strong>第一阶段：</strong> 学习理论基础知识。</li>
+                              <li><strong>第二阶段：</strong> 观看不同家长风格的视频，并与 AI 教练进行感性反思。</li>
+                              <li><strong>第三阶段：</strong> 角色扮演实战。您扮演家长，亲自尝试运用五步法安抚 AI 扮演的暴躁孩子。</li>
                             </ul>
                             <div className="mt-4 p-4 bg-amber-50 rounded border border-amber-200 text-amber-800">
-                              💡 <strong>寻求帮助：</strong> 遇到困难时，随时在对话框输入 <code>@coach</code> 或 <code>@教练</code> 提问，AI 教练会为您提供实时指导！
+                              💡 <strong>准备好了吗？</strong> 点击下方按钮进入第二阶段的视频反思环节！
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
                   </Carousel>
+                  <div className="mt-6 flex justify-center pb-4">
+                    <Button type="primary" size="large" className="bg-indigo-600 px-12 h-14 text-xl rounded-xl shadow-md hover:bg-indigo-500" onClick={handleNextStage}>
+                      {i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思'}
+                    </Button>
+                  </div>
                 </Tabs.TabPane>
-                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2" className="flex flex-col">
-                  <div className="flex-1 flex flex-col justify-center items-center">
-                    <Title level={2} className="!mb-6 text-indigo-700">
-                      {i18n.language === 'en' ? 'Watch: Lele Going to School' : '观看场景：乐乐上学'}
+                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2">
+                  <div className="p-4 h-full flex flex-col items-center">
+                    <Title level={4} className="text-indigo-600 mb-6 text-center">
+                      {i18n.language === 'en' ? 'Background Scenario: Lele Refuses to Go to School' : '背景场景：乐乐拒绝上学'}
                     </Title>
-                    <div className="w-full max-w-3xl mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-lg">
-                      <video 
-                        src="/lele-scenario.mp4" 
-                        controls 
-                        className="w-full h-full object-contain"
-                        poster=""
-                      >
+                    <div className="w-full max-w-3xl aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
+                      <video src="/lele-scenario.mp4" controls className="w-full h-full object-contain">
                         {i18n.language === 'en' ? 'Your browser does not support the video tag.' : '您的浏览器不支持视频播放。'}
                       </video>
                     </div>
-                    <Paragraph className="text-slate-600 mt-8 text-xl max-w-2xl mx-auto leading-relaxed text-center">
+                    <Paragraph className="mt-8 text-slate-600 text-center max-w-2xl text-lg">
                       {i18n.language === 'en' 
-                        ? "6-year-old Lele wakes up crying and refuses to go to school because a classmate told others not to play with him. After watching the video, you will enter separate practices to respond to this situation."
-                        : "6岁的乐乐一早起来哭闹，因为同学不跟他玩，他拒绝去上学。看完视频后，您将进入独立的练习环节，尝试以不同的方式应对这种情况。"}
+                        ? 'This is the foundational scenario. In the next phases, we will explore different parenting responses to this exact situation.'
+                        : '这是我们将要探讨的基础场景。在接下来的阶段中，我们将反思面对这一情况时，不同家长回应方式所带来的不同影响。'}
                     </Paragraph>
-                    <div className="mt-10">
+                    <div className="mt-auto pt-6 flex justify-center w-full">
                       <Button type="primary" size="large" className="bg-indigo-600 px-12 h-14 text-xl rounded-xl shadow-md hover:bg-indigo-500" onClick={handleNextStage}>
-                        {i18n.language === 'en' ? 'I have finished watching, Start Practice 1' : '我已看完视频，进入练习 1'}
+                        {i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思'}
                       </Button>
                     </div>
                   </div>
@@ -216,7 +214,52 @@ export const Module1RoleplayPage = () => {
             </div>
           )}
 
-          {currentStage > 0 && currentStage <= 3 && (
+          {(currentStage === 1 || currentStage === 2) && (
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+              {/* Left Side: Video */}
+              <div className="w-full md:w-1/2 p-6 flex flex-col border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50">
+                <Title level={4} className="text-indigo-700 mb-4">
+                  {currentStage === 1 
+                    ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频 1：忽视型家长') 
+                    : (i18n.language === 'en' ? 'Video 2: Emotion Coaching Parent' : '视频 2：教练型家长')}
+                </Title>
+                <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
+                  <video 
+                    src={currentStage === 1 ? "/lele-scenario-1.mp4" : "/lele-scenario-2.mp4"} 
+                    controls 
+                    className="w-full h-full object-contain"
+                  >
+                    {i18n.language === 'en' ? 'Your browser does not support the video tag.' : '您的浏览器不支持视频播放。'}
+                  </video>
+                </div>
+                <div className="mt-6 text-slate-600 text-sm leading-relaxed">
+                  {i18n.language === 'en' 
+                    ? "Watch the video clip above. Then, interact with the AI Coach on the right to reflect on what happened in the scene."
+                    : "请观看上方的视频片段。观看完毕后，请在右侧与 AI 教练进行互动，分享您的反思和感受。"}
+                </div>
+              </div>
+              
+              {/* Right Side: Chat */}
+              <div className="w-full md:w-1/2 flex flex-col bg-white">
+                {tid ? (
+                  <div className="flex-1 overflow-y-auto [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-[calc(100%-64px)] [&_.chat-container]:flex-1">
+                    <RoleplayChat 
+                      key={currentStage} 
+                      tid={tid} 
+                      practiceMode={currentStage} 
+                      onPracticeComplete={handleNextStage} 
+                    />
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center flex-col p-10 text-center">
+                    <Spin size="large" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {currentStage === 3 && (
             <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px]">
               {tid ? (
                 <div className="flex-1 overflow-y-auto [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-[calc(100%-64px)] [&_.chat-container]:flex-1">

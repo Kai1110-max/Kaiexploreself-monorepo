@@ -81,6 +81,12 @@ const userSlice = createSlice({
 
         appendAgenda: (state, action: PayloadAction<IAgendaWithThemeIds>) => {
             agendaEntityAdapter.addOne(state.agendaEntityState, action.payload)
+        },
+        updateAgendaTitle: (state, action: PayloadAction<{ id: string, title: string }>) => {
+            agendaEntityAdapter.updateOne(state.agendaEntityState, {
+                id: action.payload.id,
+                changes: { title: action.payload.title }
+            });
         }
     }
 })
@@ -162,11 +168,28 @@ export function updateDidTutorial(
     }
   }
 
+export function renameAgenda(agendaId: string, title: string): AppThunk {
+  return async (dispatch, getState) => {
+    const state = getState();
+    if (state.auth.token) {
+      try {
+        await Http.axios.post(`/agendas/${agendaId}/title`, { title }, {
+          headers: Http.makeSignedInHeader(state.auth.token),
+        });
+        dispatch(userSlice.actions.updateAgendaTitle({ id: agendaId, title }));
+      } catch (err) {
+        console.error('Failed to rename agenda:', err);
+      }
+    }
+  };
+}
+
 import createThreadItem from '../../api_call/createThreadItem';
 import populateThread from '../../api_call/populateThread';
 
 export function createAgenda(
-    narrative: string
+    narrative: string,
+    title?: string
   ): AppThunk<Promise<string|null>> {
     return async (dispatch, getState) => {
       const state = getState();
@@ -178,6 +201,7 @@ export function createAgenda(
             '/agendas/new',
             {
               narrative,
+              title,
             },
             {
               headers: Http.makeSignedInHeader(state.auth.token),

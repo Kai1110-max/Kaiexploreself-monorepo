@@ -50,7 +50,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
     setMessage('');
     setSending(true);
 
-    const userRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Child : RoleplayAgentType.Parent;
+    const userRole = RoleplayAgentType.Parent;
 
     // Optimistically add user message
     const tempId = `temp-${Date.now()}`;
@@ -83,7 +83,10 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   };
 
   if (loading) {
-    return <div className="p-8 text-center"><Spin tip={i18n.language === 'en' ? "Initializing Roleplay Environment..." : "正在初始化角色扮演环境..."} /></div>;
+    const tipText = practiceMode === 3 
+      ? (i18n.language === 'en' ? "Initializing Roleplay Environment..." : "正在初始化角色扮演环境...")
+      : (i18n.language === 'en' ? "Initializing Reflection Session..." : "正在初始化反思环节...");
+    return <div className="p-8 text-center"><Spin tip={tipText} /></div>;
   }
 
   const handleEvaluate = async () => {
@@ -107,12 +110,12 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   const renderScenarioDescription = () => {
     if (practiceMode === 1) {
       return i18n.language === 'en'
-        ? "In this practice, YOU are playing the role of 6-year-old Lele. You are angry because a classmate told others not to play with you, and you refuse to go to school. The AI will act as a 'Novice Parent' who uses poor communication skills (e.g., yelling, bribing, dismissing your feelings). Your goal is to react naturally as a child whose emotions are being ignored—feel free to get angrier or throw a tantrum!"
-        : "在这个练习中，您将扮演6岁的乐乐。您因为同学不跟您玩而非常生气，哭闹着不想去上学。AI将扮演一个“新手家长”，他会使用错误的沟通方式（比如吼叫、说教、否定您的情绪）。您的目标是像一个情绪被忽视的孩子那样做出真实的反应——请尽情展现您的愤怒和抗拒！";
+        ? "You just watched the first video. The parent's response was 'dismissive' or 'blaming'. Now, reflect on this video with the AI Coach. Answer the coach's questions about how the child might feel and the long-term impact."
+        : "您刚才观看了第一段视频。家长的回应属于“忽视型”或“指责型”。现在，请与AI教练一起反思这段视频。探讨如果孩子处于这种情况下会有什么感受，以及长期的影响。";
     } else if (practiceMode === 2) {
       return i18n.language === 'en'
-        ? "In this practice, YOU are still playing the role of 6-year-old Lele. You are angry and refuse to go to school. This time, the AI will act as an 'Expert Parent' who uses perfect Emotion Coaching skills. Your goal is to experience what it feels like to be truly heard and validated. React naturally to the AI parent's guidance, and allow yourself to slowly calm down as they empathize with you."
-        : "在这个练习中，您依然扮演6岁的乐乐，生气且不想去上学。但这一次，AI将扮演一位“专家家长”，他会完美地运用情绪辅导技巧来引导您。您的目标是体验“被真正倾听和接纳”是什么感觉。请根据AI家长的回应做出真实的反应，感受自己的情绪是如何慢慢平复的。";
+        ? "You just watched the second video. This time, the parent used an 'emotion coaching' approach. Reflect on the differences with the AI Coach. Discuss how the child's feelings might change."
+        : "您刚才观看了第二段视频。这次，家长的回应方式是“情绪辅导型”。请与AI教练一起反思两次视频的差异。探讨孩子感受到被理解后的变化。";
     } else {
       return i18n.language === 'en'
         ? "In this final practice, YOU are the Parent. The AI is playing the role of 6-year-old Lele who refuses to go to school. Your goal is to practice the '5-Step Emotion Coaching Method' (Notice, Connect, Empathize, Label, Set Limits). The AI Coach will observe your responses and provide guidance. If you do well, Lele will calm down!"
@@ -121,7 +124,11 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   };
 
   return (
-    <Card title={i18n.language === 'en' ? "Dual-Agent Roleplay Simulator" : "双智能体角色扮演模拟器"} className="shadow-md rounded-xl overflow-hidden border-indigo-200">
+    <Card title={
+      practiceMode === 1 || practiceMode === 2 
+        ? (i18n.language === 'en' ? "Reflection Chat" : "反思对话")
+        : (i18n.language === 'en' ? "Dual-Agent Roleplay Simulator" : "双智能体角色扮演模拟器")
+    } className="shadow-md rounded-xl overflow-hidden border-indigo-200">
       <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-700 border border-slate-200 shadow-inner">
         <div className="font-bold text-indigo-700 mb-2 text-base">
           {i18n.language === 'en' ? "Your Mission in this Practice:" : "您在此练习中的任务："}
@@ -129,14 +136,16 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
         <div className="leading-relaxed">
           {renderScenarioDescription()}
         </div>
-        <div className="mt-2 text-xs font-semibold text-indigo-500 bg-indigo-50 p-2 rounded border border-indigo-100">
-          💡 {i18n.language === 'en' ? "Tip: You can ask the coach a direct question anytime by including '@coach' in your message. The child will ignore it." : "提示：如果您不知道该怎么回复，可以在消息中包含 '@教练' 来直接向教练提问，模拟角色会自动忽略这句话。"}
-        </div>
+        {practiceMode === 3 && (
+          <div className="mt-2 text-xs font-semibold text-indigo-500 bg-indigo-50 p-2 rounded border border-indigo-100">
+            💡 {i18n.language === 'en' ? "Tip: You can ask the coach a direct question anytime by including '@coach' in your message. The child will ignore it." : "提示：如果您不知道该怎么回复，可以在消息中包含 '@教练' 来直接向教练提问，模拟角色会自动忽略这句话。"}
+          </div>
+        )}
       </div>
 
       <div className="chat-container h-96 overflow-y-auto p-4 bg-white border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4">
         {session?.messages?.map((msg, idx) => {
-          const isUser = (practiceMode === 1 || practiceMode === 2) ? msg.sender === RoleplayAgentType.Child : msg.sender === RoleplayAgentType.Parent;
+          const isUser = msg.sender === RoleplayAgentType.Parent;
           const isModerator = msg.sender === RoleplayAgentType.Moderator;
           const isPartner = !isUser && !isModerator;
 
@@ -232,7 +241,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
                 {isToCoach
                   ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
                   : practiceMode === 1 || practiceMode === 2 
-                    ? (i18n.language === 'en' ? 'Simulated Parent is typing...' : '模拟家长正在输入...')
+                    ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
                     : (i18n.language === 'en' ? 'Simulated Child is typing...' : '模拟孩子正在输入...')
                 }
               </div>
@@ -248,7 +257,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
           onChange={e => setMessage(e.target.value)}
           placeholder={
             practiceMode === 1 || practiceMode === 2 
-              ? (i18n.language === 'en' ? "Type your response as the angry child (Lele)..." : "作为生气的乐乐，在此输入您的回应...")
+              ? (i18n.language === 'en' ? "Share your thoughts with the Coach..." : "与教练分享您的感受和想法...")
               : (i18n.language === 'en' ? "Type your response to the child here..." : "作为家长，在此输入您对孩子的回应...")
           }
           autoSize={{ minRows: 2, maxRows: 4 }}
@@ -272,7 +281,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
         </Button>
         {(() => {
           if (!session) return null;
-          const userRole = (practiceMode === 1 || practiceMode === 2) ? RoleplayAgentType.Child : RoleplayAgentType.Parent;
+          const userRole = RoleplayAgentType.Parent;
           const userMsgCount = session.messages.filter(m => m.sender === userRole).length;
           const canEvaluate = userMsgCount >= 3;
           
@@ -297,7 +306,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
       </div>
 
       <Modal
-        title={i18n.language === 'en' ? "Roleplay Evaluation Report" : "角色扮演评估报告"}
+        title={i18n.language === 'en' ? "Feedback Report" : "反馈报告"}
         open={isModalVisible}
         onOk={() => setIsModalVisible(false)}
         onCancel={() => setIsModalVisible(false)}
@@ -328,19 +337,37 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
       >
         {evaluation && (
           <div className="flex flex-col gap-6 py-4">
-            <div className="text-center">
-              <Progress type="dashboard" percent={evaluation.score} strokeColor={evaluation.passed ? '#52c41a' : '#ff4d4f'} />
-              <Typography.Title level={4} className="mt-4">
-                {evaluation.passed 
-                  ? (i18n.language === 'en' ? "Practice Passed! 🎉" : "练习通过！🎉")
-                  : (i18n.language === 'en' ? "Practice Failed 😢" : "练习未通过 😢")
-                }
-              </Typography.Title>
-            </div>
+            {practiceMode !== 1 && practiceMode !== 2 && (
+              <div className="text-center">
+                <Progress type="dashboard" percent={evaluation.score} strokeColor={evaluation.passed ? '#52c41a' : '#ff4d4f'} />
+                <Typography.Title level={4} className="mt-4">
+                  {evaluation.passed 
+                    ? (i18n.language === 'en' ? "Practice Passed! 🎉" : "练习通过！🎉")
+                    : (i18n.language === 'en' ? "Practice Failed 😢" : "练习未通过 😢")
+                  }
+                </Typography.Title>
+              </div>
+            )}
+
+            {(practiceMode === 1 || practiceMode === 2) && (
+              <div className="text-center">
+                <Typography.Title level={4} className="mt-2 text-indigo-600">
+                  {i18n.language === 'en' ? "Reflection Completed 🎉" : "反思完成！🎉"}
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                  {i18n.language === 'en' 
+                    ? "Here is the summary and educational feedback based on your reflection." 
+                    : "以下是基于您反思内容的教育性指导与建议。"}
+                </Typography.Text>
+              </div>
+            )}
 
             <div>
               <Typography.Title level={5} className="text-indigo-600 mb-3">
-                {i18n.language === 'en' ? "5-Step Method Breakdown" : "五步法详细得分"}
+                {(practiceMode === 1 || practiceMode === 2)
+                  ? (i18n.language === 'en' ? "Reflection Feedback" : "反思维度反馈")
+                  : (i18n.language === 'en' ? "5-Step Method Breakdown" : "五步法详细得分")
+                }
               </Typography.Title>
               <List
                 dataSource={evaluation.stepScores || []}
@@ -348,15 +375,19 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
                   <List.Item className="!py-3 border-b border-slate-100 last:border-none flex-col items-start">
                     <div className="w-full flex justify-between items-center mb-1">
                       <Typography.Text strong className="text-slate-700">{item.stepName}</Typography.Text>
-                      <Typography.Text className="font-semibold text-indigo-600">{item.score}/20</Typography.Text>
+                      {practiceMode !== 1 && practiceMode !== 2 && (
+                        <Typography.Text className="font-semibold text-indigo-600">{item.score}/20</Typography.Text>
+                      )}
                     </div>
-                    <Progress 
-                      percent={(item.score / 20) * 100} 
-                      showInfo={false} 
-                      strokeColor={item.score >= 15 ? '#52c41a' : item.score >= 10 ? '#faad14' : '#ff4d4f'} 
-                      className="mb-1"
-                    />
-                    <Typography.Text type="secondary" className="text-sm">
+                    {practiceMode !== 1 && practiceMode !== 2 && (
+                      <Progress 
+                        percent={(item.score / 20) * 100} 
+                        showInfo={false} 
+                        strokeColor={item.score >= 15 ? '#52c41a' : item.score >= 10 ? '#faad14' : '#ff4d4f'} 
+                        className="mb-1"
+                      />
+                    )}
+                    <Typography.Text type="secondary" className="text-sm mt-1">
                       {item.feedback}
                     </Typography.Text>
                   </List.Item>

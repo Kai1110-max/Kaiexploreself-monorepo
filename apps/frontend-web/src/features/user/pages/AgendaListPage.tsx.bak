@@ -1,10 +1,9 @@
 import { useDispatch, useSelector } from "../../../redux/hooks"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
-import { agendaSelectors, renameAgenda } from "../reducer"
-import { Button, Input } from "antd"
-import { PencilIcon } from '@heroicons/react/20/solid'
+import { agendaSelectors } from "../reducer"
+import { Button } from "antd"
 import LinesEllipsis from 'react-lines-ellipsis'
 
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC'
@@ -21,63 +20,22 @@ const AgendaView = (props: {agendaId: string}) => {
     }, [agenda.createdAt])
 
     const [t] = useTranslation()
+
     const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const [isEditing, setIsEditing] = useState(false)
-    const [editTitle, setEditTitle] = useState(agenda?.title || '')
 
-    const onClick = useCallback(async (e: React.MouseEvent)=>{
-        if (isEditing) return;
+    const onClick = useCallback(async ()=>{
         console.log(props.agendaId)
-        // Navigate directly to the roleplay page so the user can continue the conversation
-        navigate("./" + props.agendaId + "/roleplay")
-    }, [props.agendaId, isEditing, navigate])
-
-    const handleSaveTitle = (e: React.MouseEvent | React.KeyboardEvent) => {
-        e.stopPropagation();
-        if (editTitle.trim() && editTitle !== agenda.title) {
-            dispatch(renameAgenda(props.agendaId, editTitle.trim()));
-        }
-        setIsEditing(false);
-    }
-
-    if (!agenda) return null;
+        navigate("./" + props.agendaId)
+    }, [props.agendaId])
 
     return <div className="card-button-wrapper" onClick={onClick}>
         <div className="flex justify-between items-baseline">
-            <div className="select-none font-semibold flex-1 mr-4 flex items-center group">
-                {isEditing ? (
-                    <Input 
-                        value={editTitle}
-                        onChange={e => setEditTitle(e.target.value)}
-                        onPressEnter={handleSaveTitle}
-                        onBlur={handleSaveTitle}
-                        autoFocus
-                        onClick={e => e.stopPropagation()}
-                        size="small"
-                        className="max-w-md"
-                    />
-                ) : (
-                    <>
-                        <span className="truncate">{agenda.title}</span>
-                        <button 
-                            className="ml-2 text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setEditTitle(agenda.title);
-                                setIsEditing(true);
-                            }}
-                        >
-                            <PencilIcon className="w-4 h-4" />
-                        </button>
-                    </>
-                )}
-            </div>
-            <div className="select-none text-slate-400 text-sm whitespace-nowrap">{createdAtLabel}</div>
+            <div className="select-none font-semibold">{agenda.title}</div>
+            <div className="select-none text-slate-400 text-sm">{createdAtLabel}</div>
         </div>
         <ResponsiveEllipsis maxLine={1} trimRight basedOn="letters" className="select-none mt-3 text-sm text-slate-400" text={agenda.initialNarrative}/>
         <div className="mt-4 px-.5">
-            <div className="text-xs font-semibold text-slate-400">{t("Agendas.ThemeCount", {count: agenda.threads?.length || 0})}</div>
+            <div className="text-xs font-semibold text-slate-400">{t("Agendas.ThemeCount", {count: agenda.threads.length})}</div>
         </div>
     </div>
 }
@@ -124,7 +82,7 @@ export const AgendaListPage  = () => {
             </div>
         </div>
 
-        <h1 className="mt-8 mb-4 text-xl font-bold">{i18n.language === 'en' ? 'History' : '历史记录'}</h1>
+        <h1 className="mt-8 mb-4 text-xl font-bold">{t("Agendas.Title")}</h1>
         <div className="grid grid-cols-1 gap-4 mb-8">
             <Button type="primary" size="large" onClick={onNewAgendaClick} style={{ display: 'none' }}>
                 <div className="select-none">{t("Agendas.New")}</div>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from '../../../redux/hooks';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 import { createAgenda } from '../reducer';
+import moment from 'moment';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -90,12 +91,13 @@ export const Module1IntroPage = () => {
   const startModule = useCallback(async () => {
     setLoading(true);
     const moduleNarrative = "Module 1 Practice: 6-year-old Lele wakes up crying and refuses to go to school because a classmate told others not to play with him. The parent needs to practice Emotion Coaching skills.";
-    const newAgendaId = await dispatch(createAgenda(moduleNarrative));
+    const title = isEn ? `Module 1 Practice - ${moment().format('lll')}` : `模块 1 练习 - ${moment().format('lll')}`;
+    const newAgendaId = await dispatch(createAgenda(moduleNarrative, title));
     if (newAgendaId != null) {
       navigate(`/app/agendas/${newAgendaId}/roleplay`, { replace: true });
     }
     setLoading(false);
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, isEn]);
 
   return (
     <div className='flex flex-col h-full bg-slate-50'>

@@ -16,8 +16,12 @@ export async function generatePartnerResponse(agenda: IAgendaORM, session: IRole
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
   const practiceMode = session.practiceMode || 3;
   
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
   let transcript = "";
-  session.messages.forEach((m: any) => {
+  messages.forEach((m: any) => {
     const actionStr = m.action ? ` [Action: ${m.action}]` : '';
     if (m.sender === RoleplayAgentType.Child) transcript += `Child: ${m.content}${actionStr}\n`;
     else if (m.sender === RoleplayAgentType.Parent) transcript += `Parent: ${m.content}${actionStr}\n`;
@@ -144,8 +148,12 @@ Rules:
 }
 
 export async function generateRoleplayHint(agenda: IAgendaORM, session: IRoleplaySessionORM, stepLabel: string, stepDescription: string, currentText: string): Promise<string> {
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
   let transcript = "";
-  session.messages.forEach((m: any) => {
+  messages.forEach((m: any) => {
     if (m.sender === RoleplayAgentType.Child) transcript += `Child: ${m.content}\n`;
     else if (m.sender === RoleplayAgentType.Parent) transcript += `Parent: ${m.content}\n`;
     else if (m.sender === RoleplayAgentType.Moderator) transcript += `Coach: ${m.content}\n`;
@@ -242,8 +250,12 @@ Rules:
 
 export async function generateCoachDirectResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, userQuestion: string, language: string = 'en'): Promise<string> {
   const practiceMode = session.practiceMode || 3;
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
   let transcript = "";
-  session.messages.forEach((m: any) => {
+  messages.forEach((m: any) => {
     const sender = m.sender === RoleplayAgentType.Child ? 'Child' : m.sender === RoleplayAgentType.Parent ? 'Parent' : 'Coach';
     const actionStr = m.action ? ` [Action: ${m.action}]` : '';
     transcript += `${sender}: ${m.content}${actionStr}\n`;
@@ -261,15 +273,15 @@ Here is the conversation history so far:
 ${transcript}
 
 Rules:
-1. Directly answer the user's question or address their comment.
-2. Provide helpful, supportive advice related to Emotion Coaching.
+1. Directly answer their question ("${userQuestion}").
+2. Provide practical, empathetic advice based on Emotion Coaching principles.
 3. Be concise (2-4 sentences max).
-4. Do NOT act as the child or the parent. You are the objective expert coach.
+4. Do not act for them; give them guidance on what to try next.
 5. You ${languageInstruction}`;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "User asks: {userQuestion}"]
+    ["user", "Answer my question: {userQuestion}"]
   ]);
   const chain = prompt.pipe(chatModel);
 
@@ -282,10 +294,89 @@ Rules:
   }
 }
 
+export async function generateReflectionCoachResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<string> {
+  const practiceMode = session.practiceMode || 1;
+  let transcript = "";
+  let userMessageCount = 0;
+  
+  // Fetch actual messages from DB to avoid Mongoose unpopulation issues after save()
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
+  messages.forEach((m: any) => {
+    const sender = m.sender === RoleplayAgentType.Parent ? 'User' : 'Coach';
+    if (m.sender === RoleplayAgentType.Parent) {
+      userMessageCount++;
+    }
+    transcript += `${sender}: ${m.content}\n`;
+  });
+  
+  const languageInstruction = language === 'zh' 
+    ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
+    : "MUST strictly use ONLY English.";
+
+  // Deterministic state machine based purely on the number of user messages
+  let nextQuestion = "";
+  let isConclusion = false;
+
+  if (practiceMode === 1) {
+    if (userMessageCount === 1) nextQuestion = "家长具体的哪句话或哪个行为，让你产生了这种情绪？";
+    else if (userMessageCount === 2) nextQuestion = "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？";
+    else if (userMessageCount === 3) nextQuestion = "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？";
+    else if (userMessageCount === 4) nextQuestion = "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？";
+    else isConclusion = true;
+  } else {
+    if (userMessageCount === 1) nextQuestion = "对方具体的哪句话或哪个行为，让你感觉到被理解了？";
+    else if (userMessageCount === 2) nextQuestion = "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？";
+    else if (userMessageCount === 3) nextQuestion = "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？";
+    else if (userMessageCount === 4) nextQuestion = "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？";
+    else isConclusion = true;
+  }
+
+  const systemPrompt = `You are an AI Parent Coach guiding a reflection on a parenting video. The user is reflecting on how it feels to be the CHILD in the video.
+
+Here is the full conversation history:
+${transcript}
+
+YOUR TASK:
+1. Provide a DETAILED, EMPATHETIC, and SPECIFIC feedback to the User's last message ("${newUserMessage}"). 
+   - Connect deeply with what they just said. 
+   - Explain WHY their feeling or thought makes sense based on the context of the video. 
+   - Do NOT just say "I understand". Expand on their point for 2-3 sentences.
+2. ${isConclusion 
+      ? `After your feedback, conclude the session EXACTLY with this sentence: "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。"` 
+      : `After your detailed feedback, you MUST append the following question exactly to move the conversation forward. DO NOT add any other questions of your own.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
+
+CRITICAL RULES:
+1. ONLY output the conversational response. DO NOT output internal labels, brackets, or "Next Question:".
+2. DO NOT ask the user why they feel that way. I have provided the exact question you must ask.
+3. NEVER ask the user to clarify their previous answer. ALWAYS move forward to the EXACT NEXT QUESTION provided above.
+4. You ${languageInstruction}`;
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemPrompt],
+    ["user", "The user replied: {newUserMessage}\n\nProvide your detailed coaching feedback and then EXACTLY append the required next step/question."]
+  ]);
+  const chain = prompt.pipe(chatModel);
+
+  try {
+    const response = await chain.invoke({ newUserMessage });
+    return response.content.toString();
+  } catch (error) {
+    console.error("Error generating reflection coach response:", error);
+    throw error;
+  }
+}
+
 export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IRoleplaySessionORM, language: string = 'en') {
   const practiceMode = session.practiceMode || 3;
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
   let transcript = "";
-  session.messages.forEach((m: any) => {
+  messages.forEach((m: any) => {
     const sender = m.sender === RoleplayAgentType.Child ? 'Child' : m.sender === RoleplayAgentType.Parent ? 'Parent' : 'Coach';
     transcript += `${sender}: ${m.content}\n`;
   });
@@ -295,7 +386,7 @@ export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IR
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the USER said in the transcript as evidence. To do this correctly: look ONLY at the lines starting with the User's role (e.g., if the user is the Child, only quote lines starting with 'Child:'). DO NOT quote what the AI/Partner said. If the user didn't say anything relevant, state what was missing. DO NOT invent quotes.";
+  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the USER said in the transcript as evidence. To do this correctly: look ONLY at the lines starting with the User's role (e.g., only quote lines starting with 'Parent:'). DO NOT quote what the AI/Coach said. If the user didn't say anything relevant, state what was missing. DO NOT invent quotes.";
 
   const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT:
 {{
@@ -316,64 +407,20 @@ DO NOT wrap in markdown blocks like \`\`\`json. DO NOT add any other text.`;
 
   let systemPrompt = "";
 
-  if (practiceMode === 1) {
-    systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a roleplay exercise.
-The user was acting as a 6-year-old child (Lele) whose emotions were being dismissed by an AI 'Novice Parent'.
-Your goal is to evaluate if the user successfully acted out the frustration and escalation of a child being ignored.
+  if (practiceMode === 1 || practiceMode === 2) {
+    systemPrompt = `You are an AI Parent Coach providing educational feedback at the end of a reflection session.
+The user just completed a reflection on a parenting video.
+Your goal is to provide a brief, educational summary of their reflection process without strict numerical grading.
 
-Evaluate the transcript based on these criteria (each step out of 20 points. Use 5-point increments: 0, 5, 10, 15, 20. Assign 15 or 5 for intermediate performance):
-Step 1: Initial Resistance (0-20 points)
-  - 20 pts: Clearly expresses unwillingness to go to school with strong emotional words.
-  - 10 pts: Mentions not wanting to go but lacks emotional intensity.
-  - 0 pts: Agrees to go or doesn't resist.
-Step 2: Escalation to Invalidation (0-20 points)
-  - 20 pts: Shows increased frustration/anger when the AI parent dismisses feelings.
-  - 10 pts: Repeats the same resistance without escalating emotion.
-  - 0 pts: Calms down when invalidated (incorrect behavior).
-Step 3: Defensiveness (0-20 points)
-  - 20 pts: Uses defensive language or actions (e.g., "*crying louder*", "You don't understand!").
-  - 10 pts: Mild disagreement.
-  - 0 pts: No defensive reaction.
-Step 4: Persistence of Negative Emotion (0-20 points)
-  - 20 pts: Maintains the negative state throughout the interaction.
-  - 10 pts: Negative state wavers.
-  - 0 pts: Drops the negative state entirely.
-Step 5: Role Immersion (0-20 points)
-  - 20 pts: Never breaks character, sounds exactly like a 6-year-old.
-  - 10 pts: Mostly in character but uses some adult language.
-  - 0 pts: Breaks character completely.
+Task: Provide a structured feedback object. DO NOT assign scores (set all scores to 20). Focus on giving them qualitative feedback based on what they answered.
 
-${evidenceInstruction}
-
-You ${languageInstruction}
-
-${formatInstruction}`;
-  } else if (practiceMode === 2) {
-    systemPrompt = `You are a Senior Clinical Child Psychologist evaluating a roleplay exercise.
-The user was acting as a 6-year-old child (Lele) whose emotions were being validated by an AI 'Expert Parent'.
-Your goal is to evaluate if the user successfully experienced the de-escalation process of being heard.
-
-Evaluate the transcript based on these criteria (each step out of 20 points. Use 5-point increments: 0, 5, 10, 15, 20. Assign 15 or 5 for intermediate performance):
-Step 1: Initial Resistance (0-20 points)
-  - 20 pts: Starts with clear anger and resistance to going to school.
-  - 10 pts: Mild resistance.
-  - 0 pts: No initial resistance.
-Step 2: Receptiveness to Empathy (0-20 points)
-  - 20 pts: Responds to the parent's empathy by sharing more details (e.g., "They said I can't play").
-  - 10 pts: Acknowledges the empathy but doesn't elaborate.
-  - 0 pts: Ignores the empathy.
-Step 3: De-escalation (0-20 points)
-  - 20 pts: Shows a clear shift from high emotion to a calmer state over the turns.
-  - 10 pts: Slight calming but still mostly resistant.
-  - 0 pts: Remains highly escalated despite perfect parenting.
-Step 4: Cooperative Problem Solving (0-20 points)
-  - 20 pts: Shows willingness to accept limits or alternative choices offered by the parent.
-  - 10 pts: Hesitant but eventually agrees.
-  - 0 pts: Completely rejects all solutions.
-Step 5: Role Immersion (0-20 points)
-  - 20 pts: Never breaks character, sounds exactly like a 6-year-old.
-  - 10 pts: Mostly in character but uses some adult language.
-  - 0 pts: Breaks character completely.
+Evaluate the transcript and provide feedback for these 3 areas (set score to 20 for all):
+Step 1: 情绪觉察 (Noticing Emotion)
+  - Summarize how well they noticed the child's feeling.
+Step 2: 原因分析 (Understanding Cause)
+  - Summarize their understanding of why the child felt that way based on the parent's actions.
+Step 3: 长期影响 (Long-term Impact)
+  - Summarize their insight into the long-term impact on the child.
 
 ${evidenceInstruction}
 
