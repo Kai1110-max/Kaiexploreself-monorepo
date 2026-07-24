@@ -33,7 +33,7 @@ const AgendaView = (props: {agendaId: string}) => {
         navigate("./" + props.agendaId + "/roleplay")
     }, [props.agendaId, isEditing, navigate])
 
-    const handleSaveTitle = (e: React.MouseEvent | React.KeyboardEvent) => {
+    const handleSaveTitle = (e: React.MouseEvent | React.KeyboardEvent | React.FocusEvent<HTMLInputElement>) => {
         e.stopPropagation();
         if (editTitle.trim() && editTitle !== agenda.title) {
             dispatch(renameAgenda(props.agendaId, editTitle.trim()));
@@ -64,7 +64,7 @@ const AgendaView = (props: {agendaId: string}) => {
                             className="ml-2 text-slate-300 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setEditTitle(agenda.title);
+                                setEditTitle(agenda.title || '');
                                 setIsEditing(true);
                             }}
                         >
