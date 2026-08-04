@@ -47,8 +47,8 @@ export const Module1RoleplayPage = () => {
   };
 
   return (
-    <div className='flex flex-col h-screen bg-slate-50'>
-      <div className='shadow-sm z-10 bg-white border-b border-slate-200'>
+    <div className='flex flex-col h-screen bg-slate-50 overflow-hidden'>
+      <div className='shadow-sm z-10 bg-white border-b border-slate-200 shrink-0'>
         <div className="max-w-4xl mx-auto flex items-center justify-between p-4 !px-8">
           <Button size="middle" type='text' icon={<ArrowLeftIcon className="w-4 h-4" />} className='px-2 text-slate-500' onClick={() => {
             if (currentStage > 0 && currentStage < 4) {
@@ -215,10 +215,10 @@ export const Module1RoleplayPage = () => {
           )}
 
           {(currentStage === 1 || currentStage === 2) && (
-            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[800px]">
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0">
               {/* Top Side: Video */}
-              <div className="w-full p-6 flex flex-col border-b border-slate-200 bg-slate-50">
-                <Title level={4} className="text-indigo-700 mb-4">
+              <div className="w-full p-6 flex flex-col border-b border-slate-200 bg-slate-50 shrink-0">
+                <Title level={4} className="text-indigo-700 mb-4 text-center">
                   {currentStage === 1 
                     ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频 1：忽视型家长') 
                     : (i18n.language === 'en' ? 'Video 2: Emotion Coaching Parent' : '视频 2：教练型家长')}
@@ -240,9 +240,9 @@ export const Module1RoleplayPage = () => {
               </div>
               
               {/* Bottom Side: Chat */}
-              <div className="w-full flex-1 flex flex-col bg-white min-h-[500px]">
+              <div className="w-full flex-1 flex flex-col bg-white min-h-0">
                 {tid ? (
-                  <div className="flex-1 overflow-y-auto [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-[calc(100%-64px)] [&_.chat-container]:flex-1">
+                  <div className="flex-1 overflow-y-auto p-4 [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-full [&_.chat-container]:flex-1">
                     <RoleplayChat 
                       key={currentStage} 
                       tid={tid} 
