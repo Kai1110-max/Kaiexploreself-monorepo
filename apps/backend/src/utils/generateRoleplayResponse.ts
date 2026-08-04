@@ -34,9 +34,13 @@ export async function generatePartnerResponse(agenda: IAgendaORM, session: IRole
     : "MUST strictly use ONLY English.";
 
   // We are forcing GLM-4 to output pure JSON because structured output might fail
-  const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT: {{"dialogue": "string", "action": "string", "emotion": "angry|sad|resistant|calm|neutral"}}. 
+  const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT: {{"dialogue": "string", "action": "string", "emotion": "angry|sad|resistant|calm|neutral", "ambient_weather": "stormy|neutral|sunny"}}. 
 CRITICAL: You MUST ALWAYS provide a descriptive physical action (e.g., "crosses arms", "sighs heavily", "looks away") in the "action" field. DO NOT use "n/a", "none", or leave it empty.
 CRITICAL: The "emotion" field MUST reflect YOUR OWN current emotional state as the speaker. Do not reflect the other person's emotion.
+CRITICAL: The "ambient_weather" field MUST reflect the pedagogical quality of the Parent's (User's) latest message. 
+  - If the Parent used dismissing language, threats, or invalidation, return "stormy".
+  - If the Parent used good Emotion Coaching (validating, empathetic), return "sunny".
+  - If the Parent is just starting or is neutral, return "neutral".
 DO NOT wrap in markdown blocks like \`\`\`json. DO NOT add any other text.`;
 
   let systemPrompt = "";
@@ -135,14 +139,16 @@ Rules:
     return {
       dialogue: parsed.dialogue || "",
       action: parsedAction,
-      emotion: parsed.emotion || "neutral"
+      emotion: parsed.emotion || "neutral",
+      ambient_weather: parsed.ambient_weather || "neutral"
     };
   } catch (error) {
     console.error("Manual JSON fallback failed:", error);
     return {
       dialogue: language === 'zh' ? "我不知道该说什么..." : "I don't know what to say...",
       action: language === 'zh' ? "低下头" : "looks down",
-      emotion: "sad"
+      emotion: "sad",
+      ambient_weather: "neutral"
     };
   }
 }

@@ -95,6 +95,7 @@ export interface IRoleplayMessageBase {
   content: string;
   action?: string;
   emotion?: 'angry' | 'sad' | 'resistant' | 'calm' | 'neutral';
+  ambient_weather?: 'stormy' | 'neutral' | 'sunny';
   timestamp: Date;
 }
 

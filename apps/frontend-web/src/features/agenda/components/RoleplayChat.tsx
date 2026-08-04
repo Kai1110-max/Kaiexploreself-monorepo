@@ -129,7 +129,7 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
         ? (i18n.language === 'en' ? "Reflection Chat" : "反思对话")
         : (i18n.language === 'en' ? "Dual-Agent Roleplay Simulator" : "双智能体角色扮演模拟器")
     } className="shadow-md rounded-xl overflow-hidden border-indigo-200">
-      <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-700 border border-slate-200 shadow-inner">
+      <div className="bg-slate-50 p-4 rounded-lg mb-4 text-sm text-slate-700 border border-slate-200 shadow-inner shrink-0">
         <div className="font-bold text-indigo-700 mb-2 text-base">
           {i18n.language === 'en' ? "Your Mission in this Practice:" : "您在此练习中的任务："}
         </div>
@@ -143,9 +143,25 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
         )}
       </div>
 
-      <div className="chat-container h-96 overflow-y-auto p-4 bg-white border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4">
-        {session?.messages?.map((msg, idx) => {
-          const isUser = msg.sender === RoleplayAgentType.Parent;
+      {(() => {
+        // Determine ambient weather from the latest partner message
+        let ambientWeather = 'neutral';
+        if (session && session.messages) {
+          const reversedMsgs = [...session.messages].reverse();
+          const latestPartnerMsg = reversedMsgs.find(m => m.sender !== RoleplayAgentType.Parent && m.sender !== RoleplayAgentType.Moderator) as any;
+          if (latestPartnerMsg && latestPartnerMsg.ambient_weather) {
+            ambientWeather = latestPartnerMsg.ambient_weather;
+          }
+        }
+        
+        let weatherBgClass = 'bg-white';
+        if (ambientWeather === 'stormy') weatherBgClass = 'bg-gradient-to-b from-red-50 to-white';
+        if (ambientWeather === 'sunny') weatherBgClass = 'bg-gradient-to-b from-green-50 to-white';
+
+        return (
+          <div className={`chat-container h-96 overflow-y-auto p-4 border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4 transition-colors duration-1000 ${weatherBgClass}`}>
+            {session?.messages?.map((msg, idx) => {
+              const isUser = msg.sender === RoleplayAgentType.Parent;
           const isModerator = msg.sender === RoleplayAgentType.Moderator;
           const isPartner = !isUser && !isModerator;
 
@@ -230,28 +246,30 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
             </div>
           );
         })}
-        {sending && (() => {
-          const lastMsg = session?.messages[session.messages.length - 1];
-          const isToCoach = lastMsg?.content?.toLowerCase().includes('@coach') || lastMsg?.content?.includes('@教练');
-          
-          return (
-            <div className="flex w-full justify-start">
-              <Avatar icon={isToCoach ? <SafetyCertificateOutlined /> : <RobotOutlined />} className={`mr-2 animate-pulse ${isToCoach ? 'bg-amber-500' : 'bg-rose-300'}`} />
-              <div className="bg-gray-100 p-3 rounded-xl rounded-tl-none text-gray-500 italic">
-                {isToCoach
-                  ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
-                  : practiceMode === 1 || practiceMode === 2 
-                    ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
-                    : (i18n.language === 'en' ? 'Simulated Child is typing...' : '模拟孩子正在输入...')
-                }
-              </div>
-            </div>
-          );
-        })()}
-        <div ref={chatEndRef} />
-      </div>
+            {sending && (() => {
+              const lastMsg = session?.messages[session.messages.length - 1];
+              const isToCoach = lastMsg?.content?.toLowerCase().includes('@coach') || lastMsg?.content?.includes('@教练');
+              
+              return (
+                <div className="flex w-full justify-start">
+                  <Avatar icon={isToCoach ? <SafetyCertificateOutlined /> : <RobotOutlined />} className={`mr-2 animate-pulse ${isToCoach ? 'bg-amber-500' : 'bg-rose-300'}`} />
+                  <div className="bg-gray-100 p-3 rounded-xl rounded-tl-none text-gray-500 italic">
+                    {isToCoach
+                      ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
+                      : practiceMode === 1 || practiceMode === 2 
+                        ? (i18n.language === 'en' ? 'Coach is typing...' : '教练正在思考...')
+                        : (i18n.language === 'en' ? 'Simulated Child is typing...' : '模拟孩子正在输入...')
+                    }
+                  </div>
+                </div>
+              );
+            })()}
+            <div ref={chatEndRef} />
+          </div>
+        );
+      })()}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 shrink-0">
         <Input.TextArea 
           value={message}
           onChange={e => setMessage(e.target.value)}
