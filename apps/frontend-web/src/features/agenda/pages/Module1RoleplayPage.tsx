@@ -217,13 +217,13 @@ export const Module1RoleplayPage = () => {
           {(currentStage === 1 || currentStage === 2) && (
             <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0">
               {/* Top Side: Video */}
-              <div className="w-full p-6 flex flex-col border-b border-slate-200 bg-slate-50 shrink-0">
-                <Title level={4} className="text-indigo-700 mb-4 text-center">
+              <div className="w-full p-4 flex flex-col border-b border-slate-200 bg-slate-50 shrink-0">
+                <Title level={5} className="text-indigo-700 mb-2 text-center !mt-0">
                   {currentStage === 1 
                     ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频 1：忽视型家长') 
                     : (i18n.language === 'en' ? 'Video 2: Emotion Coaching Parent' : '视频 2：教练型家长')}
                 </Title>
-                <div className="w-full max-w-3xl mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
+                <div className="w-full max-w-lg mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
                   <video 
                     src={currentStage === 1 ? "/lele-scenario-1.mp4" : "/lele-scenario-2.mp4"} 
                     controls 
@@ -232,7 +232,7 @@ export const Module1RoleplayPage = () => {
                     {i18n.language === 'en' ? 'Your browser does not support the video tag.' : '您的浏览器不支持视频播放。'}
                   </video>
                 </div>
-                <div className="mt-6 text-slate-600 text-sm leading-relaxed text-center">
+                <div className="mt-3 text-slate-600 text-sm leading-relaxed text-center">
                   {i18n.language === 'en' 
                     ? "Please act as the child Lele in the video, watch the clip above, and share your feelings as Lele with the AI Coach below."
                     : "请您扮演视频里的小孩乐乐，观看上方的视频片段，并在下方与 AI 教练分享您作为乐乐的感受。"}
