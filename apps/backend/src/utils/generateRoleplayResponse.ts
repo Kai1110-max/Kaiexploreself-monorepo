@@ -297,7 +297,6 @@ Rules:
 export async function generateReflectionCoachResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<string> {
   const practiceMode = session.practiceMode || 1;
   let transcript = "";
-  let userMessageCount = 0;
   
   // Fetch actual messages from DB to avoid Mongoose unpopulation issues after save()
   const mongoose = require('mongoose');
@@ -306,9 +305,6 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
 
   messages.forEach((m: any) => {
     const sender = m.sender === RoleplayAgentType.Parent ? 'User' : 'Coach';
-    if (m.sender === RoleplayAgentType.Parent) {
-      userMessageCount++;
-    }
     transcript += `${sender}: ${m.content}\n`;
   });
   
@@ -316,22 +312,60 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  // Deterministic state machine based purely on the number of user messages
+  const isZh = language === 'zh';
+
+  const pm1QuestionsZh = [
+    "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？",
+    "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？",
+    "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？"
+  ];
+  const pm1QuestionsEn = [
+    "In that difficult moment, what did you most want the parent to say or do?",
+    "If the parent frequently responds this way, what long-term impact might it have on the child's personality?",
+    "Stepping out of the child's role, as a parent, why do you think the mother in the video was so impatient?"
+  ];
+
+  const pm2QuestionsZh = [
+    "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？",
+    "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？",
+    "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？"
+  ];
+  const pm2QuestionsEn = [
+    "After your emotions were validated, how did your initial feelings of resistance change?",
+    "Growing up in such an accepting environment long-term, how might the child handle setbacks in the future?",
+    "How does the approach in this video inspire you to handle your child's emotions in reality?"
+  ];
+
+  const questions = practiceMode === 1 
+    ? (isZh ? pm1QuestionsZh : pm1QuestionsEn)
+    : (isZh ? pm2QuestionsZh : pm2QuestionsEn);
+
+  let currentStageIndex = 0;
+  let lastQuestionIndexInTranscript = -1;
+  
+  for (let i = questions.length - 1; i >= 0; i--) {
+    const idx = transcript.lastIndexOf(questions[i]);
+    if (idx !== -1) {
+      currentStageIndex = i + 1;
+      lastQuestionIndexInTranscript = idx;
+      break;
+    }
+  }
+
+  // Count how many User messages occurred AFTER the last predefined question
+  const transcriptAfterLastQuestion = transcript.substring(lastQuestionIndexInTranscript + 1);
+  const userMessagesInCurrentStage = (transcriptAfterLastQuestion.match(/User:/g) || []).length;
+
+  // Cap follow-ups: if the user has already sent 2 or more messages in this stage, force moving to the next main question
+  const forceNextQuestion = userMessagesInCurrentStage >= 2;
+
   let nextQuestion = "";
   let isConclusion = false;
 
-  const isZh = language === 'zh';
-
-  if (practiceMode === 1) {
-    if (userMessageCount === 1) nextQuestion = isZh ? "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？" : "In that difficult moment, what did you most want the parent to say or do?";
-    else if (userMessageCount === 2) nextQuestion = isZh ? "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？" : "If the parent frequently responds this way, what long-term impact might it have on the child's personality?";
-    else if (userMessageCount === 3) nextQuestion = isZh ? "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？" : "Stepping out of the child's role, as a parent, why do you think the mother in the video was so impatient?";
-    else isConclusion = true;
+  if (currentStageIndex < questions.length) {
+    nextQuestion = questions[currentStageIndex];
   } else {
-    if (userMessageCount === 1) nextQuestion = isZh ? "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？" : "After your emotions were validated, how did your initial feelings of resistance change?";
-    else if (userMessageCount === 2) nextQuestion = isZh ? "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？" : "Growing up in such an accepting environment long-term, how might the child handle setbacks in the future?";
-    else if (userMessageCount === 3) nextQuestion = isZh ? "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？" : "How does the approach in this video inspire you to handle your child's emotions in reality?";
-    else isConclusion = true;
+    isConclusion = true;
   }
 
   const systemPrompt = `You are an AI Parent Coach guiding a reflection on a parenting video. The user is reflecting on how it feels to be the CHILD in the video.
@@ -340,21 +374,24 @@ Here is the full conversation history:
 ${transcript}
 
 YOUR TASK:
-1. Provide a VERY CONCISE, EMPATHETIC, and SPECIFIC feedback to the User's last message ("${newUserMessage}"). 
-   - First, positively reinforce and affirm what they did well or understood correctly (Positive Feedback).
-   - Then, gently provide corrective or guiding insight if necessary.
-   - CRITICAL: Ensure you accurately reflect the specific emotion the user mentioned (e.g., if they say "angry", don't assume "sad").
-   - CRITICAL: Keep your feedback extremely concise and to the point. Maximum 2 short sentences total! Do not ramble.
-2. ${isConclusion 
-      ? `After your feedback, conclude the session EXACTLY with this sentence: "${isZh ? "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" : "Your reflection is very profound. All questions have been asked, and the reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase."}"` 
-      : `After your short feedback, you MUST append the following question exactly to move the conversation forward. DO NOT add any other questions of your own.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
+Evaluate the user's latest reflection ("${newUserMessage}"). You have TWO options based on the depth of their answer:
+
+${forceNextQuestion ? "" : `OPTION A (User's answer is too short, superficial, or off-topic):
+- Provide brief empathy, then ask a CONCISE follow-up question (max 1 sentence) to guide them to think deeper about the current topic.
+- DO NOT append the next main question yet.
+`}
+OPTION B (${forceNextQuestion ? "MUST BE CHOSEN NOW" : "User's answer is thoughtful and sufficient"}):
+- Provide a VERY CONCISE, EMPATHETIC feedback (max 2 sentences). 
+- Accurately reflect the specific emotion the user mentioned (e.g., if they say "angry", don't assume "sad").
+- ${isConclusion 
+      ? `Conclude EXACTLY with this sentence: "${isZh ? "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" : "Your reflection is very profound. All questions have been asked, and the reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase."}"` 
+      : `Then, you MUST append the following question exactly to move the conversation forward.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
 
 CRITICAL RULES:
-1. ONLY output the conversational response. DO NOT output internal labels, brackets, or "Next Question:".
-2. DO NOT ask the user why they feel that way. I have provided the exact question you must ask.
-3. If the user's answer is extremely short or doesn't address the previous question, gently encourage them to reflect deeper on it before you append the exact next question.
-4. NEVER ask the user to clarify their previous answer. ALWAYS move forward to the EXACT NEXT QUESTION provided above.
-5. You ${languageInstruction}`;
+1. ONLY output the conversational response. DO NOT output "OPTION A" or "OPTION B" labels.
+2. If you choose OPTION B, you MUST append the EXACT NEXT QUESTION verbatim.
+3. Keep your feedback extremely concise. Do not ramble.
+4. You ${languageInstruction}`;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
