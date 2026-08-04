@@ -17,7 +17,7 @@ const loginSchema = yup
 
 const registerSchema = yup
   .object({
-    alias: yup.string().trim().min(2).required('Name/Alias is required'),
+    alias: yup.string().trim().required('Name/Alias is required'),
     passcode: yup.string().trim().min(5).required('Passcode must be at least 5 chars'),
     secretCode: yup.string().trim().required('Invite Secret Code is required'),
   })
