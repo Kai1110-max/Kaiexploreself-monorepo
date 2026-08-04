@@ -342,13 +342,13 @@ Here is the full conversation history:
 ${transcript}
 
 YOUR TASK:
-1. Provide a DETAILED, EMPATHETIC, and SPECIFIC feedback to the User's last message ("${newUserMessage}"). 
-   - Connect deeply with what they just said. 
-   - Explain WHY their feeling or thought makes sense based on the context of the video. 
-   - Do NOT just say "I understand". Expand on their point for 2-3 sentences.
+1. Provide a VERY CONCISE, EMPATHETIC, and SPECIFIC feedback to the User's last message ("${newUserMessage}"). 
+   - First, positively reinforce and affirm what they did well or understood correctly (Positive Feedback).
+   - Then, gently provide corrective or guiding insight if necessary.
+   - CRITICAL: Keep your feedback extremely concise and to the point. Maximum 2 short sentences total! Do not ramble.
 2. ${isConclusion 
       ? `After your feedback, conclude the session EXACTLY with this sentence: "${isZh ? "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" : "Your reflection is very profound. All questions have been asked, and the reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase."}"` 
-      : `After your detailed feedback, you MUST append the following question exactly to move the conversation forward. DO NOT add any other questions of your own.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
+      : `After your short feedback, you MUST append the following question exactly to move the conversation forward. DO NOT add any other questions of your own.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
 
 CRITICAL RULES:
 1. ONLY output the conversational response. DO NOT output internal labels, brackets, or "Next Question:".

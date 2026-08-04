@@ -135,7 +135,6 @@ export const Module1IntroPage = () => {
                 <Paragraph>
                   <Text strong className="bg-yellow-100 px-2 py-1 rounded">Core Concept: Emotion does not equal behavior.</Text> When a child is angry, "anger" is the emotion, and "hitting" or "throwing things" is the behavior. We can 100% accept all of a child's emotions because they occur naturally; but this absolutely does not mean we accept all inappropriate behaviors. Accepting emotions represents understanding and empathy; regulating behavior is the boundary and rule we must teach.
                 </Paragraph>
-                <ClassificationGame i18n={i18n} />
 
                 {/* 1.4 */}
                 <Divider orientation="left"><span className="text-xl font-bold text-slate-700">1.4 The Toddler's Emotional World</span></Divider>
@@ -225,7 +224,6 @@ export const Module1IntroPage = () => {
                 <Paragraph>
                   我们需要确立一个核心理念，那就是：<Text strong className="bg-yellow-100 px-2 py-1 rounded">情绪并不等于行为。</Text> 当孩子生气时，“生气”是情绪，而“动手打人”或“乱扔东西”则是行为。我们可以百分之百地接纳孩子所有的情绪，因为情绪是自然发生、不以人的意志为转移的；但这绝对不意味着，我们要由着性子接纳孩子所有的不当行为。接纳情绪，代表着我们的理解与共情；而规范行为，则是我们要在这个过程中教给孩子的界限与规则。
                 </Paragraph>
-                <ClassificationGame i18n={i18n} />
 
                 {/* 1.4 */}
                 <Divider orientation="left"><span className="text-xl font-bold text-slate-700">1.4 幼儿的情绪世界</span></Divider>

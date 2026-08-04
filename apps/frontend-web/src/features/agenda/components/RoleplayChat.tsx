@@ -283,7 +283,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
           if (!session) return null;
           const userRole = RoleplayAgentType.Parent;
           const userMsgCount = session.messages.filter(m => m.sender === userRole).length;
-          const canEvaluate = userMsgCount >= 3;
+          const requiredTurns = (practiceMode === 1 || practiceMode === 2) ? 5 : 3;
+          const canEvaluate = userMsgCount >= requiredTurns;
           
           if (userMsgCount > 0) {
             return (
@@ -292,12 +293,12 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
                 onClick={handleEvaluate} 
                 loading={evaluating}
                 disabled={!canEvaluate}
-                title={!canEvaluate ? (i18n.language === 'en' ? "Please interact for at least 3 turns before evaluation" : "请至少对话 3 轮后再获取反馈") : ""}
+                title={!canEvaluate ? (i18n.language === 'en' ? `Please interact for at least ${requiredTurns} turns before evaluation` : `请至少对话 ${requiredTurns} 轮后再获取反馈`) : ""}
                 className={`h-auto px-6 rounded-lg border-indigo-600 text-indigo-600 hover:bg-indigo-50 ${!canEvaluate ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {i18n.language === 'en' 
-                  ? (canEvaluate ? "Finish & Get Feedback" : `Interact more (${userMsgCount}/3)`) 
-                  : (canEvaluate ? "结束并获取反馈" : `请继续对话 (${userMsgCount}/3)`)}
+                  ? (canEvaluate ? "Finish & Get Feedback" : `Interact more (${userMsgCount}/${requiredTurns})`) 
+                  : (canEvaluate ? "结束并获取反馈" : `请继续对话 (${userMsgCount}/${requiredTurns})`)}
               </Button>
             );
           }
