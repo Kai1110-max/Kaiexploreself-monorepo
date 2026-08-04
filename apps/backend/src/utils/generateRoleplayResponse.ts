@@ -1,5 +1,4 @@
-import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from "@langchain/core/prompts"
-import { z } from "zod";
+import { ChatPromptTemplate } from "@langchain/core/prompts"
 import { chatModel } from "../config/config";
 import { IRoleplaySessionORM, IAgendaORM } from "../config/schema";
 import { RoleplayAgentType } from "@core";
@@ -12,8 +11,7 @@ function fallbackHint(language: string) {
     : "Hint: write (1) your first emotional reaction, (2) the exact validation line you used, and (3) the limit/choice you offered.";
 }
 
-export async function generatePartnerResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<{dialogue: string, action: string, emotion: string}> {
-  const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
+export async function generatePartnerResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<{dialogue: string, action: string, emotion: string, ambient_weather?: string}> {
   const practiceMode = session.practiceMode || 3;
   
   const mongoose = require('mongoose');
