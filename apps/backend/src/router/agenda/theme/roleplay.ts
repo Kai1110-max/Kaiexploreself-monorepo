@@ -131,8 +131,7 @@ router.post('/message', async (req: RequestWithTheme, res) => {
         sender: aiRole,
         content: aiResponse.dialogue || "...", // Fallback if dialogue is empty but action exists
         action: aiResponse.action,
-        emotion: aiResponse.emotion,
-        ambient_weather: aiResponse.ambient_weather
+        emotion: aiResponse.emotion
       });
       await aiMsg.save();
       session.messages.push(aiMsg._id);
