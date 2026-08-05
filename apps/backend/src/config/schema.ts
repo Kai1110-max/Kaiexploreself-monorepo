@@ -111,8 +111,7 @@ export const RoleplayMessageSchema = new Schema({
   sender: { type: String, enum: Object.values(RoleplayAgentType), required: true },
   content: { type: String, required: true },
   action: { type: String },
-  emotion: { type: String, enum: ['angry', 'sad', 'resistant', 'calm', 'neutral'] },
-  ambient_weather: { type: String, enum: ['stormy', 'neutral', 'sunny'], default: 'neutral' },
+  emotion: { type: String, enum: ['angry', 'sad', 'resistant', 'calm', 'neutral'], default: 'neutral' },
   timestamp: { type: Date, default: Date.now }
 });
 

@@ -11,7 +11,7 @@ function fallbackHint(language: string) {
     : "Hint: write (1) your first emotional reaction, (2) the exact validation line you used, and (3) the limit/choice you offered.";
 }
 
-export async function generatePartnerResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<{dialogue: string, action: string, emotion: string, ambient_weather?: string}> {
+export async function generatePartnerResponse(agenda: IAgendaORM, session: IRoleplaySessionORM, newUserMessage: string, language: string = 'en'): Promise<{dialogue: string, action: string, emotion: string}> {
   const practiceMode = session.practiceMode || 3;
   
   const mongoose = require('mongoose');
@@ -68,13 +68,9 @@ export async function generatePartnerResponse(agenda: IAgendaORM, session: IRole
     : "MUST strictly use ONLY English.";
 
   // We are forcing GLM-4 to output pure JSON because structured output might fail
-  const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT: {{"dialogue": "string", "action": "string", "emotion": "angry|sad|resistant|calm|neutral", "ambient_weather": "stormy|neutral|sunny"}}. 
+  const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT: {{"dialogue": "string", "action": "string", "emotion": "angry|sad|resistant|calm|neutral"}}. 
 CRITICAL: You MUST ALWAYS provide a descriptive physical action (e.g., "crosses arms", "sighs heavily", "looks away") in the "action" field. DO NOT use "n/a", "none", or leave it empty.
 CRITICAL: The "emotion" field MUST reflect YOUR OWN current emotional state as the speaker. Do not reflect the other person's emotion.
-CRITICAL: The "ambient_weather" field MUST reflect the pedagogical quality of the Parent's (User's) latest message. 
-  - If the Parent used dismissing language, threats, or invalidation, return "stormy".
-  - If the Parent used good Emotion Coaching (validating, empathetic), return "sunny".
-  - If the Parent is just starting or is neutral, return "neutral".
 DO NOT wrap in markdown blocks like \`\`\`json. DO NOT add any other text.`;
 
   let systemPrompt = "";
@@ -173,16 +169,14 @@ Rules:
     return {
       dialogue: parsed.dialogue || "",
       action: parsedAction,
-      emotion: parsed.emotion || "neutral",
-      ambient_weather: parsed.ambient_weather || "neutral"
+      emotion: parsed.emotion || "neutral"
     };
   } catch (error) {
     console.error("Manual JSON fallback failed:", error);
     return {
       dialogue: language === 'zh' ? "我不知道该说什么..." : "I don't know what to say...",
       action: language === 'zh' ? "低下头" : "looks down",
-      emotion: "sad",
-      ambient_weather: "neutral"
+      emotion: "sad"
     };
   }
 }
@@ -385,88 +379,38 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
 
   const isZh = language === 'zh';
 
-  const pm1QuestionsZh = [
-    "在那个难过的当下，你心里最渴望家长对你说什么，或者怎么做？",
-    "如果家长经常这样回应，长此以往会对孩子的性格产生什么影响？",
-    "跳出孩子的角色，作为家长，你觉得视频里的妈妈为什么会这么急躁？"
-  ];
-  const pm1QuestionsEn = [
-    "In that difficult moment, what did you most want the parent to say or do?",
-    "If the parent frequently responds this way, what long-term impact might it have on the child's personality?",
-    "Stepping out of the child's role, as a parent, why do you think the mother in the video was so impatient?"
-  ];
+  const topicsZh = practiceMode === 1 
+    ? "1. 觉察情绪：在那个难过的当下，孩子心里最渴望家长说什么或做什么？\n2. 长期影响：如果家长经常这样回应，对孩子性格的长期影响？\n3. 家长动机：跳出角色，家长为什么会那么急躁？"
+    : "1. 情绪变化：当情绪被接纳后，孩子原本抗拒的心情发生了怎样的变化？\n2. 长期影响：长期在接纳的环境中长大，孩子未来面对挫折会怎么表现？\n3. 现实启发：这段视频对现实中处理孩子情绪有什么启发？";
 
-  const pm2QuestionsZh = [
-    "当你的情绪被接纳后，你原本抗拒的心情发生了怎样的变化？",
-    "长期在这样被接纳的环境中长大，孩子未来面对挫折时会怎么表现？",
-    "这段视频里的做法，对你在现实中处理孩子的情绪有什么启发？"
-  ];
-  const pm2QuestionsEn = [
-    "After your emotions were validated, how did your initial feelings of resistance change?",
-    "Growing up in such an accepting environment long-term, how might the child handle setbacks in the future?",
-    "How does the approach in this video inspire you to handle your child's emotions in reality?"
-  ];
+  const topicsEn = practiceMode === 1
+    ? "1. Child's Needs: What the child most wanted the parent to say/do in that difficult moment.\n2. Long-term Impact: The long-term impact on the child's personality if the parent frequently responds this way.\n3. Parent's Motivation: Stepping out of the child's role, why the mother in the video was so impatient."
+    : "1. Emotional Shift: How the child's initial resistance changed after their emotions were validated.\n2. Long-term Impact: How the child might handle setbacks in the future if they grow up in an accepting environment.\n3. Real-world Inspiration: How the video inspires the user to handle their child's emotions in reality.";
 
-  const questions = practiceMode === 1 
-    ? (isZh ? pm1QuestionsZh : pm1QuestionsEn)
-    : (isZh ? pm2QuestionsZh : pm2QuestionsEn);
+  const topics = isZh ? topicsZh : topicsEn;
+  const conclusionPhrase = isZh 
+    ? "反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" 
+    : "The reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase.";
 
-  let currentStageIndex = 0;
-  let lastQuestionIndexInTranscript = -1;
-  
-  for (let i = questions.length - 1; i >= 0; i--) {
-    const idx = transcript.lastIndexOf(questions[i]);
-    if (idx !== -1) {
-      currentStageIndex = i + 1;
-      lastQuestionIndexInTranscript = idx;
-      break;
-    }
-  }
-
-  // Count how many User messages occurred AFTER the last predefined question
-  const transcriptAfterLastQuestion = transcript.substring(lastQuestionIndexInTranscript + 1);
-  const userMessagesInCurrentStage = (transcriptAfterLastQuestion.match(/User:/g) || []).length;
-
-  // Cap follow-ups: if the user has already sent 2 or more messages in this stage, force moving to the next main question
-  const forceNextQuestion = userMessagesInCurrentStage >= 2;
-
-  let nextQuestion = "";
-  let isConclusion = false;
-
-  if (currentStageIndex < questions.length) {
-    nextQuestion = questions[currentStageIndex];
-  } else {
-    isConclusion = true;
-  }
-
-  const systemPrompt = `You are an AI Parent Coach guiding a reflection on a parenting video. The user is reflecting on how it feels to be the CHILD in the video.
+  const systemPrompt = `You are an AI Parent Coach guiding a reflection on a parenting video. The user is reflecting on their experience.
 
 Here is the full conversation history:
 ${transcript}
 
-YOUR TASK:
-Evaluate the user's latest reflection ("${newUserMessage}"). You have TWO options based on the depth of their answer:
+YOUR GOAL:
+Guide the user to reflect deeply on the following topics:
+${topics}
 
-${forceNextQuestion ? "" : `OPTION A (User's answer is too short, superficial, or off-topic):
-- Provide brief empathy, then ask a CONCISE follow-up question (max 1 sentence) to guide them to think deeper about the current topic.
-- DO NOT append the next main question yet.
-`}
-OPTION B (${forceNextQuestion ? "MUST BE CHOSEN NOW" : "User's answer is thoughtful and sufficient"}):
-- Provide a VERY CONCISE, EMPATHETIC feedback (max 2 sentences). 
-- Accurately reflect the specific emotion the user mentioned (e.g., if they say "angry", don't assume "sad").
-- ${isConclusion 
-      ? `Conclude EXACTLY with this sentence: "${isZh ? "你反思/总结得非常深刻。问完所有问题了，反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" : "Your reflection is very profound. All questions have been asked, and the reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase."}"` 
-      : `Then, you MUST append the following question exactly to move the conversation forward.\n\nEXACT NEXT QUESTION TO APPEND: "${nextQuestion}"`}
-
-CRITICAL RULES:
-1. ONLY output the conversational response. DO NOT output "OPTION A" or "OPTION B" labels.
-2. If you choose OPTION B, you MUST append the EXACT NEXT QUESTION verbatim.
-3. Keep your feedback extremely concise. Do not ramble.
-4. You ${languageInstruction}`;
+RULES FOR YOUR RESPONSE:
+1. GIVE YOURSELF AUTONOMY: Base your next response strictly on the user's latest answer. Dig deeper into their thoughts if their answer is superficial (e.g., asking "Why do you think so?"). 
+2. MEMORY & PROGRESSION: Read the conversation history carefully. Ensure you cover all the topics above eventually. DO NOT repeat questions or topics that have already been sufficiently discussed. Once a topic is well-explored, smoothly transition to the next topic.
+3. BE CONCISE: Keep your empathy and questions brief (2-3 sentences max). First give positive reinforcement/validation for their answer, then ask your question.
+4. CONCLUSION: If and ONLY IF you determine that the user has sufficiently reflected on ALL the topics above, you MUST conclude your response EXACTLY with this phrase: "${conclusionPhrase}"
+5. You ${languageInstruction}`;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "The user replied: {newUserMessage}\n\nProvide your detailed coaching feedback and then EXACTLY append the required next step/question."]
+    ["user", "The user replied: {newUserMessage}\n\nProvide your detailed coaching feedback. Either dig deeper based on their answer, move to the next topic, or conclude if all topics are covered."]
   ]);
   const chain = prompt.pipe(chatModel);
 

@@ -144,22 +144,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
       </div>
 
       {(() => {
-        // Determine ambient weather from the latest partner message
-        let ambientWeather = 'neutral';
-        if (session && session.messages) {
-          const reversedMsgs = [...session.messages].reverse();
-          const latestPartnerMsg = reversedMsgs.find(m => m.sender !== RoleplayAgentType.Parent && m.sender !== RoleplayAgentType.Moderator) as any;
-          if (latestPartnerMsg && latestPartnerMsg.ambient_weather) {
-            ambientWeather = latestPartnerMsg.ambient_weather;
-          }
-        }
-        
-        let weatherBgClass = 'bg-white';
-        if (ambientWeather === 'stormy') weatherBgClass = 'bg-gradient-to-b from-red-50 to-white';
-        if (ambientWeather === 'sunny') weatherBgClass = 'bg-gradient-to-b from-green-50 to-white';
-
         return (
-          <div className={`chat-container h-96 overflow-y-auto p-4 border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4 transition-colors duration-1000 ${weatherBgClass}`}>
+          <div className="chat-container h-96 overflow-y-auto p-4 border border-gray-100 rounded-lg shadow-inner mb-4 flex flex-col gap-4 transition-colors duration-1000 bg-white">
             {session?.messages?.map((msg, idx) => {
               const isUser = msg.sender === RoleplayAgentType.Parent;
           const isModerator = msg.sender === RoleplayAgentType.Moderator;
