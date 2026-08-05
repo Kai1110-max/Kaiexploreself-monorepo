@@ -16,7 +16,43 @@ export async function generatePartnerResponse(agenda: IAgendaORM, session: IRole
   
   const mongoose = require('mongoose');
   const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const AgendaItem = mongoose.model('AgendaItem');
+  
   const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
+  // --- INNOVATION 2: AGENTIC MEMORY (LONG-TERM MEMORY) ---
+  // Fetch up to 3 previous agendas of this user to provide longitudinal memory
+  let memoryContext = "";
+  try {
+    const pastAgendas = await AgendaItem.find({ uid: agenda.uid, _id: { $ne: agenda._id } })
+      .populate({
+        path: 'threads',
+        populate: { path: 'roleplaySessionId' }
+      })
+      .sort({ createdAt: -1 })
+      .limit(2);
+      
+    if (pastAgendas && pastAgendas.length > 0) {
+      let memoryLines = [];
+      pastAgendas.forEach((pastAgenda: any) => {
+        const dateStr = pastAgenda.createdAt ? pastAgenda.createdAt.toLocaleDateString() : 'recently';
+        const pastSession = pastAgenda.threads?.[0]?.roleplaySessionId;
+        if (pastSession && pastSession.cachedEvaluation) {
+          const strengths = pastSession.cachedEvaluation.strengths?.join(", ") || "";
+          const improvements = pastSession.cachedEvaluation.improvements?.join(", ") || "";
+          if (strengths || improvements) {
+            memoryLines.push(`- On ${dateStr}, user's strengths: ${strengths}. Areas to improve: ${improvements}.`);
+          }
+        }
+      });
+      if (memoryLines.length > 0) {
+        memoryContext = `\n\n[LONG-TERM MEMORY OF THIS USER]\nYou remember the user from previous sessions:\n${memoryLines.join("\n")}\nUse this memory naturally in your responses if relevant (e.g., "I noticed you improved since last time..." or "You are still struggling with...").`;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching agentic memory:", err);
+  }
+  // --- END AGENTIC MEMORY ---
 
   let transcript = "";
   messages.forEach((m: any) => {
@@ -47,7 +83,7 @@ DO NOT wrap in markdown blocks like \`\`\`json. DO NOT add any other text.`;
     systemPrompt = `You are an AI acting as a NOVICE PARENT in a roleplay simulation. 
 The user is playing the role of 6-year-old Lele who doesn't want to go to school and is angry.
 Your goal is to act like a typical novice parent who dismisses emotions, rushes the child, or yells. 
-Do NOT use good emotion coaching skills. Invalidate the child's feelings, offer bribes, or use threats.
+Do NOT use good emotion coaching skills. Invalidate the child's feelings, offer bribes, or use threats.${memoryContext}
 
 Here is the conversation history so far:
 ${transcript}
@@ -62,7 +98,7 @@ Rules:
     systemPrompt = `You are an AI acting as an EXPERT PARENT in a roleplay simulation. 
 The user is playing the role of 6-year-old Lele who doesn't want to go to school and is angry.
 Your goal is to demonstrate PERFECT Emotion Coaching skills (Notice, Connect, Empathize, Label, Set Limits). 
-Respond to the child's (user's) anger with extreme patience, empathy, and validation.
+Respond to the child's (user's) anger with extreme patience, empathy, and validation.${memoryContext}
 
 Here is the conversation history so far:
 ${transcript}
@@ -77,7 +113,7 @@ Rules:
   } else {
     systemPrompt = `You are an AI acting as a specific child in a parent training simulation.
 Your goal is to simulate realistic challenging behavior based on your profile, to help the parent practice their parenting skills.
-The child's profile is: ${session.childProfile}
+The child's profile is: ${session.childProfile}${memoryContext}
 
 Here is the conversation history so far:
 ${transcript}
@@ -256,6 +292,37 @@ export async function generateCoachDirectResponse(agenda: IAgendaORM, session: I
   const practiceMode = session.practiceMode || 3;
   const mongoose = require('mongoose');
   const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const AgendaItem = mongoose.model('AgendaItem');
+
+  // --- INNOVATION 2: AGENTIC MEMORY (LONG-TERM MEMORY) ---
+  let memoryContext = "";
+  try {
+    const pastAgendas = await AgendaItem.find({ uid: agenda.uid, _id: { $ne: agenda._id } })
+      .populate({ path: 'threads', populate: { path: 'roleplaySessionId' } })
+      .sort({ createdAt: -1 }).limit(2);
+      
+    if (pastAgendas && pastAgendas.length > 0) {
+      let memoryLines = [];
+      pastAgendas.forEach((pastAgenda: any) => {
+        const dateStr = pastAgenda.createdAt ? pastAgenda.createdAt.toLocaleDateString() : 'recently';
+        const pastSession = pastAgenda.threads?.[0]?.roleplaySessionId;
+        if (pastSession && pastSession.cachedEvaluation) {
+          const strengths = pastSession.cachedEvaluation.strengths?.join(", ") || "";
+          const improvements = pastSession.cachedEvaluation.improvements?.join(", ") || "";
+          if (strengths || improvements) {
+            memoryLines.push(`- On ${dateStr}, user's strengths: ${strengths}. Areas to improve: ${improvements}.`);
+          }
+        }
+      });
+      if (memoryLines.length > 0) {
+        memoryContext = `\n\n[LONG-TERM MEMORY OF THIS USER]\nYou remember the user's progress from previous training sessions:\n${memoryLines.join("\n")}\nUse this memory to give personalized advice (e.g., "I know you struggled with X last time, try to...").`;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching agentic memory:", err);
+  }
+  // --- END AGENTIC MEMORY ---
+
   const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
 
   let transcript = "";
@@ -271,7 +338,7 @@ export async function generateCoachDirectResponse(agenda: IAgendaORM, session: I
 
   const systemPrompt = `You are a helpful Parent Training AI Coach.
 The user is participating in a roleplay simulation (Practice Mode: ${practiceMode}).
-They have paused the roleplay to ask you a direct question using the "@coach" or "@教练" tag.
+They have paused the roleplay to ask you a direct question using the "@coach" or "@教练" tag.${memoryContext}
 
 Here is the conversation history so far:
 ${transcript}
