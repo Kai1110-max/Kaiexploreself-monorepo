@@ -574,6 +574,8 @@ export async function generateAdvisorsResponse(
   // Format the chat history
   let chatHistory = "";
   if (session && session.messages) {
+    const mongoose = require('mongoose');
+    const RoleplayMessage = mongoose.model('RoleplayMessage');
     const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
     const recentMessages = messages.slice(-6); // Only need the last few turns
     for (const msg of recentMessages) {
@@ -604,7 +606,7 @@ Output format MUST be a valid JSON:
   ]);
 
   try {
-    const response = await model.invoke(await prompt.format({ chatHistory }));
+    const response = await chatModel.invoke(await prompt.format({ chatHistory }));
     const responseText = response.content as string;
     
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -612,7 +614,15 @@ Output format MUST be a valid JSON:
       throw new Error("Failed to extract JSON from AI response.");
     }
     
-    return JSON.parse(jsonMatch[0]);
+    let result;
+    try {
+      result = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      const cleanedJson = jsonMatch[0].replace(/[\u0000-\u001F]+/g, "");
+      result = JSON.parse(cleanedJson);
+    }
+    
+    return result;
   } catch (error) {
     console.error("Error generating advisors response:", error);
     return {
