@@ -225,7 +225,7 @@ export const Module1RoleplayPage = () => {
                 </Title>
                 <div className="w-full max-w-lg mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
                   <video 
-                    src={currentStage === 1 ? "/lele-scenario-1.mp4" : "/lele-scenario-2.mp4"} 
+                    src={currentStage === 1 ? "/new-dismissive.mp4" : "/new-supportive.mp4"} 
                     controls 
                     className="w-full h-full object-contain"
                   >
