@@ -9,73 +9,82 @@ import moment from 'moment';
 
 const { Title, Paragraph, Text } = Typography;
 
-const ClassificationGame = ({ i18n }: { i18n: any }) => {
+const EmotionCoachingQuiz = ({ i18n }: { i18n: any }) => {
   const isEn = i18n.language === 'en';
-  const initialWords = [
-    { id: 1, zh: '生气', en: 'Angry', type: 'emotion' },
-    { id: 2, zh: '打人', en: 'Hitting', type: 'behavior' },
-    { id: 3, zh: '害怕', en: 'Scared', type: 'emotion' },
-    { id: 4, zh: '扔玩具', en: 'Throwing toys', type: 'behavior' },
-    { id: 5, zh: '伤心', en: 'Sad', type: 'emotion' },
-    { id: 6, zh: '喊叫', en: 'Yelling', type: 'behavior' },
-  ];
-  
-  const [words] = useState(initialWords);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleClassify = (guessType: string) => {
-    if (words[currentIndex].type === guessType) {
-      message.success(isEn ? 'Correct!' : '回答正确！');
-      setScore(s => s + 1);
-    } else {
-      message.error(isEn ? 'Oops, that was wrong.' : '哎呀，选错啦。');
-    }
-    
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(c => c + 1);
-    } else {
-      setFinished(true);
-    }
+  const options = isEn ? [
+    { id: 1, text: "It's just ice cream, stop crying. I'll buy you another one right now.", type: 'Dismissing' },
+    { id: 2, text: "Why weren't you careful? I told you to hold it tight!", type: 'Disapproving' },
+    { id: 3, text: "Oh no, your ice cream fell! You must be so sad and disappointed. I'd be sad too.", type: 'Emotion Coaching' }
+  ] : [
+    { id: 1, text: "别哭了，一个冰淇淋而已，妈妈马上再给你买一个就是了。", type: '忽视型' },
+    { id: 2, text: "你怎么这么不小心？我刚才就跟你说要拿紧了吧！", type: '指责型' },
+    { id: 3, text: "哎呀，冰淇淋掉地上了！你一定很难过、很失望吧，如果是我也会很伤心的。", type: '情绪辅导型' }
+  ];
+
+  const handleSelect = (id: number) => {
+    if (!submitted) setSelected(id);
   };
 
-  if (finished) {
-    return (
-      <div className="my-6 p-6 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-        <Title level={4} className="!text-emerald-700 !mt-0">{isEn ? 'Practice Completed!' : '练习完成！'}</Title>
-        <Paragraph className="text-emerald-800 text-lg">
-          {isEn ? `You scored ${score} out of ${words.length}.` : `您的得分：${score} / ${words.length}。`}
-        </Paragraph>
-        <Paragraph className="font-bold text-emerald-900">
-          {isEn ? 'Core Rule: Accept 100% of emotions, but set boundaries for behaviors!' : '核心原则：百分之百接纳情绪，但必须规范不当行为！'}
-        </Paragraph>
-        <Button onClick={() => { setCurrentIndex(0); setScore(0); setFinished(false); }}>
-          {isEn ? 'Play Again' : '再玩一次'}
-        </Button>
-      </div>
-    );
-  }
+  const handleSubmit = () => {
+    if (selected) setSubmitted(true);
+  };
 
   return (
-    <div className="my-6 p-6 bg-indigo-50 border border-indigo-100 rounded-xl text-center shadow-sm">
-      <Title level={5} className="!text-indigo-800 !mt-0 !mb-6">
-        {isEn ? 'Interactive Practice: Emotion vs. Behavior' : '互动练习：“情绪 vs. 行为” 快速分类'}
+    <div className="my-10 p-6 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm">
+      <Title level={4} className="!text-indigo-800 !mt-0 !mb-4">
+        {isEn ? 'Mini Quiz: Identify the Emotion Coach' : '随堂小测：寻找情绪教练'}
       </Title>
-      <div className="text-3xl font-bold text-slate-800 mb-8">
-        {isEn ? words[currentIndex].en : words[currentIndex].zh}
+      <Paragraph className="text-lg mb-6">
+        {isEn ? "Scenario: Your 4-year-old child accidentally drops their ice cream on the ground and bursts into tears. How would an 'Emotion Coach' respond?" : "场景：您4岁的孩子不小心把刚买的冰淇淋掉在了地上，瞬间大哭起来。作为“情绪教练”，您会如何回应？"}
+      </Paragraph>
+      <div className="space-y-3 mb-6">
+        {options.map((opt) => {
+          let itemClass = "p-4 border rounded-lg cursor-pointer transition-colors duration-200 ";
+          if (submitted) {
+            if (opt.id === 3) itemClass += "bg-emerald-100 border-emerald-400";
+            else if (selected === opt.id) itemClass += "bg-rose-100 border-rose-400";
+            else itemClass += "bg-white border-slate-200 opacity-60";
+          } else {
+            itemClass += selected === opt.id ? "bg-indigo-100 border-indigo-400" : "bg-white border-slate-200 hover:bg-slate-50";
+          }
+          
+          return (
+            <div key={opt.id} className={itemClass} onClick={() => handleSelect(opt.id)}>
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected === opt.id ? 'border-indigo-500' : 'border-slate-300'}`}>
+                  {selected === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />}
+                </div>
+                <Text className="text-lg">{opt.text}</Text>
+              </div>
+            </div>
+          );
+        })}
       </div>
-      <div className="flex justify-center gap-4">
-        <Button size="large" className="bg-rose-100 hover:bg-rose-200 border-rose-300 text-rose-700 w-32 h-12 text-lg" onClick={() => handleClassify('emotion')}>
-          {isEn ? 'Emotion' : '情绪筐'}
+      
+      {!submitted ? (
+        <Button type="primary" size="large" onClick={handleSubmit} disabled={!selected} className="bg-indigo-600">
+          {isEn ? 'Submit Answer' : '提交答案'}
         </Button>
-        <Button size="large" className="bg-blue-100 hover:bg-blue-200 border-blue-300 text-blue-700 w-32 h-12 text-lg" onClick={() => handleClassify('behavior')}>
-          {isEn ? 'Behavior' : '行为筐'}
-        </Button>
-      </div>
-      <div className="mt-6 text-sm text-slate-500">
-        {isEn ? `Question ${currentIndex + 1} of ${words.length}` : `第 ${currentIndex + 1} 题，共 ${words.length} 题`}
-      </div>
+      ) : (
+        <div className={`p-4 rounded-lg ${selected === 3 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}`}>
+          <div className="font-bold mb-2">
+            {selected === 3 
+              ? (isEn ? '🎉 Correct!' : '🎉 回答正确！') 
+              : (isEn ? '💡 Not quite.' : '💡 再想想哦。')}
+          </div>
+          <Paragraph className="mb-0">
+            {isEn 
+              ? "Option 3 is the Emotion Coaching approach. It acknowledges and validates the child's feelings (sadness/disappointment) without immediately rushing to fix the problem (Option 1) or blaming them (Option 2)." 
+              : "选项 3 才是情绪教练的回应方式。它第一反应是接纳并认可孩子的感受（伤心、失望），而不是立刻用物质去掩盖问题（选项 1 的忽视型），或者趁机指责孩子（选项 2 的指责型）。"}
+          </Paragraph>
+          <Button className="mt-4" onClick={() => { setSubmitted(false); setSelected(null); }}>
+            {isEn ? 'Try Again' : '再试一次'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -178,6 +187,8 @@ export const Module1IntroPage = () => {
                   <div><Tag color="blue" className="text-sm px-2 py-1">Step 4. Express</Tag> Help the child use appropriate words to label their emotions.</div>
                   <div><Tag color="blue" className="text-sm px-2 py-1">Step 5. Set Boundaries</Tag> Guide the child to solve the problem while setting clear behavioral boundaries.</div>
                 </div>
+                
+                <EmotionCoachingQuiz i18n={i18n} />
 
                 {/* 1.6 */}
                 <Divider orientation="left"><span className="text-xl font-bold text-slate-700">1.6 Module Summary & Family Practice</span></Divider>
@@ -267,6 +278,8 @@ export const Module1IntroPage = () => {
                   <div><Tag color="blue" className="text-sm px-2 py-1">第四步：表达</Tag> 帮助孩子用恰当的词语表达情绪。</div>
                   <div><Tag color="blue" className="text-sm px-2 py-1">第五步：解决与界限</Tag> 指导孩子解决问题，并划定清晰的行为界限。</div>
                 </div>
+                
+                <EmotionCoachingQuiz i18n={i18n} />
 
                 {/* 1.6 */}
                 <Divider orientation="left"><span className="text-xl font-bold text-slate-700">1.6 模块总结与家庭实践</span></Divider>
