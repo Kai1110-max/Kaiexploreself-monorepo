@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Input, Button, List, Typography, Space, Spin, Avatar, Modal, Progress, Tag, message as antdMessage } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined, SafetyCertificateOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { SendOutlined, UserOutlined, RobotOutlined, SafetyCertificateOutlined, CheckCircleOutlined, BulbOutlined } from '@ant-design/icons';
 import { useSelector } from '../../../redux/hooks';
 import { startRoleplaySession, sendRoleplayMessage, evaluateRoleplaySession, IRoleplayEvaluation } from '../../../api_call/roleplay';
 import { IRoleplaySessionPopulated, RoleplayAgentType } from '@core';
@@ -18,6 +18,9 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<IRoleplayEvaluation | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  const [advisorsAdvice, setAdvisorsAdvice] = useState<{ expert: string, peer: string } | null>(null);
+  const [askingAdvisors, setAskingAdvisors] = useState(false);
   const [message, setMessage] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +123,35 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
       return i18n.language === 'en'
         ? "In this final practice, YOU are the Parent. The AI is playing the role of 6-year-old Lele who refuses to go to school. Your goal is to practice the '5-Step Emotion Coaching Method' (Notice, Connect, Empathize, Label, Set Limits). The AI Coach will observe your responses and provide guidance. If you do well, Lele will calm down!"
         : "在最终的练习中，您将回归“家长”的角色。AI将扮演那个哭闹着不想去上学的乐乐。您的目标是亲自实践刚才学到的“情绪辅导五步法”（觉察、链接、共情、表达、界限）。AI教练会在一旁观察并给予提示。如果您做得好，乐乐的情绪就会逐渐平复！";
+    }
+  };
+
+  const handleAskAdvisors = async () => {
+    if (!session || !agendaId || !tid || !token) return;
+    setAskingAdvisors(true);
+    setAdvisorsAdvice(null);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/agendas/${agendaId}/themes/${tid}/roleplay/advisors`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          language: i18n.language,
+          practiceMode
+        })
+      });
+      if (!response.ok) throw new Error("Failed to fetch advice");
+      const advice = await response.json();
+      setAdvisorsAdvice(advice);
+      setTimeout(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (err) {
+      antdMessage.error(i18n.language === 'en' ? 'Failed to get advice' : '获取智囊团建议失败');
+    } finally {
+      setAskingAdvisors(false);
     }
   };
 
@@ -250,12 +282,66 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
                 </div>
               );
             })()}
+            
+            {advisorsAdvice && practiceMode === 3 && (
+              <div className="flex flex-col gap-3 my-4 mx-2 p-4 bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
+                <div className="text-center font-bold text-slate-600 mb-2">
+                  {i18n.language === 'en' ? "💡 Board of Advisors" : "💡 智囊团建议"}
+                </div>
+                
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border border-blue-200">
+                    🧑‍🏫
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-blue-700 mb-1">
+                      {i18n.language === 'en' ? "Expert (Psychologist)" : "专家（儿童心理学家）"}
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-700">
+                      {advisorsAdvice.expert}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start mt-2">
+                  <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0 border border-rose-200">
+                    👩‍👧‍👦
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-rose-700 mb-1">
+                      {i18n.language === 'en' ? "Peer (Experienced Mom)" : "过来人（二胎妈妈）"}
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-slate-200 text-sm text-slate-700">
+                      {advisorsAdvice.peer}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-center text-xs text-slate-400 mt-2 italic">
+                  {i18n.language === 'en' 
+                    ? "Choose one to follow, or combine them to craft your own response below." 
+                    : "请结合他们的建议，在下方输入您的回复。"}
+                </div>
+              </div>
+            )}
+
             <div ref={chatEndRef} />
           </div>
         );
       })()}
 
-      <div className="flex gap-2 shrink-0">
+      <div className="flex gap-2 shrink-0 mt-4">
+        {practiceMode === 3 && (
+          <Button
+            type="dashed"
+            icon={<BulbOutlined />}
+            onClick={handleAskAdvisors}
+            loading={askingAdvisors}
+            disabled={sending || evaluating}
+            className="h-auto rounded-lg text-amber-600 border-amber-300 hover:text-amber-700 hover:border-amber-400 hover:bg-amber-50 shrink-0"
+            title={i18n.language === 'en' ? "Ask Board of Advisors" : "求助智囊团"}
+          />
+        )}
         <Input.TextArea 
           value={message}
           onChange={e => setMessage(e.target.value)}

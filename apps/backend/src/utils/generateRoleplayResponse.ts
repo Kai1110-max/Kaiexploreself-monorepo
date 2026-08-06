@@ -563,3 +563,61 @@ ${formatInstruction}`;
     };
   }
 }
+
+export async function generateAdvisorsResponse(
+  agenda: any,
+  session: any,
+  language: string
+): Promise<{ expert: string, peer: string }> {
+  const isZh = language === 'zh';
+  
+  // Format the chat history
+  let chatHistory = "";
+  if (session && session.messages) {
+    const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+    const recentMessages = messages.slice(-6); // Only need the last few turns
+    for (const msg of recentMessages) {
+      chatHistory += `${msg.sender}: ${msg.content} ${msg.action ? `[Action: ${msg.action}]` : ''}\n`;
+    }
+  }
+
+  const systemPrompt = `You are a Dual-Agent Advisory Board helping a parent during a difficult child-rearing simulation.
+The parent is struggling to respond to the child's tantrum.
+Based on the chat history, you must provide TWO distinct pieces of advice from two different personas:
+1. 'expert': A strict, theoretical child psychologist. Focuses on the formal 5-step emotion coaching theory (Notice, Connect, Empathize, Express, Set Boundaries). Tone is professional and theoretical.
+2. 'peer': An experienced, empathetic mother of two. Focuses on ground-level, practical tactics and emotional support for the parent. Tone is casual, relatable, and encouraging.
+
+CRITICAL RULES:
+- Provide EXACTLY 1 to 2 short sentences per advisor.
+- Do NOT provide the exact same advice. They should offer different angles (theory vs. practical).
+- The parent will read both and decide how to act.
+
+Output format MUST be a valid JSON:
+{
+  "expert": "expert's advice here",
+  "peer": "peer's advice here"
+}`;
+
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemPrompt],
+    ["user", `Language to use: ${isZh ? 'Chinese' : 'English'}\n\nRecent Chat History:\n{chatHistory}\n\nProvide the dual-advisor JSON now.`]
+  ]);
+
+  try {
+    const response = await model.invoke(await prompt.format({ chatHistory }));
+    const responseText = response.content as string;
+    
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Failed to extract JSON from AI response.");
+    }
+    
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error generating advisors response:", error);
+    return {
+      expert: isZh ? "根据情绪辅导理论，您现在应该先接纳孩子的负面情绪，再说出您的界限。" : "According to emotion coaching theory, you should validate the negative emotion first before stating your boundary.",
+      peer: isZh ? "别着急，这时候讲大道理孩子听不进去的。试着先抱抱他，或者转移一下注意力吧！" : "Don't stress, kids can't hear logic right now. Try just giving a hug or gently redirecting their attention!"
+    };
+  }
+}

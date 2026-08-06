@@ -2,7 +2,7 @@ import express from 'express';
 import { RoleplaySession, RoleplayMessage, ThreadItem } from '../../../config/schema';
 import type { RequestWithTheme } from '../../middlewares';
 import { RoleplayAgentType } from '@core';
-import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation, generateCoachDirectResponse, generateReflectionCoachResponse } from '../../../utils/generateRoleplayResponse';
+import { generatePartnerResponse, generateModeratorResponse, generateRoleplayHint, generateRoleplayEvaluation, generateCoachDirectResponse, generateReflectionCoachResponse, generateAdvisorsResponse } from '../../../utils/generateRoleplayResponse';
 
 const router = express.Router({ mergeParams: true });
 
@@ -175,6 +175,27 @@ router.post('/hint', async (req: RequestWithTheme, res) => {
     return res.json({ hint });
   } catch (err) {
     console.error('Error generating hint:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/advisors', async (req: RequestWithTheme, res) => {
+  const { language, practiceMode = 3 } = req.body;
+  try {
+    const thread = await ThreadItem.findById(req.theme._id);
+    if (!thread) {
+      return res.status(404).json({ error: "Thread not found." });
+    }
+
+    const session = await RoleplaySession.findOne({ tid: thread._id, practiceMode }).populate('messages');
+    if (!session) {
+      return res.status(404).json({ error: "Session not found." });
+    }
+
+    const advice = await generateAdvisorsResponse(req.agenda, session, language);
+    return res.json(advice);
+  } catch (err) {
+    console.error('Error generating advisors advice:', err);
     res.status(500).json({ error: err.message });
   }
 });
