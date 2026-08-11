@@ -466,7 +466,7 @@ export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IR
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
 
-  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the USER said in the transcript as evidence. To do this correctly: look ONLY at the lines starting with the User's role (e.g., only quote lines starting with 'Parent:'). DO NOT quote what the AI/Coach said. If the user didn't say anything relevant, state what was missing. DO NOT invent quotes.";
+  const evidenceInstruction = "CRITICAL: In the 'feedback' for each step, you MUST quote the exact words the USER said in the transcript as evidence. Put the user's quotes in quotation marks (e.g., You said \"...\"). To do this correctly: look ONLY at the lines starting with the User's role (e.g., only quote lines starting with 'Parent:'). DO NOT quote what the AI/Coach said. If the user didn't say anything relevant to that step, explicitly state that they missed it. DO NOT invent quotes. DO NOT just describe what they did (like 'The parent validated feelings'), you MUST show the proof (like 'You validated feelings by saying \"I know you are upset\"').";
 
   const formatInstruction = `YOU MUST RESPOND ONLY WITH A VALID JSON OBJECT EXACTLY MATCHING THIS FORMAT:
 {{
