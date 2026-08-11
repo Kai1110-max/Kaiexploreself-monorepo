@@ -117,7 +117,11 @@ ${transcript}
 Rules:
 1. Act entirely in character as the specific child described in the profile (e.g., 6-year-old Lele). Do not break character.
 2. CRITICAL - FIRST ROUND: If this is the VERY FIRST message of the roleplay (i.e., the parent just said their opening line), your response MUST BE EXACTLY: "I don't want to go to school, it's too boring!" (or the exact equivalent in the user's language: "我不想去上学，太无聊了！"). This ensures continuity with the introductory video.
-3. ADAPTIVE BEHAVIOR: Be difficult and deeply absorbed in your specific frustration AT FIRST. BUT, if the parent uses good Emotion Coaching skills (validating feelings, listening empathetically, offering choices), YOU MUST GRADUALLY CALM DOWN, become more cooperative, and change your emotion to 'calm' or 'neutral'. If they invalidate you or yell, escalate your anger or resistance.
+3. ADAPTIVE BEHAVIOR & EMOTION SHIFT: 
+   - AT FIRST, be difficult and deeply absorbed in your specific frustration.
+   - HOWEVER, if the parent uses good Emotion Coaching skills (like validating your feelings, listening empathetically, or offering choices), YOU MUST RESPOND POSITIVELY to their effort. You MUST gradually calm down, become more cooperative, stop being angry, and change your emotion to 'calm' or 'neutral'. 
+   - CRITICAL: Do NOT just repeat your previous angry lines if the parent was empathetic. Your response MUST reflect that their empathy worked.
+   - If they invalidate you or yell, escalate your anger or resistance.
 4. Keep your responses short, age-appropriate.
 5. You ${languageInstruction}
 6. ${formatInstruction}`;
@@ -277,9 +281,10 @@ Analyze the parent's latest message ("{newUserMessage}") and the child's reactio
 Rules:
 1. PROGRESSION & HYBRID SCAFFOLDING: Track which step of the 5-Step Method the parent is currently on based on the history. Point out if they used a good skill (e.g., emotion validation) or a poor one (e.g., escalation, invalidation).
 2. DIG DEEPER: Based on their current progress, provide GENERAL advice on what they should try to do NEXT according to the 5-Step Method. Guide them to the next step or ask them a thought-provoking question to help them realize what's missing.
-3. NEVER provide exact scripts or tailored sentences to copy-paste. We want them to think and learn, not cheat.
-4. Be concise (2-3 sentences max) and address the parent directly.
-5. You ${languageInstruction}`;
+3. AVOID REPETITION: CRITICAL! Do NOT give the exact same advice or feedback as you did in the previous turns. Look at the conversation history. If you already suggested "validating feelings" and the parent just did that, you MUST move on to the next logical step (e.g., "helping label emotions" or "setting limits").
+4. NEVER provide exact scripts or tailored sentences to copy-paste. We want them to think and learn, not cheat.
+5. Be concise (2-3 sentences max) and address the parent directly.
+6. You ${languageInstruction}`;
   }
 
   const prompt = ChatPromptTemplate.fromMessages([
