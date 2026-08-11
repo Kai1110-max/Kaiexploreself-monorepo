@@ -116,12 +116,11 @@ ${transcript}
 
 Rules:
 1. Act entirely in character as the specific child described in the profile (e.g., 6-year-old Lele). Do not break character.
-2. CRITICAL: Respond DIRECTLY to the parent's latest message. Answer their specific questions or react to their specific actions.
-3. Be difficult, resistant, and deeply absorbed in your specific frustration, especially if the parent uses poor communication.
-4. If the parent uses good Emotion Coaching skills, you can slightly de-escalate, but maintain the realism of a child's emotional state.
-5. Keep your responses short, age-appropriate.
-6. You ${languageInstruction}
-7. ${formatInstruction}`;
+2. CRITICAL - FIRST ROUND: If this is the VERY FIRST message of the roleplay (i.e., the parent just said their opening line), your response MUST BE EXACTLY: "I don't want to go to school, it's too boring!" (or the exact equivalent in the user's language: "我不想去上学，太无聊了！"). This ensures continuity with the introductory video.
+3. ADAPTIVE BEHAVIOR: Be difficult and deeply absorbed in your specific frustration AT FIRST. BUT, if the parent uses good Emotion Coaching skills (validating feelings, listening empathetically, offering choices), YOU MUST GRADUALLY CALM DOWN, become more cooperative, and change your emotion to 'calm' or 'neutral'. If they invalidate you or yell, escalate your anger or resistance.
+4. Keep your responses short, age-appropriate.
+5. You ${languageInstruction}
+6. ${formatInstruction}`;
   }
 
   const prompt = ChatPromptTemplate.fromMessages([
@@ -221,6 +220,16 @@ export async function generateModeratorResponse(agenda: IAgendaORM, session: IRo
   const init_info = await summarizeProfilicInfo(agenda.initialNarrative);
   const practiceMode = session.practiceMode || 3;
 
+  const mongoose = require('mongoose');
+  const RoleplayMessage = mongoose.model('RoleplayMessage');
+  const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
+
+  let transcript = "";
+  messages.forEach((m: any) => {
+    const sender = m.sender === RoleplayAgentType.Child ? 'Child' : m.sender === RoleplayAgentType.Parent ? 'Parent' : 'Coach';
+    transcript += `${sender}: ${m.content}\n`;
+  });
+
   const languageInstruction = language === 'zh' 
     ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
     : "MUST strictly use ONLY English.";
@@ -253,14 +262,23 @@ Rules:
     systemPrompt = `You are an objective AI Moderator and Parent Coach observing a roleplay between a Parent (the user) and a Simulated Child.
 The parent's initial problem is: ${init_info}
 
-Your goal is to guide the parent through the "Emotion Coaching" exercise.
+Your goal is to guide the parent through the "5-Step Emotion Coaching Method":
+Step 1: Notice the child's emotion
+Step 2: Recognize as an opportunity for connection
+Step 3: Listen empathetically and validate
+Step 4: Help verbally label emotions
+Step 5: Set limits & explore strategies
+
+Here is the full conversation history so far:
+${transcript}
+
 Analyze the parent's latest message ("{newUserMessage}") and the child's reaction ("{partnerResponse}").
 
 Rules:
-1. Provide GENERAL advice on what they should try to do next (e.g., "Think about how to validate the child's emotion before solving the problem"), but NEVER provide exact scripts or tailored sentences to copy-paste. We want them to think and learn, not cheat.
-2. Point out if they used a good skill (e.g., emotion validation) or a poor one (e.g., escalation, invalidation).
-3. Be concise (2-3 sentences max).
-4. Address the parent directly.
+1. PROGRESSION & HYBRID SCAFFOLDING: Track which step of the 5-Step Method the parent is currently on based on the history. Point out if they used a good skill (e.g., emotion validation) or a poor one (e.g., escalation, invalidation).
+2. DIG DEEPER: Based on their current progress, provide GENERAL advice on what they should try to do NEXT according to the 5-Step Method. Guide them to the next step or ask them a thought-provoking question to help them realize what's missing.
+3. NEVER provide exact scripts or tailored sentences to copy-paste. We want them to think and learn, not cheat.
+4. Be concise (2-3 sentences max) and address the parent directly.
 5. You ${languageInstruction}`;
   }
 
@@ -510,7 +528,9 @@ Step 5: Set limits & explore strategies (设定界限/解决问题) (0-20 points
   - 10 pts: Solves the problem but forgets to hold the limit, OR holds the limit harshly without offering choices.
   - 0 pts: Offers bribes, gives up on the limit, or uses threats.
 
-Task: Provide a structured evaluation of the parent's performance.
+Task: Provide a highly accurate and strict structured evaluation of the parent's performance.
+CRITICAL: You MUST base your scores SOLELY on what the parent ACTUALLY SAID in the transcript. Do NOT give high scores if the parent did not explicitly demonstrate the skill in their dialogue.
+Calculate the total 'score' by summing the 5 step scores. Set 'passed' to true ONLY IF the total score is >= 60.
 
 ${evidenceInstruction}
 

@@ -372,9 +372,15 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
         {(() => {
           if (!session) return null;
           const userRole = RoleplayAgentType.Parent;
-          const userMsgCount = session.messages.filter(m => m.sender === userRole).length;
-          // Phase 1/2 require 6 turns to manually skip, Phase 3 requires 3 turns
-          const requiredTurns = (practiceMode === 1 || practiceMode === 2) ? 6 : 3;
+          // Filter out @coach messages from the round count
+          const userMsgCount = session.messages.filter(m => 
+            m.sender === userRole && 
+            !m.content.toLowerCase().includes('@coach') && 
+            !m.content.includes('@教练')
+          ).length;
+          
+          // Phase 1, 2, and 3 all require 6 turns to manually skip
+          const requiredTurns = 6;
           
           let canEvaluate = false;
           if (practiceMode === 1 || practiceMode === 2) {
