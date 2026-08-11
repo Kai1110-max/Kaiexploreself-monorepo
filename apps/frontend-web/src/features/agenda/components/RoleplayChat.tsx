@@ -373,7 +373,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
           if (!session) return null;
           const userRole = RoleplayAgentType.Parent;
           const userMsgCount = session.messages.filter(m => m.sender === userRole).length;
-          const requiredTurns = (practiceMode === 1 || practiceMode === 2) ? 5 : 3;
+          // Phase 1/2 require 6 turns to manually skip, Phase 3 requires 3 turns
+          const requiredTurns = (practiceMode === 1 || practiceMode === 2) ? 6 : 3;
           
           let canEvaluate = false;
           if (practiceMode === 1 || practiceMode === 2) {
@@ -381,7 +382,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
              const conclusionEn = "All questions have been asked, and the reflection phase is complete.";
              const conclusionZh = "反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告";
              const hasConclusion = session.messages.some(m => m.content.includes(conclusionEn) || m.content.includes(conclusionZh));
-             canEvaluate = hasConclusion;
+             // If AI concludes early, or user has reached 6 turns, they can proceed
+             canEvaluate = hasConclusion || userMsgCount >= requiredTurns;
           } else {
              canEvaluate = userMsgCount >= requiredTurns;
           }
@@ -397,8 +399,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
                 className={`h-auto px-6 rounded-lg border-indigo-600 text-indigo-600 hover:bg-indigo-50 ${!canEvaluate ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {i18n.language === 'en' 
-                  ? (canEvaluate ? "Finish & Get Feedback" : (practiceMode === 1 || practiceMode === 2 ? `Reflecting...` : `Interact more (${userMsgCount}/${requiredTurns})`)) 
-                  : (canEvaluate ? "结束并获取反馈" : (practiceMode === 1 || practiceMode === 2 ? `反思进行中...` : `请继续对话 (${userMsgCount}/${requiredTurns})`))}
+                  ? (canEvaluate ? "Finish & Get Feedback" : `Reflecting... (${userMsgCount}/${requiredTurns})`) 
+                  : (canEvaluate ? "结束并获取反馈" : `反思探讨中 (${userMsgCount}/${requiredTurns})`)}
               </Button>
             );
           }

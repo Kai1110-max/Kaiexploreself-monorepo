@@ -3,7 +3,7 @@ import { Button, Spin, Typography, Tabs, Carousel } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from '../../../redux/hooks';
-import { ArrowLeftIcon } from '@heroicons/react/20/solid';
+import { ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
 import { RoleplayChat } from '../components/RoleplayChat';
 import { threadSelectors } from '../reducer';
 
@@ -18,6 +18,9 @@ export const Module1RoleplayPage = () => {
   
   // Stages: 0: Video, 1: Practice 1, 2: Practice 2, 3: Practice 3, 4: Done
   const [currentStage, setCurrentStage] = useState<number>(0);
+  
+  // Track whether the video section is collapsed
+  const [isVideoCollapsed, setIsVideoCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     // We expect exactly 1 thread to be generated for Module 1
@@ -25,6 +28,11 @@ export const Module1RoleplayPage = () => {
       setTid(threadIds[0] as string);
     }
   }, [threadIds]);
+
+  // Reset video collapse state when changing stages
+  useEffect(() => {
+    setIsVideoCollapsed(false);
+  }, [currentStage]);
 
   const handleNextStage = () => {
     if (currentStage < 4) {
@@ -54,7 +62,7 @@ export const Module1RoleplayPage = () => {
             if (currentStage > 0 && currentStage < 4) {
               handlePrevStage();
             } else {
-              navigate('/app/agendas');
+              navigate('/app/agendas/module1', { state: { agendaId: tid } });
             }
           }}>
             {currentStage > 0 && currentStage < 4 
@@ -215,9 +223,20 @@ export const Module1RoleplayPage = () => {
           )}
 
           {(currentStage === 1 || currentStage === 2) && (
-            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0">
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0 relative">
+              {/* Toggle Button */}
+              <div className="absolute top-2 right-2 z-10">
+                <Button 
+                  type="text" 
+                  icon={isVideoCollapsed ? <ChevronDownIcon className="w-5 h-5" /> : <ChevronUpIcon className="w-5 h-5" />} 
+                  onClick={() => setIsVideoCollapsed(!isVideoCollapsed)}
+                  className="text-slate-500 hover:text-indigo-600 bg-white/80 hover:bg-white rounded-full shadow-sm border border-slate-200"
+                  title={isVideoCollapsed ? (i18n.language === 'en' ? 'Show Video' : '显示视频') : (i18n.language === 'en' ? 'Hide Video' : '隐藏视频')}
+                />
+              </div>
+
               {/* Top Side: Video */}
-              <div className="w-full p-4 flex flex-col border-b border-slate-200 bg-slate-50 shrink-0">
+              <div className={`w-full flex flex-col border-b border-slate-200 bg-slate-50 shrink-0 transition-all duration-300 ${isVideoCollapsed ? 'h-0 overflow-hidden border-b-0 p-0' : 'p-4'}`}>
                 <Title level={5} className="text-indigo-700 mb-2 text-center !mt-0">
                   {currentStage === 1 
                     ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频 1：忽视型家长') 
@@ -233,9 +252,19 @@ export const Module1RoleplayPage = () => {
                   </video>
                 </div>
                 <div className="mt-3 text-slate-600 text-sm leading-relaxed text-center">
-                  {i18n.language === 'en' 
-                    ? "Please act as the child Lele in the video, watch the clip above, and share your feelings as Lele with the AI Coach below."
-                    : "请您扮演视频里的小孩乐乐，观看上方的视频片段，并在下方与 AI 教练分享您作为乐乐的感受。"}
+                  {i18n.language === 'en' ? (
+                    <>
+                      Please watch the video clip above, and share your thoughts and feelings about it with the AI Coach below.
+                      <br />
+                      <span className="font-medium text-indigo-600">Passing Criteria: You need to interact with the emotional coach for at least 6 dialogs, OR until the coach determines your reflection is thorough enough to proceed.</span>
+                    </>
+                  ) : (
+                    <>
+                      请观看上方的视频片段。观看完毕后，请在下方与 AI 教练进行互动，分享您的反思和感受。
+                      <br />
+                      <span className="font-medium text-indigo-600">通过条件：您需要与情绪教练进行至少 6 轮有效的互动探讨，或者当教练认为您的反思已足够深入时，即可进入下一环节。</span>
+                    </>
+                  )}
                 </div>
               </div>
               
@@ -260,9 +289,42 @@ export const Module1RoleplayPage = () => {
           )}
 
           {currentStage === 3 && (
-            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[600px]">
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0 relative">
+              {/* Toggle Button */}
+              <div className="absolute top-2 right-2 z-10">
+                <Button 
+                  type="text" 
+                  icon={isVideoCollapsed ? <ChevronDownIcon className="w-5 h-5" /> : <ChevronUpIcon className="w-5 h-5" />} 
+                  onClick={() => setIsVideoCollapsed(!isVideoCollapsed)}
+                  className="text-slate-500 hover:text-indigo-600 bg-white/80 hover:bg-white rounded-full shadow-sm border border-slate-200"
+                  title={isVideoCollapsed ? (i18n.language === 'en' ? 'Show Video' : '显示视频') : (i18n.language === 'en' ? 'Hide Video' : '隐藏视频')}
+                />
+              </div>
+
+              {/* Top Side: Video */}
+              <div className={`w-full flex flex-col border-b border-slate-200 bg-slate-50 shrink-0 transition-all duration-300 ${isVideoCollapsed ? 'h-0 overflow-hidden border-b-0 p-0' : 'p-4'}`}>
+                <Title level={5} className="text-indigo-700 mb-2 text-center !mt-0">
+                  {i18n.language === 'en' ? 'Phase 3: The Setup' : '第三阶段：实战前情提要'}
+                </Title>
+                <div className="w-full max-w-lg mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
+                  <video 
+                    src="/phase3.mp4" 
+                    controls 
+                    className="w-full h-full object-contain"
+                  >
+                    {i18n.language === 'en' ? 'Your browser does not support the video tag.' : '您的浏览器不支持视频播放。'}
+                  </video>
+                </div>
+                <div className="mt-3 text-slate-600 text-sm leading-relaxed text-center">
+                  {i18n.language === 'en' 
+                    ? "Watch this short clip to understand the context. Then, step in as the Parent and start your roleplay below!"
+                    : "请先观看这个简短的视频了解前情提要。然后，请在下方作为家长，开始您的情绪辅导实战！"}
+                </div>
+              </div>
+
+              {/* Bottom Side: Chat */}
               {tid ? (
-                <div className="flex-1 overflow-y-auto [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-[calc(100%-64px)] [&_.chat-container]:flex-1">
+                <div className="flex-1 overflow-y-auto p-4 [&_.ant-card]:h-full [&_.ant-card]:border-none [&_.ant-card]:shadow-none [&_.ant-card-body]:flex [&_.ant-card-body]:flex-col [&_.ant-card-body]:h-[calc(100%-64px)] [&_.chat-container]:flex-1">
                   <RoleplayChat 
                     key={currentStage} 
                     tid={tid} 

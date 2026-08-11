@@ -29,8 +29,8 @@ const AgendaView = (props: {agendaId: string}) => {
     const onClick = useCallback(async (e: React.MouseEvent)=>{
         if (isEditing) return;
         console.log(props.agendaId)
-        // Navigate directly to the roleplay page so the user can continue the conversation
-        navigate("./" + props.agendaId + "/roleplay")
+        // Navigate to the theory intro page, passing the agendaId so it can continue
+        navigate("/app/agendas/module1", { state: { agendaId: props.agendaId } })
     }, [props.agendaId, isEditing, navigate])
 
     const handleSaveTitle = (e: React.MouseEvent | React.KeyboardEvent | React.FocusEvent<HTMLInputElement>) => {

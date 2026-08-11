@@ -47,8 +47,8 @@ router.post('/start', async (req: RequestWithTheme, res) => {
         : "You just watched the second video. This time, the parent used an 'emotion coaching' approach. How do your feelings differ from the first video? If you were Lele, would you feel understood and respected this time?";
     } else {
       initialContent = isZh 
-        ? "【练习 3：家长作为家长，AI作为孩子】\n现在，你是家长，AI将扮演不想上学的乐乐。请运用我们学过的“情绪辅导五步法”来与乐乐沟通。\n\n请直接对乐乐说出你的第一句话："
-        : "[Practice 3: You as Parent, AI as Child]\nNow, you are the parent, and the AI will act as Lele who doesn't want to go to school. Please use the '5-Step Emotion Coaching Method' to talk to Lele.\n\nPlease say your first sentence to Lele:";
+        ? "【练习 3：角色扮演实战】\n现在，你是家长，AI将扮演不想上学的乐乐。请运用我们学过的“情绪辅导五步法”来与乐乐沟通。\n\n乐乐刚刚生气地向你抱怨了，请看他的发言并给出你的回应："
+        : "[Practice 3: Roleplay Practice]\nNow, you are the parent, and the AI will act as Lele who doesn't want to go to school. Please use the '5-Step Emotion Coaching Method' to talk to Lele.\n\nLele has just complained to you. Please read his message and respond:";
     }
     
     const initialModMsg = new RoleplayMessage({
@@ -58,6 +58,20 @@ router.post('/start', async (req: RequestWithTheme, res) => {
     await initialModMsg.save();
 
     session.messages.push(initialModMsg._id);
+
+    // If it's Phase 3, we immediately push the child's first angry complaint to connect with the video
+    if (practiceMode === 3) {
+      const childInitialContent = isZh ? "我不想去上学，太无聊了！" : "I don't want to go to school, it's too boring!";
+      const initialChildMsg = new RoleplayMessage({
+        sender: RoleplayAgentType.Child,
+        content: childInitialContent,
+        action: "crosses arms, looks away angrily",
+        emotion: "angry"
+      });
+      await initialChildMsg.save();
+      session.messages.push(initialChildMsg._id);
+    }
+
     await session.save();
 
     const populatedSession = await RoleplaySession.findById(session._id).populate('messages');
