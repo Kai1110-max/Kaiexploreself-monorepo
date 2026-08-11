@@ -12,7 +12,7 @@ export const Header = () => {
 
   return (
     <div className="bg-white shadow-sm shadow-slate-600/20 flex justify-between items-center w-full max-w-full z-10 px-2 py-1">
-      <div className="ml-2 font-bold text-gray-600">ExploreSelf</div>
+      <div className="ml-2 font-bold text-gray-600">EmotionBridge</div>
       <div className="flex items-center gap-2">
         <Button size="small" onClick={toggleLanguage}>
           {i18n.language === 'en' ? '中文' : 'English'}
