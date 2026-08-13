@@ -406,12 +406,12 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
   const isZh = language === 'zh';
 
   const topicsZh = practiceMode === 1 
-    ? "1. 觉察情绪：在那个难过的当下，孩子心里最渴望家长说什么或做什么？\n2. 长期影响：如果家长经常这样回应，对孩子性格的长期影响？\n3. 家长动机：跳出角色，家长为什么会那么急躁？"
-    : "1. 情绪变化：当情绪被接纳后，孩子原本抗拒的心情发生了怎样的变化？\n2. 长期影响：长期在接纳的环境中长大，孩子未来面对挫折会怎么表现？\n3. 现实启发：这段视频对现实中处理孩子情绪有什么启发？";
+    ? "1. 情绪觉察：在行为背后，孩子真正的感受是什么？\n2. 触发因素分析：视频中家长的哪些具体言行导致或加重了孩子的情绪？\n3. 长期影响：这种教育方式长期来看会对孩子的性格产生什么影响？\n4. 替代方案：如果使用情绪辅导，更好的回应方式是什么？"
+    : "1. 情绪变化：当情绪被接纳后，孩子原本抗拒的心情发生了怎样的变化？\n2. 触发因素分析：视频中家长的哪些具体言行或态度帮助缓解了孩子的情绪？\n3. 长期影响：长期在接纳的环境中长大，孩子未来面对挫折会怎么表现？\n4. 现实启发：这段视频对现实中处理孩子情绪有什么启发？";
 
   const topicsEn = practiceMode === 1
-    ? "1. Child's Needs: What the child most wanted the parent to say/do in that difficult moment.\n2. Long-term Impact: The long-term impact on the child's personality if the parent frequently responds this way.\n3. Parent's Motivation: Stepping out of the child's role, why the mother in the video was so impatient."
-    : "1. Emotional Shift: How the child's initial resistance changed after their emotions were validated.\n2. Long-term Impact: How the child might handle setbacks in the future if they grow up in an accepting environment.\n3. Real-world Inspiration: How the video inspires the user to handle their child's emotions in reality.";
+    ? "Topic 1: Emotion Awareness (e.g., \"What was the child actually feeling beneath the behavior?\")\nTopic 2: Trigger Analysis (e.g., \"What specific actions or words from the parent in the video caused or worsened the child's emotion?\")\nTopic 3: Long-term Impact (e.g., \"How does this parenting style affect the child's personality over time?\")\nTopic 4: Alternative Approaches (e.g., \"What would be a better way to respond using Emotion Coaching?\")"
+    : "Topic 1: Emotional Shift (e.g., \"How did the child's initial resistance change after their emotions were validated?\")\nTopic 2: Trigger Analysis (e.g., \"What specific actions or words from the parent in the video helped soothe the child's emotion?\")\nTopic 3: Long-term Impact (e.g., \"How might the child handle setbacks in the future if they grow up in an accepting environment?\")\nTopic 4: Real-world Inspiration (e.g., \"How does the video inspire the user to handle their child's emotions in reality?\")";
 
   const topics = isZh ? topicsZh : topicsEn;
   const conclusionPhrase = isZh 
