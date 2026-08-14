@@ -199,22 +199,18 @@ export const Module1RoleplayPage = () => {
                 <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2">
                   <div className="p-4 h-full flex flex-col items-center">
                     <Title level={4} className="text-indigo-600 mb-6 text-center">
-                      {i18n.language === 'en' ? 'Background Scenario: Lele Refuses to Go to School' : '背景场景：乐乐拒绝上学'}
+                      {currentStage === 1 
+                        ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频一：忽视型家长')
+                        : (i18n.language === 'en' ? 'Video 2: Emotion Coaching Parent' : '视频二：情绪辅导型家长')}
                     </Title>
-                    <div className="w-full max-w-3xl aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center shadow-lg">
-                      <video src="/lele-scenario.mp4" controls className="w-full h-full object-contain">
-                        {i18n.language === 'en' ? 'Your browser does not support the video tag.' : '您的浏览器不支持视频播放。'}
+                    <div className="bg-black rounded-lg overflow-hidden flex justify-center items-center h-[300px] w-full max-w-2xl">
+                      <video 
+                        controls 
+                        className="max-h-full max-w-full"
+                        src={currentStage === 1 ? '/new-dismissive.mp4' : '/new-supportive.mp4'}
+                      >
+                        Your browser does not support the video tag.
                       </video>
-                    </div>
-                    <Paragraph className="mt-8 text-slate-600 text-center max-w-2xl text-lg">
-                      {i18n.language === 'en' 
-                        ? 'This is the foundational scenario. In the next phases, we will explore different parenting responses to this exact situation.'
-                        : '这是我们将要探讨的基础场景。在接下来的阶段中，我们将反思面对这一情况时，不同家长回应方式所带来的不同影响。'}
-                    </Paragraph>
-                    <div className="mt-auto pt-6 flex justify-center w-full">
-                      <Button type="primary" size="large" className="bg-indigo-600 px-12 h-14 text-xl rounded-xl shadow-md hover:bg-indigo-500" onClick={handleNextStage}>
-                        {i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思'}
-                      </Button>
                     </div>
                   </div>
                 </Tabs.TabPane>
@@ -250,6 +246,13 @@ export const Module1RoleplayPage = () => {
                           ? "There are no right or wrong answers, and this is not about judging the mother in the video. Please stay open-minded and answer based on your true feelings."
                           : "这些问题没有标准答案，也不是为了评判视频中的母亲。请尽量保持开放，并根据自己代入孩子角色后的真实感受进行回答。"}
                       </Paragraph>
+                      <div className="mt-8 flex justify-center pb-4">
+                        <Button type="primary" size="large" className="bg-indigo-600 px-12 h-14 text-xl rounded-xl shadow-md hover:bg-indigo-500" onClick={handleNextStage}>
+                          {currentStage === 1 
+                            ? (i18n.language === 'en' ? 'Start Phase 1: Reflection' : '开始第一阶段：感性反思')
+                            : (i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思')}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Tabs.TabPane>
