@@ -113,12 +113,12 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   const renderScenarioDescription = () => {
     if (practiceMode === 1) {
       return i18n.language === 'en'
-        ? "You just watched the first video. The parent's response was 'dismissive' or 'blaming'. Now, reflect on this video with the AI Coach. Answer the coach's questions about how the child might feel and the long-term impact."
-        : "您刚才观看了第一段视频。家长的回应属于“忽视型”或“指责型”。现在，请与AI教练一起反思这段视频。探讨如果孩子处于这种情况下会有什么感受，以及长期的影响。";
+        ? "You just watched the first video. Now, reflect on this video with the AI Coach. Explore how the child might feel in this situation, and discuss the potential long-term impacts."
+        : "您刚才观看了第一段视频。现在，请与 AI 教练一起反思这段视频。探讨如果孩子处于这种情况下会有什么感受，以及长期的影响。";
     } else if (practiceMode === 2) {
       return i18n.language === 'en'
-        ? "You just watched the second video. This time, the parent used an 'emotion coaching' approach. Reflect on the differences with the AI Coach. Discuss how the child's feelings might change."
-        : "您刚才观看了第二段视频。这次，家长的回应方式是“情绪辅导型”。请与AI教练一起反思两次视频的差异。探讨孩子感受到被理解后的变化。";
+        ? "You just watched the second video. Now, reflect on the differences with the AI Coach. Discuss how the child's feelings might change after their emotions are validated."
+        : "您刚才观看了第二段视频。现在，请与 AI 教练一起反思两次视频的差异。探讨孩子感受到被理解后的变化。";
     } else {
       return i18n.language === 'en'
         ? "In this final practice, YOU are the Parent. The AI is playing the role of 6-year-old Lele who refuses to go to school. Your goal is to practice the '5-Step Emotion Coaching Method' (Notice, Connect, Empathize, Label, Set Limits). The AI Coach will observe your responses and provide guidance. If you do well, Lele will calm down!"
