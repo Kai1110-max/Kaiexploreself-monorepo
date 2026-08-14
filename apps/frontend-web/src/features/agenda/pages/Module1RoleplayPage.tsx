@@ -196,7 +196,42 @@ export const Module1RoleplayPage = () => {
                     </Button>
                   </div>
                 </Tabs.TabPane>
-                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2">
+                <Tabs.TabPane tab={i18n.language === 'en' ? 'Video Instructions' : '视频观看指导语'} key="2">
+                  <div className="p-8 h-full flex flex-col overflow-y-auto bg-slate-50 rounded-lg">
+                    <div className="max-w-3xl mx-auto text-left text-slate-700 leading-relaxed">
+                      <Paragraph className="mb-4 text-lg">
+                        {i18n.language === 'en' 
+                          ? "Next, you will watch a video of a mother interacting with her child. While watching, please try to put yourself in the child's shoes and understand the interaction from their perspective."
+                          : "接下来，您将观看一段母亲与孩子互动的视频。观看时，请尽可能把自己代入视频中孩子的角色，试着站在孩子的角度感受和理解这段互动。"}
+                      </Paragraph>
+                      <Paragraph className="mb-4 text-lg">
+                        {i18n.language === 'en'
+                          ? "Pay special attention to: What the mother said and did when the child expressed emotions, including her tone and facial expressions; and how these responses would make you feel if you were the child."
+                          : "请特别留意：当孩子表达情绪时，母亲说了什么、做了什么，包括她的语气、表情是怎样的；如果您就是视频中的孩子，这些回应可能会让您产生什么感受。"}
+                      </Paragraph>
+                      <Paragraph className="mb-4 text-lg">
+                        {i18n.language === 'en'
+                          ? "You can watch the video multiple times. Once you feel you have sufficiently stepped into the child's role, you can start the interaction with the AI Coach."
+                          : "您可以根据需要多次观看视频，当您觉得自己已经能够比较充分地进入孩子的角色、体会孩子当时的处境和感受后，再开始与 AI 教练互动。"}
+                      </Paragraph>
+                      <Paragraph className="mb-2 text-lg font-semibold">
+                        {i18n.language === 'en' ? "The AI Coach will guide you to think about:" : "随后，AI 教练将引导您进一步思考："}
+                      </Paragraph>
+                      <ul className="list-disc pl-6 mb-6 space-y-2 text-lg">
+                        <li>{i18n.language === 'en' ? "If I were the child in the video, how would I feel?" : "如果我是视频中的孩子，我会有什么感受？"}</li>
+                        <li>{i18n.language === 'en' ? "What did the mother say or do that made me feel this way?" : "母亲说了什么、做了什么，让我产生这些感受？"}</li>
+                        <li>{i18n.language === 'en' ? "If I were this child, how would I want my mother to respond?" : "如果我是这个孩子，我希望母亲怎样说、怎样做？"}</li>
+                        <li>{i18n.language === 'en' ? "If the mother consistently responds this way, how might it affect the child's long-term development?" : "如果母亲长期以类似的方式回应孩子的情绪，可能会对孩子的长远发展产生什么影响？"}</li>
+                      </ul>
+                      <Paragraph className="text-indigo-600 font-medium text-lg bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                        {i18n.language === 'en'
+                          ? "There are no right or wrong answers, and this is not about judging the mother in the video. Please stay open-minded and answer based on your true feelings."
+                          : "这些问题没有标准答案，也不是为了评判视频中的母亲。请尽量保持开放，并根据自己代入孩子角色后的真实感受进行回答。"}
+                      </Paragraph>
+                    </div>
+                  </div>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="3">
                   <div className="p-4 h-full flex flex-col items-center">
                     <Title level={4} className="text-indigo-600 mb-6 text-center">
                       {i18n.language === 'en' ? 'Background Scenario: Lele Refuses to Go to School' : '背景场景：乐乐拒绝上学'}
