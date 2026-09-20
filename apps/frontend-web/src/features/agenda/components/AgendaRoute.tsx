@@ -3,6 +3,8 @@ import { Outlet } from "react-router-dom"
 import { useAgendaIdInRoute } from "../hooks"
 import { useDispatch } from "../../../redux/hooks"
 import { loadAgenda } from "../reducer"
+import { ExpertChatWidget } from "../../../components/ExpertChatWidget"
+
 export const AgendaRoute = () => {
     
     const agendaId = useAgendaIdInRoute()
@@ -18,7 +20,12 @@ export const AgendaRoute = () => {
     }, [agendaId])
     
     if(agendaId != null){
-        return <Outlet/>
+        return (
+            <>
+                <Outlet/>
+                <ExpertChatWidget />
+            </>
+        )
     }else{
         return null
     }

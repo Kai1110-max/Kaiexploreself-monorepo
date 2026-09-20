@@ -199,15 +199,13 @@ export const Module1RoleplayPage = () => {
                 <Tabs.TabPane tab={i18n.language === 'en' ? 'Scenario Video' : '场景视频'} key="2">
                   <div className="p-4 h-full flex flex-col items-center">
                     <Title level={4} className="text-indigo-600 mb-6 text-center">
-                      {currentStage === 1 
-                        ? (i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频一：忽视型家长')
-                        : (i18n.language === 'en' ? 'Video 2: Emotion Coaching Parent' : '视频二：情绪辅导型家长')}
+                      {i18n.language === 'en' ? 'Video 1: Dismissive Parent' : '视频一：忽视型家长'}
                     </Title>
                     <div className="bg-black rounded-lg overflow-hidden flex justify-center items-center h-[300px] w-full max-w-2xl">
                       <video 
                         controls 
                         className="max-h-full max-w-full"
-                        src={currentStage === 1 ? '/new-dismissive.mp4' : '/new-supportive.mp4'}
+                        src="/lele-scenario.mp4"
                       >
                         Your browser does not support the video tag.
                       </video>
@@ -248,9 +246,7 @@ export const Module1RoleplayPage = () => {
                       </Paragraph>
                       <div className="mt-8 flex justify-center pb-4">
                         <Button type="primary" size="large" className="bg-indigo-600 px-12 h-14 text-xl rounded-xl shadow-md hover:bg-indigo-500" onClick={handleNextStage}>
-                          {currentStage === 1 
-                            ? (i18n.language === 'en' ? 'Start Phase 1: Reflection' : '开始第一阶段：感性反思')
-                            : (i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思')}
+                          {i18n.language === 'en' ? 'Start Phase 2: Reflection' : '开始第二阶段：感性反思'}
                         </Button>
                       </div>
                     </div>
@@ -282,7 +278,7 @@ export const Module1RoleplayPage = () => {
                 </Title>
                 <div className="w-full max-w-lg mx-auto aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center shadow-md">
                   <video 
-                    src={currentStage === 1 ? "/new-dismissive.mp4" : "/new-supportive.mp4"} 
+                    src={currentStage === 1 ? "/reflection1.mp4" : "/reflection2.mp4"} 
                     controls 
                     className="w-full h-full object-contain"
                   >
@@ -294,13 +290,13 @@ export const Module1RoleplayPage = () => {
                     <>
                       Please watch the video clip above, and share your thoughts and feelings about it with the AI Coach below.
                       <br />
-                      <span className="font-medium text-indigo-600">Passing Criteria: You need to interact with the emotional coach for at least 6 dialogs, OR until the coach determines your reflection is thorough enough to proceed.</span>
+                      <span className="font-medium text-indigo-600">Passing Criteria: You need to complete all the reflection topics with the AI Coach to proceed to the next phase.</span>
                     </>
                   ) : (
                     <>
                       请观看上方的视频片段。观看完毕后，请在下方与 AI 教练进行互动，分享您的反思和感受。
                       <br />
-                      <span className="font-medium text-indigo-600">通过条件：您需要与情绪教练进行至少 6 轮有效的互动探讨，或者当教练认为您的反思已足够深入时，即可进入下一环节。</span>
+                      <span className="font-medium text-indigo-600">通过条件：您需要与 AI 教练完成所有反思话题的探讨，即可进入下一环节。</span>
                     </>
                   )}
                 </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, Input, Button, List, Typography, Space, Spin, Avatar, Modal, Progress, Tag, message as antdMessage } from 'antd';
 import { SendOutlined, UserOutlined, RobotOutlined, SafetyCertificateOutlined, CheckCircleOutlined, BulbOutlined } from '@ant-design/icons';
 import { useSelector } from '../../../redux/hooks';
-import { startRoleplaySession, sendRoleplayMessage, evaluateRoleplaySession, IRoleplayEvaluation } from '../../../api_call/roleplay';
+import { startRoleplaySession, sendRoleplayMessage, evaluateRoleplaySession, getAdvisorsAdvice, IRoleplayEvaluation } from '../../../api_call/roleplay';
 import { IRoleplaySessionPopulated, RoleplayAgentType } from '@core';
 import { useTranslation } from 'react-i18next';
 
@@ -131,19 +131,8 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
     setAskingAdvisors(true);
     setAdvisorsAdvice(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/agendas/${agendaId}/themes/${tid}/roleplay/advisors`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          language: i18n.language,
-          practiceMode
-        })
-      });
-      if (!response.ok) throw new Error("Failed to fetch advice");
-      const advice = await response.json();
+      const advice = await getAdvisorsAdvice(token, agendaId, tid, i18n.language, practiceMode);
+      if (!advice) throw new Error("Failed to fetch advice");
       setAdvisorsAdvice(advice);
       setTimeout(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -384,29 +373,34 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
           
           let canEvaluate = false;
           if (practiceMode === 1 || practiceMode === 2) {
-             const isZh = i18n.language === 'zh';
-             const conclusionEn = "All questions have been asked, and the reflection phase is complete.";
-             const conclusionZh = "反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告";
-             const hasConclusion = session.messages.some(m => m.content.includes(conclusionEn) || m.content.includes(conclusionZh));
-             // If AI concludes early, or user has reached 6 turns, they can proceed
-             canEvaluate = hasConclusion || userMsgCount >= requiredTurns;
+             const hasConclusion = session.messages.some(m => m.content.includes("The reflection phase is complete") || m.content.includes("反思阶段已完成"));
+             // For reflection phases, user must complete all topics to proceed
+             canEvaluate = hasConclusion;
+             
+             // Auto trigger evaluation when conclusion is reached and modal isn't already visible
+             if (canEvaluate && !evaluating && !isModalVisible && !evaluation) {
+               // Use setTimeout to avoid React state update during render warning
+               setTimeout(() => {
+                 handleEvaluate();
+               }, 1000);
+             }
           } else {
              canEvaluate = userMsgCount >= requiredTurns;
           }
           
-          if (userMsgCount > 0) {
+          if (userMsgCount >= 0) { // Changed from > 0 to >= 0 so the button always shows
             return (
               <Button 
                 type="default" 
                 onClick={handleEvaluate} 
                 loading={evaluating}
                 disabled={!canEvaluate}
-                title={!canEvaluate ? (i18n.language === 'en' ? `Please complete the reflection phase before evaluation` : `请完成反思阶段后再获取反馈`) : ""}
+                title={!canEvaluate ? (i18n.language === 'en' ? `Please complete all topics before evaluation` : `请完成所有反思话题后再获取反馈`) : ""}
                 className={`h-auto px-6 rounded-lg border-indigo-600 text-indigo-600 hover:bg-indigo-50 ${!canEvaluate ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {i18n.language === 'en' 
-                  ? (canEvaluate ? "Finish & Get Feedback" : `Reflecting... (${userMsgCount}/${requiredTurns})`) 
-                  : (canEvaluate ? "结束并获取反馈" : `反思探讨中 (${userMsgCount}/${requiredTurns})`)}
+                  ? (canEvaluate ? "Finish & Get Feedback" : (practiceMode === 1 || practiceMode === 2 ? "Reflecting..." : `Reflecting... (${userMsgCount}/${requiredTurns})`)) 
+                  : (canEvaluate ? "结束并获取反馈" : (practiceMode === 1 || practiceMode === 2 ? "反思探讨中..." : `反思探讨中 (${userMsgCount}/${requiredTurns})`))}
               </Button>
             );
           }

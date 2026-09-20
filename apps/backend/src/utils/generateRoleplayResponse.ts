@@ -389,7 +389,6 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
   const practiceMode = session.practiceMode || 1;
   let transcript = "";
   
-  // Fetch actual messages from DB to avoid Mongoose unpopulation issues after save()
   const mongoose = require('mongoose');
   const RoleplayMessage = mongoose.model('RoleplayMessage');
   const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
@@ -399,56 +398,114 @@ export async function generateReflectionCoachResponse(agenda: IAgendaORM, sessio
     transcript += `${sender}: ${m.content}\n`;
   });
   
-  const languageInstruction = language === 'zh' 
-    ? "MUST strictly use ONLY Simplified Chinese (简体中文). DO NOT output any English words."
-    : "MUST strictly use ONLY English.";
-
   const isZh = language === 'zh';
 
-  const topicsZh = practiceMode === 1 
-    ? "1. 情绪觉察：在行为背后，孩子真正的感受是什么？\n2. 触发因素分析：视频中家长的哪些具体言行导致或加重了孩子的情绪？\n3. 长期影响：这种教育方式长期来看会对孩子的性格产生什么影响？\n4. 替代方案：如果使用情绪辅导，更好的回应方式是什么？"
-    : "1. 情绪变化：当情绪被接纳后，孩子原本抗拒的心情发生了怎样的变化？\n2. 触发因素分析：视频中家长的哪些具体言行或态度帮助缓解了孩子的情绪？\n3. 长期影响：长期在接纳的环境中长大，孩子未来面对挫折会怎么表现？\n4. 现实启发：这段视频对现实中处理孩子情绪有什么启发？";
-
   const topicsEn = practiceMode === 1
-    ? "Topic 1: Emotion Awareness (e.g., \"What was the child actually feeling beneath the behavior?\")\nTopic 2: Trigger Analysis (e.g., \"What specific actions or words from the parent in the video caused or worsened the child's emotion?\")\nTopic 3: Long-term Impact (e.g., \"How does this parenting style affect the child's personality over time?\")\nTopic 4: Alternative Approaches (e.g., \"What would be a better way to respond using Emotion Coaching?\")"
-    : "Topic 1: Emotional Shift (e.g., \"How did the child's initial resistance change after their emotions were validated?\")\nTopic 2: Trigger Analysis (e.g., \"What specific actions or words from the parent in the video helped soothe the child's emotion?\")\nTopic 3: Long-term Impact (e.g., \"How might the child handle setbacks in the future if they grow up in an accepting environment?\")\nTopic 4: Real-world Inspiration (e.g., \"How does the video inspire the user to handle their child's emotions in reality?\")";
+    ? `Topic 1: Trigger Identification (Building on initial emotion)
+  - Subtopic 1a: Based on the initial emotion identified, what specific actions or words from the mother caused Lele to feel this way?
+Topic 2: Unmet Psychological Needs & Internal State
+  - Subtopic 2a: Exploring Lele's internal thoughts and cognitive state at that moment.
+  - Subtopic 2b: Identifying the core unmet psychological need (e.g., need to be understood, feeling safe, autonomy).
+Topic 3: Relational Impact (Mother-Child Bond)
+  - Subtopic 3a: How this dismissive interaction damages mutual trust.
+  - Subtopic 3b: The effect on Lele's willingness to communicate openly with his mother in the future.
+Topic 4: Negative Long-term Impact on Development
+  - Subtopic 4a: Impact on Lele's personality traits over time (e.g., becoming withdrawn, rebellious, or people-pleasing).
+  - Subtopic 4b: Impact on his future emotional regulation and coping mechanisms when facing stress.
+Topic 5: Alternative Approaches & Reflection
+  - Subtopic 5a: Identifying the critical turning point in the video where the mother could have acted differently.
+  - Subtopic 5b: How the mother could use Emotion Coaching (validation, empathy) to handle the situation better.`
+    : `Topic 1: Trigger Identification (Building on initial emotion)
+  - Subtopic 1a: Based on the initial positive emotion, what specific supportive actions or words from the mother helped soothe Lele's emotions and made him feel understood?
+Topic 2: Fostering Emotional Intelligence
+  - Subtopic 2a: How the mother's validation helped Lele recognize and process his own emotions.
+  - Subtopic 2b: How this process builds Lele's self-acceptance.
+Topic 3: Relational Impact (Secure Attachment)
+  - Subtopic 3a: How this supportive interaction builds a secure attachment and deepens trust.
+  - Subtopic 3b: How it encourages open and honest communication between mother and child.
+Topic 4: Positive Long-term Impact on Development
+  - Subtopic 4a: Impact on Lele's resilience and problem-solving skills when facing future setbacks.
+  - Subtopic 4b: How this secure emotional foundation helps him build healthy peer relationships.
+Topic 5: Real-world Inspiration
+  - Subtopic 5a: The most inspiring or surprising moment in the video for the user.
+  - Subtopic 5b: Specific takeaways the user can apply to their own parenting in daily life.`;
 
-  const topics = isZh ? topicsZh : topicsEn;
-  const conclusionPhrase = isZh 
-    ? "反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。" 
-    : "The reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase.";
+  const conclusionPhraseEn = "The reflection phase is complete. Please click 'End and Get Feedback' to view your feedback report and proceed to the next phase.";
+  const conclusionPhraseZh = "反思阶段已完成，请点击‘结束并获取反馈’查看您的反馈报告，并进入下一个环节。";
 
   const systemPrompt = `You are an AI Parent Coach guiding a reflection on a parenting video. The user is reflecting on their experience.
+The video only features a mother and her son (Lele). ALWAYS refer to the parent as "the mother" (not "parents").
+IMPORTANT CONTEXT: The system has already asked the user about Lele's initial emotion (e.g., "If you were Lele, how would you feel?"). The user's FIRST message in this conversation history is their answer to that initial question.
 
 Here is the full conversation history:
 ${transcript}
 
 YOUR GOAL:
-Guide the user to reflect deeply on the following topics:
-${topics}
+You are executing a STRICT INTERVIEW SCRIPT. You MUST guide the user through these exact subtopics in this EXACT ORDER: 1a -> 2a -> 2b -> 3a -> 3b -> 4a -> 4b -> 5a -> 5b.
+${topicsEn}
 
 RULES FOR YOUR RESPONSE:
-1. HANDLE SHALLOW ANSWERS STRICTLY: If the user's answer is shallow, too short, perfunctory, or unrelated (e.g., "I don't know", "yes", "no", "nothing"), YOU MUST NOT give generic positive reinforcement like "It's wonderful to hear that" or "Great". Instead, acknowledge their hesitation (e.g., "I understand it might be hard to answer" or "It's okay if you're not sure"), and then gently guide them to elaborate ON THE EXACT SAME TOPIC they just avoided. You must rephrase the original question or break it down into a much simpler, concrete sub-question. YOU MUST STAY ON THIS SPECIFIC TOPIC until you determine the user has provided a meaningful and relevant answer.
-2. MEMORY & PROGRESSION: Read the conversation history carefully. Ensure you cover all the topics above eventually. DO NOT repeat questions or topics that have already been sufficiently discussed. Once a topic is well-explored, smoothly transition to the next topic.
-3. BE CONCISE: Keep your empathy and questions brief (2-3 sentences max). For meaningful answers, give brief positive reinforcement before asking your next question. For shallow answers, follow Rule 1.
-4. CONCLUSION: If and ONLY IF you determine that the user has sufficiently reflected on ALL the topics above, you MUST conclude your response EXACTLY with this phrase: "${conclusionPhrase}"
-5. You ${languageInstruction}`;
+1. MANDATORY CHAIN OF THOUGHT: You MUST start your response with a <thinking> block to track your progress.
+   <thinking>
+   1. What was the LAST subtopic I asked about in my previous message? (e.g., 2a)
+   2. What is the STRICT NEXT subtopic in the sequence (1a->2a->2b->3a->3b->4a->4b->5a->5b)? (e.g., 2b)
+   3. Even if the user's answer was overly comprehensive, I MUST move to the next subtopic (or skip to the one after if fully answered). I will NEVER go backwards to 1a.
+   4. Formulate the question strictly based on the NEXT subtopic.
+   </thinking>
+2. ZERO DRILL-DOWN / NO FOLLOW-UP QUESTIONS: When the user answers your question, you MUST immediately move to the NEXT subtopic on the list. DO NOT ask for examples, details, or clarifications. (e.g., If the user says "He wants to be understood", DO NOT ask "What behaviors show he wants to be understood?". Instead, validate it and immediately ask the question for Subtopic 3a).
+3. STRICT PROGRESSION: Analyze the conversation history. Identify the LAST subtopic you asked about. Your new response MUST target the EXACT NEXT subtopic in the sequence. NEVER go backwards. NEVER repeat a subtopic.
+4. HANDLING PERFUNCTORY ANSWERS: ONLY if the user's answer is completely empty (e.g., "I don't know", "Nothing"), you may stay on the current subtopic. If they provide ANY relevant content, it is a pass. Move on!
+5. ACCURATE QUESTIONING: Your questions must strictly align with the NEXT subtopic. DO NOT constantly ask about the child's internal state unless the subtopic specifically requires it (like 2a or 2b). For Topic 3, ask about relational impact. For Topic 4, ask about long-term impact.
+6. SMOOTH TRANSITIONS: Briefly validate their answer (1 sentence), then ask the question for the next subtopic (1 sentence). 
+   - Example Transition (1a -> 2a): "You're right, the mother's constant rushing was definitely the trigger. Beyond the obvious rush, what do you think was going through Lele's mind at that moment?"
+   - Example Transition (2b -> 3a): "You're spot on, the core need here is to be understood. When that need isn't met, how do you think this dismissive interaction damages the trust between Lele and his mother?"
+7. BE CONCISE: After the <thinking> block, keep your actual response brief (1-3 sentences max). Talk like a real, empathetic human therapist. No bullet points.
+8. CONCLUSION: If you have reached the end of the script (Subtopic 5b is answered), conclude EXACTLY with this phrase: "${conclusionPhraseEn}"
+9. You MUST strictly use ONLY English for your response.`;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", "The user replied: {newUserMessage}\n\nProvide your detailed coaching feedback. Either dig deeper based on their answer, move to the next topic, or conclude if all topics are covered."]
+    ["user", "The user replied: {newUserMessage}\n\nProvide your coaching feedback in English. Remember to use <thinking> first. DO NOT ask follow-up questions about their answer. Validate it, and IMMEDIATELY ask the question for the NEXT subtopic in the sequence."]
   ]);
   const chain = prompt.pipe(chatModel);
 
   try {
     const response = await chain.invoke({ newUserMessage });
-    return response.content.toString();
+    let englishResponse = response.content.toString();
+
+    // Remove <thinking> block before translation or returning
+    englishResponse = englishResponse.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim();
+
+    if (!isZh) {
+      return englishResponse;
+    }
+
+    // --- TRANSLATION LAYER FOR CHINESE ---
+    const translationPrompt = ChatPromptTemplate.fromMessages([
+      ["system", `You are an expert psychological translator. Translate the following English coaching response into natural, empathetic, and professional Chinese. 
+The tone should be warm, encouraging, and thought-provoking, just like a real therapist using Socratic questioning. 
+
+CRITICAL TRANSLATION RULES:
+1. Contextual Accuracy: Pay attention to the emotional context. For example, if the user expresses negative emotions like "anger" (愤怒), do NOT translate words like "trigger" or "touch" as "触动" (which implies being emotionally moved in a positive or profound way). Instead, use "引发" (trigger), "导致" (cause), or "激怒" (infuriate).
+2. Character Consistency: Translate "mother" as "妈妈" (not "父母" or "家长" if specifically referring to the mother). NEVER translate the name "Lele" (or any variations like "Li Lei") into anything other than "乐乐". Always use "乐乐".
+3. Natural Phrasing: Keep the translated questions concise, logical, and natural in Chinese. Avoid awkward, overly complex, or presumptuous sentence structures (e.g., just translate "What was going through Lele's mind?" without adding extra speculative clauses).
+4. Do not add any extra commentary, just provide the translation.`],
+      ["user", "{englishResponse}"]
+    ]);
+    const translationChain = translationPrompt.pipe(chatModel);
+    const translationResult = await translationChain.invoke({ englishResponse });
+    let chineseResponse = translationResult.content.toString();
+
+    if (englishResponse.includes("The reflection phase is complete")) {
+      chineseResponse += "\n\n" + conclusionPhraseZh;
+    }
+
+    return chineseResponse;
   } catch (error) {
     console.error("Error generating reflection coach response:", error);
     throw error;
   }
 }
-
 export async function generateRoleplayEvaluation(agenda: IAgendaORM, session: IRoleplaySessionORM, language: string = 'en') {
   const practiceMode = session.practiceMode || 3;
   const mongoose = require('mongoose');
@@ -599,38 +656,40 @@ export async function generateAdvisorsResponse(
 ): Promise<{ expert: string, peer: string }> {
   const isZh = language === 'zh';
   
-  // Format the chat history
+  // Format the chat history safely using the already populated messages
   let chatHistory = "";
-  if (session && session.messages) {
-    const mongoose = require('mongoose');
-    const RoleplayMessage = mongoose.model('RoleplayMessage');
-    const messages = await RoleplayMessage.find({ _id: { $in: session.messages } }).sort({ timestamp: 1 });
-    const recentMessages = messages.slice(-6); // Only need the last few turns
+  if (session && session.messages && Array.isArray(session.messages)) {
+    const recentMessages = session.messages.slice(-6); // Only need the last few turns
     for (const msg of recentMessages) {
       chatHistory += `${msg.sender}: ${msg.content} ${msg.action ? `[Action: ${msg.action}]` : ''}\n`;
     }
   }
 
-  const systemPrompt = `You are a Dual-Agent Advisory Board helping a parent during a difficult child-rearing simulation.
-The parent is struggling to respond to the child's tantrum.
-Based on the chat history, you must provide TWO distinct pieces of advice from two different personas:
-1. 'expert': A strict, theoretical child psychologist. Focuses on the formal 5-step emotion coaching theory (Notice, Connect, Empathize, Express, Set Boundaries). Tone is professional and theoretical.
-2. 'peer': An experienced, empathetic mother of two. Focuses on ground-level, practical tactics and emotional support for the parent. Tone is casual, relatable, and encouraging.
+  const systemPrompt = `You are the "Board of Advisors" in an emotion coaching simulation.
+Your purpose is to provide **Constructive Friction** and protect the user's **Epistemic Agency**. 
+Unlike the direct @coach who gives procedural steps, you provide TWO distinct, nuanced, and sometimes slightly conflicting perspectives on the child's current emotional state based on the chat history.
 
-CRITICAL RULES:
-- Provide EXACTLY 1 to 2 short sentences per advisor.
-- Do NOT provide the exact same advice. They should offer different angles (theory vs. practical).
-- The parent will read both and decide how to act.
+1. 'expert' (Child Psychologist): 
+   - Tone: Academic, analytical, objective.
+   - Focus: Analyze the hidden psychological mechanism behind the child's behavior in the recent chat (e.g., "The child's resistance is a manifestation of autonomy anxiety...").
+   - DO NOT give a direct script to copy. Give a theoretical diagnosis.
+
+2. 'peer' (Experienced Mom):
+   - Tone: Empathetic, relatable, highly practical.
+   - Focus: Share a "been-there" realization or a soft, non-theoretical approach. She might even slightly challenge the strictness of the theory (e.g., "Sometimes you just need to drop the rules and give a hug first...").
+   - DO NOT give a direct script to copy. Give emotional resonance and a pragmatic tip.
+
+By offering these two different lenses, you force the parent to synthesize the situation and make their own choice, preventing the "Illusion of Competence".
 
 Output format MUST be a valid JSON:
-{
-  "expert": "expert's advice here",
-  "peer": "peer's advice here"
-}`;
+{{
+  "expert": "expert's insight here (1-2 sentences)",
+  "peer": "peer's insight here (1-2 sentences)"
+}}`;
 
   const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemPrompt],
-    ["user", `Language to use: ${isZh ? 'Chinese' : 'English'}\n\nRecent Chat History:\n{chatHistory}\n\nProvide the dual-advisor JSON now.`]
+    ["user", `Language to use: ${isZh ? 'Chinese' : 'English'}\n\nRecent Chat History:\n${chatHistory}\n\nProvide the dual-advisor JSON now.`]
   ]);
 
   try {
@@ -654,8 +713,8 @@ Output format MUST be a valid JSON:
   } catch (error) {
     console.error("Error generating advisors response:", error);
     return {
-      expert: isZh ? "根据情绪辅导理论，您现在应该先接纳孩子的负面情绪，再说出您的界限。" : "According to emotion coaching theory, you should validate the negative emotion first before stating your boundary.",
-      peer: isZh ? "别着急，这时候讲大道理孩子听不进去的。试着先抱抱他，或者转移一下注意力吧！" : "Don't stress, kids can't hear logic right now. Try just giving a hug or gently redirecting their attention!"
+      expert: isZh ? "根据认知负荷理论，孩子当前处于'热认知'状态，无法处理复杂的说教，建议先关注情绪。" : "According to cognitive load theory, the child is in a 'hot cognition' state and cannot process logic right now. Focus on emotions first.",
+      peer: isZh ? "遇到这种情况我通常也会很崩溃，但我发现这时候讲道理没用，先给他个台阶下会好很多。" : "I always get frustrated too, but I found that giving them a way out instead of lecturing works much better."
     };
   }
 }

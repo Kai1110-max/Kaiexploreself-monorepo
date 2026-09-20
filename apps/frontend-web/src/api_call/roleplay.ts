@@ -64,3 +64,23 @@ export const evaluateRoleplaySession = async (
     return null;
   }
 };
+
+export const getAdvisorsAdvice = async (
+  token: string,
+  agendaId: string,
+  tid: string,
+  language: string = 'en',
+  practiceMode: number = 3
+): Promise<{ expert: string, peer: string } | null> => {
+  try {
+    const response = await Http.axios.post(
+      `/agendas/${agendaId}/themes/${tid}/roleplay/advisors`,
+      { language, practiceMode },
+      { headers: Http.makeSignedInHeader(token) }
+    );
+    return response.data;
+  } catch (err) {
+    console.error('Error getting advisors advice:', err);
+    return null;
+  }
+};
