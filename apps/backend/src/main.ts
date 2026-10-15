@@ -10,6 +10,7 @@ import adminAuthRouter from './router/admin/auth'
 import adminUserRouter from './router/admin/user'
 import adminDataRouter from './router/admin/data'
 import expertRouter from './router/expert'
+import helperRouter from './router/helper'
 import * as morgan from 'morgan'
 import cors from 'cors'
 import mongoose from 'mongoose';
@@ -58,6 +59,7 @@ apiRouter.use("/auth", authRouter)
 apiRouter.use("/agendas", agendaRouter)
 apiRouter.use("/interaction", interactionRouter)
 apiRouter.use("/expert", expertRouter)
+apiRouter.use("/helper", helperRouter)
 apiRouter.use("/admin/auth", adminAuthRouter)
 apiRouter.use("/admin/users", signedInAdminUserMiddleware, adminUserRouter)
 apiRouter.use("/admin/data", signedInAdminUserMiddleware, adminDataRouter)

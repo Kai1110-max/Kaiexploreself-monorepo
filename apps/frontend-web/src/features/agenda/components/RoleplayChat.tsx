@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Input, Button, List, Typography, Space, Spin, Avatar, Modal, Progress, Tag, message as antdMessage } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined, SafetyCertificateOutlined, CheckCircleOutlined, BulbOutlined } from '@ant-design/icons';
+import { Card, Input, Button, List, Typography, Space, Spin, Avatar, Modal, Progress, Tag, message as antdMessage, Popover } from 'antd';
+import { SendOutlined, UserOutlined, RobotOutlined, SafetyCertificateOutlined, CheckCircleOutlined, BulbOutlined, CloseOutlined } from '@ant-design/icons';
 import { useSelector } from '../../../redux/hooks';
 import { startRoleplaySession, sendRoleplayMessage, evaluateRoleplaySession, getAdvisorsAdvice, IRoleplayEvaluation } from '../../../api_call/roleplay';
+import { chatWithHelper } from '../../../api_call/helper';
 import { IRoleplaySessionPopulated, RoleplayAgentType } from '@core';
 import { useTranslation } from 'react-i18next';
 
@@ -23,6 +24,20 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
   const [askingAdvisors, setAskingAdvisors] = useState(false);
   const [message, setMessage] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
+  
+  // Helper Agent States
+  const [isHelperOpen, setIsHelperOpen] = useState(false);
+  const [helperHistory, setHelperHistory] = useState<{role: string, content: string}[]>([]);
+  const [isHelperLoading, setIsHelperLoading] = useState(false);
+  const [helperInput, setHelperInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const helperChatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isHelperOpen) {
+      helperChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [helperHistory, isHelperOpen]);
 
   useEffect(() => {
     const initSession = async () => {
@@ -46,12 +61,42 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [session?.messages]);
 
+  const isMessageTooShort = () => {
+    const text = message.trim();
+    if (!text) return false; // If empty, we handle it separately
+    const isEnglish = i18n.language.startsWith('en');
+    return isEnglish 
+      ? text.split(/\s+/).length < 8 // Less than 8 words for English
+      : text.length < 8;             // Less than 8 characters for Chinese
+  };
+
   const handleSend = async () => {
     if (!message.trim() || !token || !agendaId) return;
+
+    if (isMessageTooShort() && (practiceMode === 1 || practiceMode === 2)) {
+      Modal.confirm({
+        title: i18n.language === 'en' ? 'Tip' : '提示',
+        content: i18n.language === 'en' 
+          ? 'Your reflection is very concise! It would be great if you could share a bit more detail. If you are not sure how to answer, please click the lightbulb button for a hint.' 
+          : '您的反思非常精炼！如果能多分享一点细节就更好了，如果不知道如何回答请点击输入框右侧的小灯泡按钮。',
+        okText: i18n.language === 'en' ? 'Send Anyway' : '继续发送',
+        cancelText: i18n.language === 'en' ? 'Add More' : '去补充',
+        onOk: () => {
+          executeSend();
+        }
+      });
+      return;
+    }
     
+    executeSend();
+  };
+
+  const executeSend = async () => {
     const userMsg = message;
     setMessage('');
     setSending(true);
+    setIsHelperOpen(false); // Close helper if it was open
+    setHelperHistory([]); // Reset helper history for the next question
 
     const userRole = RoleplayAgentType.Parent;
 
@@ -68,13 +113,15 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
     }
 
     try {
-      const updatedSession = await sendRoleplayMessage(token, agendaId, tid, userMsg, i18n.language, practiceMode);
-      if (updatedSession && !('error' in updatedSession)) {
-        setSession(updatedSession);
-      } else {
-        antdMessage.error(i18n.language === 'en' ? 'Failed to get response from AI. Please try again.' : 'AI 响应失败，请重试。');
-        // Rollback optimistic update
-        setSession(prev => prev ? { ...prev, messages: (prev.messages || []).filter(m => m._id !== tempId) } : prev);
+      if (token && agendaId && tid) {
+        const updatedSession = await sendRoleplayMessage(token, agendaId, tid, userMsg, i18n.language, practiceMode);
+        if (updatedSession && !('error' in updatedSession)) {
+          setSession(updatedSession);
+        } else {
+          antdMessage.error(i18n.language === 'en' ? 'Failed to get response from AI. Please try again.' : 'AI 响应失败，请重试。');
+          // Rollback optimistic update
+          setSession(prev => prev ? { ...prev, messages: (prev.messages || []).filter(m => m._id !== tempId) } : prev);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -108,6 +155,48 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
       antdMessage.error(i18n.language === 'en' ? 'Network error. Please try again.' : '网络错误，请重试。');
     }
     setEvaluating(false);
+  };
+
+  const toggleHelper = async () => {
+    const newState = !isHelperOpen;
+    setIsHelperOpen(newState);
+    
+    if (newState && helperHistory.length === 0 && session?.messages) {
+      setIsHelperLoading(true);
+      const coachMsgs = session.messages.filter(m => m.sender === RoleplayAgentType.Moderator);
+      const lastCoachMsg = coachMsgs.length > 0 ? coachMsgs[coachMsgs.length - 1].content : "";
+      
+      try {
+        console.log("Calling helper with:", { lastCoachMsg, language: i18n.language, practiceMode });
+        const reply = await chatWithHelper(lastCoachMsg, [], i18n.language, practiceMode);
+        setHelperHistory([{ role: 'helper', content: reply }]);
+      } catch (e) {
+        console.error("Failed to get initial helper response:", e);
+        antdMessage.error(i18n.language === 'en' ? 'Failed to connect to Helper.' : '无法连接到小助手。');
+      }
+      setIsHelperLoading(false);
+    }
+  };
+
+  const handleHelperSend = async () => {
+    if (!helperInput.trim() || isHelperLoading) return;
+    
+    const userText = helperInput;
+    setHelperInput("");
+    const newHistory = [...helperHistory, { role: 'user', content: userText }];
+    setHelperHistory(newHistory);
+    setIsHelperLoading(true);
+    
+    const coachMsgs = session?.messages?.filter(m => m.sender === RoleplayAgentType.Moderator) || [];
+    const lastCoachMsg = coachMsgs.length > 0 ? coachMsgs[coachMsgs.length - 1].content : "";
+
+    try {
+      const reply = await chatWithHelper(lastCoachMsg, newHistory, i18n.language, practiceMode);
+      setHelperHistory([...newHistory, { role: 'helper', content: reply }]);
+    } catch (e) {
+      console.error(e);
+    }
+    setIsHelperLoading(false);
   };
 
   const renderScenarioDescription = () => {
@@ -331,24 +420,80 @@ export const RoleplayChat = ({ tid, practiceMode = 3, onPracticeComplete }: { ti
             title={i18n.language === 'en' ? "Ask Board of Advisors" : "求助智囊团"}
           />
         )}
-        <Input.TextArea 
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          placeholder={
-            practiceMode === 1 || practiceMode === 2 
-              ? (i18n.language === 'en' ? "Share your thoughts with the Coach..." : "与教练分享您的感受和想法...")
-              : (i18n.language === 'en' ? "Type your response to the child here..." : "作为家长，在此输入您对孩子的回应...")
-          }
-          autoSize={{ minRows: 2, maxRows: 4 }}
-          onPressEnter={(e) => {
-            if (!e.shiftKey) {
-              e.preventDefault();
-              handleSend();
+        <div className="relative flex-1">
+          <Input.TextArea 
+            value={message}
+            onChange={e => {
+              setMessage(e.target.value);
+              setIsTyping(true);
+              setTimeout(() => setIsTyping(false), 1500);
+            }}
+            placeholder={
+              practiceMode === 1 || practiceMode === 2 
+                ? (i18n.language === 'en' ? "Share your thoughts with the Coach..." : "与教练分享您的感受和想法...")
+                : (i18n.language === 'en' ? "Type your response to the child here..." : "作为家长，在此输入您对孩子的回应...")
             }
-          }}
-          disabled={sending || evaluating}
-          className="rounded-lg"
-        />
+            autoSize={{ minRows: 2, maxRows: 4 }}
+            onPressEnter={(e) => {
+              if (!e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            disabled={sending || evaluating}
+            className="rounded-lg pr-12"
+          />
+          {(practiceMode === 1 || practiceMode === 2) && (
+            <Popover
+              content={
+                <div className="w-80 h-96 flex flex-col">
+                  <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                    <span className="font-bold text-amber-600 flex items-center gap-1">
+                      <BulbOutlined /> {i18n.language === 'en' ? "Reflection Helper" : "反思小助手"}
+                    </span>
+                    <Button type="text" size="small" icon={<CloseOutlined />} onClick={() => setIsHelperOpen(false)} />
+                  </div>
+                  <div className="flex-1 overflow-y-auto mb-3 flex flex-col gap-2 p-1">
+                    {helperHistory.map((msg, idx) => (
+                      <div key={idx} className={`max-w-[85%] p-2 rounded-lg text-sm ${msg.role === 'helper' ? 'bg-amber-50 text-amber-900 self-start border border-amber-100' : 'bg-blue-500 text-white self-end'}`}>
+                        {msg.content}
+                      </div>
+                    ))}
+                    {isHelperLoading && (
+                      <div className="self-start text-amber-500 text-xs italic"><Spin size="small" className="mr-1" /> {i18n.language === 'en' ? "Thinking..." : "思考中..."}</div>
+                    )}
+                    <div ref={helperChatEndRef} />
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Input 
+                      size="small" 
+                      value={helperInput} 
+                      onChange={e => setHelperInput(e.target.value)}
+                      onPressEnter={handleHelperSend}
+                      disabled={isHelperLoading}
+                      placeholder={i18n.language === 'en' ? "Ask the helper..." : "向小助手提问..."} 
+                    />
+                    <Button size="small" type="primary" className="bg-amber-500 hover:bg-amber-400 border-none" icon={<SendOutlined />} onClick={handleHelperSend} loading={isHelperLoading} />
+                  </div>
+                </div>
+              }
+              trigger="click"
+              open={isHelperOpen}
+              onOpenChange={(open) => {
+                if (!open) setIsHelperOpen(false);
+              }}
+              placement="topRight"
+            >
+              <Button 
+                type="text" 
+                icon={<BulbOutlined className={`text-xl ${isTyping && isMessageTooShort() ? 'animate-bounce text-amber-500' : 'text-slate-400'}`} />} 
+                className="absolute right-2 bottom-2 hover:bg-amber-50" 
+                onClick={toggleHelper}
+                title={i18n.language === 'en' ? "Get a hint" : "获取提示"}
+              />
+            </Popover>
+          )}
+        </div>
         <Button 
           type="primary" 
           icon={<SendOutlined />} 
